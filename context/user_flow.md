@@ -1,4 +1,4 @@
-### Written User Flow (MVP Edition)
+### Written User Flow (v2 - Agent Negotiation Edition)
 
 * 
 **Step 1: The Request.** The human user talks to their personal AI agent and requests a service, such as getting their gutters fixed.
@@ -9,23 +9,44 @@
 
 
 * 
-**Step 3: The Search.** The AI agent takes this criteria and queries the platform's system (via vector search or standard search) to find relevant jobs and agents.
+**Step 3: The Search.** The AI agent takes this criteria and queries the platform's system using RAG (Retrieval Augmented Generation) to find relevant tradespeople and their agents.
 
 
 * 
-**Step 4: Filtering and Sorting.** The system returns the top 10 best agents for that category. The search applies custom filters dictated by the user's AI, sorting by price (low to high or high to low), rating, or longevity on the platform.
+**Step 4: Ranking and Filtering.** The system uses RAG to retrieve the top 50 candidates, then ranks them by:
+- RAG relevance score
+- Number of successful services completed
+- Time on the platform
+- Customer ratings
+
+The system returns the top 10 best matches to the agent.
 
 
 * 
-**Step 5: The Match (KISS Hackathon Shortcut).** Originally, your plan was for the AI to select the top three agents, chat with them, check their availability, and debate to find the best one. To save time for the MVP, your AI agent will simply take the top 10 results  and automatically select the number one best match based on the search filters.
+**Step 5: Agent Reasoning.** The AI agent analyzes the top 10 results, considers the human's priorities and preferences, and narrows it down to a top 3 list of candidates.
 
 
 * 
-**Step 6: The Transaction.** Once the best tradesperson agent is selected, an embedded payment process takes place. For the hackathon, this will generate our `Transaction` entity.
+**Step 6: Agent-to-Agent Negotiation.** The user's AI agent chats with each of the three shortlisted tradesperson agents to:
+- Negotiate discounts (tradesperson agents can offer discounts if needed)
+- Discuss potential compromises
+- Refine the scope of work to get the best price for the human
 
 
 * 
-**Step 7: Two-Way Review.** After the physical job is completed, the system prompts a two-way rating system. The human leaves a review for the tradesperson they hired. In return, the tradesperson leaves a review for the human and their AI agent to rate how good of a customer they were.
+**Step 7: Final Selection.** After negotiating with all three candidates, the agent does additional reasoning based on the human's priorities and selects the best option.
+
+
+* 
+**Step 8: The Transaction.** Once a tradesperson agent is selected, an embedded payment process takes place to finalize the booking.
+
+
+* 
+**Step 9: Human Notification.** The human user is notified of the completed transaction. The human can be in the loop at this stage if needed.
+
+
+* 
+**Step 10: Two-Way Review.** After the physical job is completed, the system prompts a two-way rating system. The human leaves a review for the tradesperson they hired. In return, the tradesperson leaves a review for the human and their AI agent to rate how good of a customer they were.
 
 
 
@@ -46,37 +67,49 @@
         |                                     +-------------------+
         |                                     |                   |
         |                                     |  Platform Search  |
-        |                                     |  (Vector/RAG)     |
+        |                                     |  (RAG + Ranking)  |
         |                                     |                   |
         |                                     +-------------------+
         |                                              |
-        |                                              | (Returns Top 10 sorted
-        |                                              |  by price/rating)
+        |                                              | (Returns Top 10
+        |                                              |  sorted by relevance,
+        |                                              |  success, time, rating)
         |                                              v
         |                                     +-------------------+
         |                                     |                   |
         |                                     |  User's AI Agent  |
-        |                                     |  (Selects #1 Match|
-        |                                     |   for the MVP)    |
+        |                                     |  (Narrows to Top 3|
+        |                                     |   based on human  |
+        |                                     |   priorities)     |
+        |                                     +-------------------+
+        |                                              |
+        |                                              | (Agent-to-Agent Chat)
+        |                                              |  - Discounts
+        |                                              |  - Compromises
+        |                                              |  - Scope refinement
+        |                                              v
+        |                                     +-------------------+
+        |                                     |                   |
+        |                                     |  User's AI Agent  |
+        |                                     |  (Selects best    |
+        |                                     |   option)         |
         |                                     +-------------------+
         |                                              |
         |                                              | (Initiates embedded
         |                                              |  payment/booking)
         |                                              v
-+----------------+                            +-------------------+
-|                |                            |                   |
-|  Tradesperson  | <------------------------> | Tradesperson's AI |
-|  (Physical Job)|      (Job Completed)       | Agent             |
-+----------------+                            +-------------------+
+ +----------------+                            +-------------------+
+ |                | <------------------------- |                   |
+ | Tradesperson   |      (Job Completed)       | Tradesperson's AI |
+ | (Physical Job) |                            | Agent             |
+ +----------------+                            +-------------------+
         |                                              |
         v                                              v
-+----------------+                            +-------------------+
-|  Review of     |                            |  Review of        |
-|  Tradesperson  | <------------------------> |  Human/Agent      |
-+----------------+      (Two-Way Rating)      +-------------------+
+ +----------------+                            +-------------------+
+ |  Review of     |                            |  Review of        |
+ |  Tradesperson  | <-------------------------> |  Human/Agent      |
+ +----------------+      (Two-Way Rating)      +-------------------+
 
 ```
 
-With this flow, you only need to build a simple chat interface for Step 1, a mock database query for Steps 3-5, a basic checkout screen for Step 6, and a simple rating form for Step 7.
-
-Would you like me to map out the API endpoints (e.g., `POST /api/search`, `POST /api/transaction`) you'll need to support this exact flow so your team can split up the frontend and backend work right now?
+With this flow, you need to build a chat interface for Step 1, a RAG-powered search with ranking for Steps 3-4, agent reasoning logic for Steps 5 & 7, agent-to-agent communication for Step 6, an embedded checkout for Step 8, notification system for Step 9, and a rating form for Step 10.
