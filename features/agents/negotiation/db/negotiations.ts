@@ -27,9 +27,10 @@ export async function getNegotiation(id: string): Promise<Negotiation | null> {
     .from('negotiations')
     .select()
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
-  if (error) return null;
+  if (error) throw new Error(`Failed to get negotiation: ${error.message}`);
+  if (!data) return null;
   return mapDbToNegotiation(data);
 }
 
@@ -129,7 +130,7 @@ export async function respondToResult(
   return mapDbToResult(data);
 }
 
-function mapDbToNegotiation(row: Record<string, any>): Negotiation {
+function mapDbToNegotiation(row: any): Negotiation {
   return {
     id: row.id,
     buyerAgentId: row.buyer_agent_id,
@@ -144,7 +145,7 @@ function mapDbToNegotiation(row: Record<string, any>): Negotiation {
   };
 }
 
-function mapDbToMessage(row: Record<string, any>): NegotiationMessage {
+function mapDbToMessage(row: any): NegotiationMessage {
   return {
     id: row.id,
     negotiationId: row.negotiation_id,
@@ -156,7 +157,7 @@ function mapDbToMessage(row: Record<string, any>): NegotiationMessage {
   };
 }
 
-function mapDbToResult(row: Record<string, any>): NegotiationResult {
+function mapDbToResult(row: any): NegotiationResult {
   return {
     id: row.id,
     negotiationId: row.negotiation_id,
