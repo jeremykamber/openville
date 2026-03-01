@@ -43,7 +43,7 @@ Please respond to ${buyerName}'s inquiry professionally.`;
 }
 
 export function buildProviderTurnPrompt(
-  negotiation: Negotiation,
+  _negotiation: Negotiation,
   messages: NegotiationMessage[],
   candidate: Candidate
 ): string {

@@ -51,7 +51,7 @@ Please start the negotiation by introducing yourself and discussing the job.`;
 }
 
 export function buildBuyerTurnPrompt(
-  negotiation: Negotiation,
+  _negotiation: Negotiation,
   messages: NegotiationMessage[],
   preferences: UserPreferences
 ): string {
