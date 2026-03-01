@@ -9,13 +9,17 @@ const supabaseUrl =
   process.env.SUPABASE_API_URL;
 
 const supabaseKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ??
-  process.env.SUPABASE_ADMIN_KEY ??
-  process.env.SUPABASE_PUBLISHABLE_DEFAULT_KEY ??
-  process.env.SUPABASE_KEY ??
+  process.env.NEXT_SUPABASE_SERVICE_ROLE_KEY ??
+  process.env.NEXT_SUPABASE_ADMIN_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ??
+  process.env.NEXT_SUPABASE_KEY ??
   process.env.NEXT_PUBLIC_SUPABASE_KEY ??
-  process.env.SUPABASE_API_KEY;
+  process.env.NEXT_SUPABASE_API_KEY;
 
+console.log("Supabase Admin Config:", {
+  supabaseUrl,
+  supabaseKey: supabaseKey ? "****" : null, // Don't log the actual key
+});
 export const hasSupabaseAdminConfig = Boolean(supabaseUrl && supabaseKey);
 
 let cachedClient: SupabaseClient | null = null;
@@ -34,4 +38,6 @@ export function getSupabaseAdminClient(): SupabaseClient {
   return cachedClient;
 }
 
-export const supabaseAdmin = hasSupabaseAdminConfig ? getSupabaseAdminClient() : null;
+export const supabaseAdmin = hasSupabaseAdminConfig
+  ? getSupabaseAdminClient()
+  : null;
