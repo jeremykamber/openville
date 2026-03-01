@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock the providers module so we can control LLM outputs per test
-vi.mock('@/features/agents/reasoning/providers', () => {
+vi.mock('../../reasoning/providers', () => {
   let responses: string[] = [];
   return {
     createChatModel: () => ({
@@ -54,8 +54,8 @@ vi.mock('../db/negotiations', () => {
 });
 
 import { startNegotiation, sendBuyerMessage, proposeNegotiationResult } from '../negotiate';
-import * as providers from '@/features/agents/reasoning/providers';
-import * as db from '@/features/agents/negotiation/db/negotiations';
+import * as providers from '../../reasoning/providers';
+import * as db from '../db/negotiations';
 
 describe('negotiate engine (unit)', () => {
   beforeEach(() => {
