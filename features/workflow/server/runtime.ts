@@ -13,11 +13,19 @@ export interface ResolvedLlmProvider {
 }
 
 export function isEmbeddingConfigured(): boolean {
-  return Boolean(process.env.OPENAI_API_KEY);
+  return Boolean(process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY);
 }
 
-export function getEmbeddingProviderLabel(): "openai" | "unconfigured" {
-  return isEmbeddingConfigured() ? "openai" : "unconfigured";
+export function getEmbeddingProviderLabel(): "openai" | "openrouter" | "unconfigured" {
+  if (process.env.OPENAI_API_KEY) {
+    return "openai";
+  }
+
+  if (process.env.OPENROUTER_API_KEY) {
+    return "openrouter";
+  }
+
+  return "unconfigured";
 }
 
 export function isMockLlmFallbackAllowed(): boolean {

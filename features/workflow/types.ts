@@ -23,7 +23,7 @@ export interface WorkflowStatusResponse {
   };
   retrieval: {
     mode: WorkflowRetrievalMode;
-    embeddingProvider: "openai" | "unconfigured";
+    embeddingProvider: "openai" | "openrouter" | "unconfigured";
     ready: boolean;
     fallbackAllowed: boolean;
   };
