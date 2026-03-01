@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView, useScroll, useTransform } from "motion/react";
+import { motion, useInView } from "motion/react";
 import {
   finalists,
   winnerExplanation,
@@ -415,12 +415,6 @@ function FinalistCard({
 
 export function FinalistSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  });
-  const contentOpacity = useTransform(scrollYProgress, [0.25, 0.75], [1, 0]);
-
   const isInView = useInView(sectionRef, { once: true, amount: 0.08 });
 
   return (
@@ -440,10 +434,7 @@ export function FinalistSection() {
         }}
       />
 
-      <motion.div
-        style={{ opacity: contentOpacity }}
-        className="relative z-[1] mx-auto max-w-6xl"
-      >
+      <div className="relative z-[1] mx-auto max-w-6xl">
         {/* Section header */}
         <motion.div
           variants={sectionHeader}
@@ -589,7 +580,7 @@ export function FinalistSection() {
             ))}
           </motion.div>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

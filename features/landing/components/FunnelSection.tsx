@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion } from "motion/react";
 import {
   AgentMarketGraph,
   type MarketGraphStage,
@@ -60,12 +60,6 @@ function useAutoStage(): MarketGraphStage {
 
 export function FunnelSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  });
-  const contentOpacity = useTransform(scrollYProgress, [0.25, 0.75], [1, 0]);
-
   const stage = useAutoStage();
   const stageIndex = STAGE_ORDER.indexOf(stage);
 
@@ -86,10 +80,7 @@ export function FunnelSection() {
         }}
       />
 
-      <motion.div
-        style={{ opacity: contentOpacity }}
-        className="relative z-[1] mx-auto max-w-6xl space-y-6"
-      >
+      <div className="relative z-[1] mx-auto max-w-6xl space-y-6">
         {/* Section header */}
         <div className="text-center">
           <span className="ov-kicker">Communication & Bargaining</span>
@@ -194,7 +185,7 @@ export function FunnelSection() {
             </span>
           </div>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }
