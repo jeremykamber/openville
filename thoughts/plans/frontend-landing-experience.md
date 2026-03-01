@@ -5,8 +5,9 @@ branch: feat/yirivera-landing
 repository: openville
 topic: "Frontend landing experience plan"
 tags: [plan, frontend, landing-page, onboarding, ux, agent-negotiation]
-status: complete
+status: superseded-by-v2
 last_updated: 2026-02-28
+superseded_by: thoughts/plans/frontend-landing-experience-v2.md
 ---
 
 # Plan: Frontend Landing Experience

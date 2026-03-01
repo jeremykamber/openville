@@ -7,6 +7,7 @@ topic: "Frontend landing experience research"
 tags: [research, frontend, landing-page, onboarding, ux, agent-negotiation]
 status: complete
 last_updated: 2026-02-28
+plan_version: v2 (thoughts/plans/frontend-landing-experience-v2.md)
 ---
 
 # Research: Frontend Landing Experience
