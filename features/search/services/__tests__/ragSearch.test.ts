@@ -37,7 +37,7 @@ describe('RAGSearchService', () => {
         filters: { serviceCategories: ['plumbing'] }
       });
       expect(result.results.every(r => 
-        r.services.some(s => s.toLowerCase().includes('plumbing'))
+        (r.services || []).some(s => s.toLowerCase().includes('plumbing'))
       )).toBe(true);
     });
 
@@ -46,7 +46,7 @@ describe('RAGSearchService', () => {
         query: 'fix',
         filters: { minRating: 4.5 }
       });
-      expect(result.results.every(r => r.rating >= 4.5)).toBe(true);
+      expect(result.results.every(r => (r.rating || 0) >= 4.5)).toBe(true);
     });
 
     it('filters by minimum rating of 0', async () => {
@@ -54,7 +54,6 @@ describe('RAGSearchService', () => {
         query: 'fix',
         filters: { minRating: 0 }
       });
-      // Should return results (0 means no minimum)
       expect(result.results.length).toBeGreaterThan(0);
     });
 
@@ -63,7 +62,7 @@ describe('RAGSearchService', () => {
         query: 'fix',
         filters: { minSuccessCount: 100 }
       });
-      expect(result.results.every(r => r.successCount >= 100)).toBe(true);
+      expect(result.results.every(r => (r.successCount || 0) >= 100)).toBe(true);
     });
 
     it('filters by minimum success count of 0', async () => {
@@ -79,7 +78,7 @@ describe('RAGSearchService', () => {
         query: 'fix',
         filters: { maxHourlyRate: 60 }
       });
-      expect(result.results.every(r => r.hourlyRate <= 60)).toBe(true);
+      expect(result.results.every(r => (r.hourlyRate || 0) <= 60)).toBe(true);
     });
 
     it('filters by max hourly rate of 0', async () => {
@@ -87,7 +86,6 @@ describe('RAGSearchService', () => {
         query: 'fix',
         filters: { maxHourlyRate: 0 }
       });
-      // Should return empty since no one has rate <= 0
       expect(result.results.length).toBe(0);
     });
 
@@ -97,7 +95,7 @@ describe('RAGSearchService', () => {
         filters: { location: 'NYC' }
       });
       expect(result.results.every(r => 
-        r.location.toLowerCase().includes('nyc')
+        (r.location || '').toLowerCase().includes('nyc')
       )).toBe(true);
     });
 
@@ -110,7 +108,7 @@ describe('RAGSearchService', () => {
         }
       });
       expect(result.results.every(r => 
-        r.rating >= 4.0 && r.location.toLowerCase().includes('nyc')
+        (r.rating || 0) >= 4.0 && (r.location || '').toLowerCase().includes('nyc')
       )).toBe(true);
     });
   });
