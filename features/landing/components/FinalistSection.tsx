@@ -419,7 +419,7 @@ export function FinalistSection() {
     target: sectionRef,
     offset: ["start end", "end start"],
   });
-  const contentOpacity = useTransform(scrollYProgress, [0.15, 0.85], [1, 0]);
+  const contentOpacity = useTransform(scrollYProgress, [0.25, 0.75], [1, 0]);
 
   const isInView = useInView(sectionRef, { once: true, amount: 0.08 });
 
@@ -427,7 +427,7 @@ export function FinalistSection() {
     <section
       ref={sectionRef}
       id="negotiation"
-      className="relative px-4 py-20 sm:px-6 sm:py-24 lg:px-8"
+      className="relative px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
       aria-label="Negotiation -- three finalists compete on price, scope, and certainty"
     >
       {/* Ambient glow */}
@@ -463,16 +463,6 @@ export function FinalistSection() {
             and timeline. One loses on incomplete coverage. One loses on
             scheduling risk. The winner is chosen with explainable reasoning.
           </p>
-        </motion.div>
-
-        {/* Horizontal accent line */}
-        <motion.div
-          variants={lineReveal}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-          className="mx-auto my-12 max-w-lg origin-center sm:my-16"
-        >
-          <div className="ov-divider" />
         </motion.div>
 
         {/* Finalist cards */}

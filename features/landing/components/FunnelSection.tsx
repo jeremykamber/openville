@@ -64,7 +64,7 @@ export function FunnelSection() {
     target: sectionRef,
     offset: ["start end", "end start"],
   });
-  const contentOpacity = useTransform(scrollYProgress, [0.15, 0.85], [1, 0]);
+  const contentOpacity = useTransform(scrollYProgress, [0.25, 0.75], [1, 0]);
 
   const stage = useAutoStage();
   const stageIndex = STAGE_ORDER.indexOf(stage);
@@ -73,7 +73,7 @@ export function FunnelSection() {
     <section
       ref={sectionRef}
       id="funnel"
-      className="relative px-4 py-20 sm:px-6 sm:py-24 lg:px-8"
+      className="relative px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
       aria-label="The Agent Economy -- market funnel visualization"
     >
       {/* Ambient glow */}

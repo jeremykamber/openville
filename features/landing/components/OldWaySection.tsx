@@ -73,7 +73,7 @@ export function OldWaySection() {
     target: sectionRef,
     offset: ["start end", "end start"],
   });
-  const contentOpacity = useTransform(scrollYProgress, [0.15, 0.85], [1, 0]);
+  const contentOpacity = useTransform(scrollYProgress, [0.25, 0.75], [1, 0]);
 
   const isInView = useInView(sectionRef, { once: true, amount: 0.15 });
 
@@ -81,7 +81,7 @@ export function OldWaySection() {
     <section
       ref={sectionRef}
       id="problem"
-      className="relative px-4 py-20 sm:px-6 sm:py-24 lg:px-8"
+      className="relative px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
       aria-label="Before AI -- the old way of finding tradespeople"
     >
       {/* Ambient glow */}
@@ -120,16 +120,6 @@ export function OldWaySection() {
             while you wait for callbacks. The problem was never finding a
             plumber. It was figuring out which one to trust with your home.
           </p>
-        </motion.div>
-
-        {/* Horizontal accent line */}
-        <motion.div
-          variants={lineReveal}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-          className="mx-auto my-12 max-w-lg origin-center sm:my-16"
-        >
-          <div className="ov-divider" />
         </motion.div>
 
         {/* Pain point bento grid */}

@@ -85,7 +85,7 @@ export function ClosureSection({
     target: sectionRef,
     offset: ["start end", "end start"],
   });
-  const contentOpacity = useTransform(scrollYProgress, [0.15, 0.85], [1, 0]);
+  const contentOpacity = useTransform(scrollYProgress, [0.25, 0.75], [1, 0]);
 
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.1 });
@@ -93,7 +93,7 @@ export function ClosureSection({
   return (
     <section
       ref={sectionRef}
-      className="relative px-4 pb-20 pt-16 sm:px-6 sm:pb-24 sm:pt-20 lg:px-8"
+      className="relative px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-16 lg:px-8"
       aria-label="The Future -- booking confirmed, your agent handled the market"
     >
       {/* Ambient glow */}
