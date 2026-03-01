@@ -1,6 +1,14 @@
-import { supabaseAdmin } from '@/lib/supabase/server';
-import { Negotiation, NegotiationMessage, NegotiationResult, NegotiationStatus, NegotiationTurn } from '../types';
-import { NegotiationRepository } from './NegotiationRepository';
+import { hasSupabaseAdminConfig, supabaseAdmin } from "@/lib/supabase/server";
+
+import type {
+  Negotiation,
+  NegotiationMessage,
+  NegotiationResult,
+  NegotiationStatus,
+  NegotiationTurn,
+} from "../types";
+import { createInMemoryNegotiationRepository } from "./InMemoryNegotiationRepository";
+import type { NegotiationRepository } from "./NegotiationRepository";
 
 export class SupabaseNegotiationRepository implements NegotiationRepository {
   async createNegotiation(
@@ -8,6 +16,10 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
     providerAgentId: string,
     jobId?: string
   ): Promise<Negotiation> {
+    if (!supabaseAdmin) {
+      throw new Error('Supabase admin client is not configured');
+    }
+
     const { data, error } = await supabaseAdmin
       .from('negotiations')
       .insert({
@@ -25,6 +37,10 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
   }
 
   async getNegotiation(id: string): Promise<Negotiation | null> {
+    if (!supabaseAdmin) {
+      throw new Error('Supabase admin client is not configured');
+    }
+
     const { data, error } = await supabaseAdmin
       .from('negotiations')
       .select()
@@ -44,6 +60,10 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
     content: string,
     messageType: 'message' | 'proposal' | 'cancellation' = 'message'
   ): Promise<NegotiationMessage> {
+    if (!supabaseAdmin) {
+      throw new Error('Supabase admin client is not configured');
+    }
+
     const { data, error } = await supabaseAdmin
       .from('negotiation_messages')
       .insert({
@@ -61,6 +81,10 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
   }
 
   async getMessages(negotiationId: string): Promise<NegotiationMessage[]> {
+    if (!supabaseAdmin) {
+      throw new Error('Supabase admin client is not configured');
+    }
+
     const { data, error } = await supabaseAdmin
       .from('negotiation_messages')
       .select()
@@ -68,7 +92,7 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
       .order('created_at', { ascending: true });
 
     if (error) throw new Error(`Failed to get messages: ${error.message}`);
-    return (data || []).map((row) => this.mapDbToMessage(row));
+    return (data || []).map((row: Record<string, unknown>) => this.mapDbToMessage(row));
   }
 
   async updateNegotiationStatus(
@@ -76,6 +100,10 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
     status: 'active' | 'completed' | 'cancelled',
     summary?: string
   ): Promise<void> {
+    if (!supabaseAdmin) {
+      throw new Error('Supabase admin client is not configured');
+    }
+
     const { error } = await supabaseAdmin
       .from('negotiations')
       .update({
@@ -95,6 +123,10 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
     finalPrice?: number,
     scope?: { description?: string; rooms?: number; details?: Record<string, unknown> }
   ): Promise<NegotiationResult> {
+    if (!supabaseAdmin) {
+      throw new Error('Supabase admin client is not configured');
+    }
+
     const { data, error } = await supabaseAdmin
       .from('negotiation_results')
       .insert({
@@ -118,6 +150,10 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
     status: 'accepted' | 'rejected',
     responseMessage?: string
   ): Promise<NegotiationResult> {
+    if (!supabaseAdmin) {
+      throw new Error('Supabase admin client is not configured');
+    }
+
     const { data, error } = await supabaseAdmin
       .from('negotiation_results')
       .update({
@@ -179,4 +215,9 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
   }
 }
 
-export const defaultNegotiationRepository = new SupabaseNegotiationRepository();
+export const negotiationPersistenceMode = hasSupabaseAdminConfig ? "supabase" : "memory";
+
+export const defaultNegotiationRepository: NegotiationRepository =
+  negotiationPersistenceMode === "supabase"
+    ? new SupabaseNegotiationRepository()
+    : createInMemoryNegotiationRepository();

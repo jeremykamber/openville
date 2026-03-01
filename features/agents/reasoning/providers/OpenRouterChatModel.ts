@@ -8,7 +8,10 @@ export class OpenRouterChatModel implements ChatModel {
   private client: OpenAI;
   private model: string;
 
-  constructor(apiKey?: string, model = 'qwen/qwen3-30b-a3b') {
+  constructor(
+    apiKey?: string,
+    model = process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini",
+  ) {
     this.client = new OpenAI({
       apiKey: apiKey ?? process.env.OPENROUTER_API_KEY,
       baseURL: 'https://openrouter.ai/api/v1',

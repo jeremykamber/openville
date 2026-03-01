@@ -22,13 +22,19 @@ export function createChatModel(type: ProviderType = 'openai'): ChatModel {
 function createMockChatModel(): ChatModel {
   return {
     async invoke(input: BaseMessage | BaseMessage[]): Promise<BaseMessage> {
-      console.log('[Mock] Input:', 
-        Array.isArray(input) 
-          ? input.map(m => m.content).join('\n')
-          : input.content
-      );
+      const content = Array.isArray(input)
+        ? input.map((message) => String(message.content)).join("\n")
+        : String(input.content);
+
+      if (/accept or reject/i.test(content)) {
+        return {
+          content: "ACCEPT: Mock provider accepted the proposal for deterministic fallback behavior.",
+          type: "ai",
+        } as unknown as BaseMessage;
+      }
+
       return { 
-        content: '{"error": "Mock - implement for tests"}',
+        content: "Mock provider response: proceeding with deterministic fallback behavior.",
         type: 'ai' 
       } as unknown as BaseMessage;
     },

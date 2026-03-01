@@ -28,6 +28,25 @@ export async function selectTop3(
     throw new Error('At least 3 candidates required for selection');
   }
 
+  if (options.providerType === 'mock') {
+    const top3 = [...candidates]
+      .sort((left, right) => right.score - left.score)
+      .slice(0, 3)
+      .map((candidate, index) => ({
+        candidate,
+        reasoning:
+          preferences.priority === 'cost'
+            ? `${candidate.name} stayed near the top because their pricing signals align with the cost priority.`
+            : `${candidate.name} remained in the shortlist because they score strongly for the requested job scope.`,
+        matchScore: Math.max(60, Math.round((candidate.score || 0) * 100) - index * 3),
+      }));
+
+    return {
+      top3,
+      summary: `Mock fallback selected the top ${top3.length} candidates using deterministic score ordering for ${scope.jobType}.`,
+    };
+  }
+
   const model = createChatModel(options.providerType ?? 'openai');
   const userPrompt = buildSelectionUserPrompt(candidates, preferences, scope);
 

@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 // Gather possible environment variable names for Supabase URL and Key.
 const supabaseUrl =
@@ -19,11 +19,20 @@ const supabaseKey =
 // const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
 // const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
 
-if (!supabaseUrl) {
-  throw new Error("Missing Supabase URL environment variable");
-}
-if (!supabaseKey) {
-  throw new Error("Missing Supabase Key environment variable");
+export const hasSupabaseBrowserConfig = Boolean(supabaseUrl && supabaseKey);
+
+let cachedClient: SupabaseClient | null = null;
+
+export function getSupabaseBrowserClient(): SupabaseClient {
+  if (!hasSupabaseBrowserConfig || !supabaseUrl || !supabaseKey) {
+    throw new Error("Missing Supabase browser environment variables");
+  }
+
+  if (!cachedClient) {
+    cachedClient = createClient(supabaseUrl, supabaseKey);
+  }
+
+  return cachedClient;
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = hasSupabaseBrowserConfig ? getSupabaseBrowserClient() : null;
