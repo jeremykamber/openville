@@ -2,41 +2,42 @@ import { NextRequest, NextResponse } from "next/server";
 import { ragSearchService } from "@/features/search/services/ragSearch";
 import { rankingService } from "@/features/search/services/ranking";
 import { selectTop3 } from "@/features/agents/selection/selectTop3";
-import { UserPreferences, JobScope, SelectTop3Response } from "@/features/agents/selection/types";
+import { SelectTop3Response } from "@/features/agents/selection/types";
 import { SearchResult } from "@/features/search/types";
-
-interface SearchAndSelectRequest {
-  query: string;
-  userPreferences: UserPreferences;
-  scope: JobScope;
-  limit?: number;
-}
+import { SearchAndSelectRequestSchema } from "@/features/shared/schemas/WorkflowSchemas";
+import {
+  isMockLlmFallbackAllowed,
+  mergeExecutionMeta,
+  resolveLlmProvider,
+} from "@/features/workflow/server/runtime";
 
 interface SearchAndSelectResponse {
   searchResults: SearchResult[];
-  selectionResult: SelectTop3Response;
+  selectionResult: SelectTop3Response | null;
+  meta: ReturnType<typeof mergeExecutionMeta>;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body: SearchAndSelectRequest = await request.json();
+    const rawBody = await request.json();
+    const validated = SearchAndSelectRequestSchema.safeParse(rawBody);
 
-    if (!body.query || typeof body.query !== "string") {
-      return NextResponse.json({ error: "Invalid query" }, { status: 400 });
-    }
-
-    if (!body.userPreferences) {
+    if (!validated.success) {
       return NextResponse.json(
-        { error: "userPreferences is required" },
-        { status: 400 }
+        { error: "Invalid workflow request", details: validated.error.format() },
+        { status: 400 },
       );
     }
 
-    if (!body.scope) {
-      return NextResponse.json({ error: "scope is required" }, { status: 400 });
-    }
+    const body = validated.data;
 
-    const { results: ragResults } = await ragSearchService.search({
+    const {
+      results: ragResults,
+      source,
+      retrievalMode,
+      warnings,
+      fallbacksUsed,
+    } = await ragSearchService.search({
       query: body.query,
       userPreferences: body.userPreferences,
       filters: {
@@ -54,29 +55,67 @@ export async function POST(request: NextRequest) {
     );
 
     rankedCandidates.sort((a, b) => b.score - a.score);
-    const top10 = rankedCandidates.slice(0, 10);
+    const top10 = rankedCandidates.slice(0, body.limit ?? 10);
 
-    if (top10.length < 3) {
-      return NextResponse.json(
-        { error: "At least 3 candidates required for selection" },
-        { status: 400 }
-      );
+    const llm = resolveLlmProvider();
+    let selectionResult: SelectTop3Response | null = null;
+    let selectionMeta = llm.meta;
+    const searchWarnings =
+      top10.length < 3
+        ? [
+            ...warnings,
+            "Search returned fewer than 3 candidates, so shortlist selection was skipped.",
+          ]
+        : warnings;
+
+    if (top10.length >= 3) {
+      try {
+        selectionResult = await selectTop3(
+          top10,
+          body.userPreferences,
+          body.scope,
+          { providerType: llm.providerType }
+        );
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Unknown shortlist selection failure";
+
+        if (llm.providerType !== "mock" && isMockLlmFallbackAllowed()) {
+          selectionResult = await selectTop3(
+            top10,
+            body.userPreferences,
+            body.scope,
+            { providerType: "mock" }
+          );
+          selectionMeta = {
+            mode: "degraded",
+            llmProvider: "mock",
+            fallbacksUsed: ["mock_llm"],
+            warnings: [
+              `Primary ${llm.providerType} shortlist selection failed: ${message}`,
+              "Using mock LLM fallback for shortlist selection.",
+            ],
+          };
+        } else {
+          throw error;
+        }
+      }
     }
-
-    const providerType = process.env.USE_MOCK_LLM === "true"
-      ? "mock"
-      : (process.env.LLM_PROVIDER === "openrouter" ? "openrouter" : "openai");
-
-    const selectionResult = await selectTop3(
-      top10,
-      body.userPreferences,
-      body.scope,
-      { providerType }
-    );
 
     const response: SearchAndSelectResponse = {
       searchResults: top10,
       selectionResult,
+      meta: mergeExecutionMeta(
+        {
+          mode: fallbacksUsed.length > 0 || top10.length < 3 ? "degraded" : "live",
+          llmProvider: "openai",
+          dataSource: source,
+          retrievalMode,
+          fallbacksUsed,
+          warnings: searchWarnings,
+        },
+        selectionMeta,
+      ),
     };
 
     return NextResponse.json(response);
