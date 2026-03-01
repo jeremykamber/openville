@@ -74,7 +74,7 @@ export function FunnelSection() {
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient(ellipse 60% 45% at 50% 20%, rgba(255,255,255,0.03), transparent 55%), radial-gradient(ellipse 40% 35% at 80% 75%, rgba(200,169,126,0.02), transparent 50%)",
+            "radial-gradient(ellipse 60% 45% at 50% 20%, rgba(255,255,255,0.03), transparent 55%), radial-gradient(ellipse 40% 35% at 80% 75%, rgba(255,77,77,0.02), transparent 50%)",
         }}
       />
 
@@ -152,7 +152,7 @@ export function FunnelSection() {
                     className={`size-1.5 rounded-full ${
                       isActive
                         ? isWinnerDot
-                          ? "bg-[var(--ov-accent)] shadow-[0_0_8px_rgba(200,169,126,0.3)]"
+                          ? "bg-[var(--ov-accent)] shadow-[0_0_8px_rgba(255,77,77,0.3)]"
                           : "bg-[var(--ov-text)]"
                         : "bg-[var(--ov-text-dim)]"
                     }`}

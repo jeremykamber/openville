@@ -152,7 +152,7 @@ export function Header({ onCtaClick }: HeaderProps) {
             >
               <div className="relative flex size-8 items-center justify-center">
                 {/* Logo mark — stylized "O" */}
-                <div className="absolute inset-0 rounded-lg border border-[var(--ov-border-strong)] bg-[var(--ov-surface-1)] transition-all duration-300 group-hover:border-[rgba(200,169,126,0.3)] group-hover:shadow-[0_0_20px_rgba(200,169,126,0.08)]" />
+                <div className="absolute inset-0 rounded-lg border border-[var(--ov-border-strong)] bg-[var(--ov-surface-1)] transition-all duration-300 group-hover:border-[rgba(255,77,77,0.3)] group-hover:shadow-[0_0_20px_rgba(255,77,77,0.08)]" />
                 <span className="relative font-display text-sm font-semibold text-[var(--ov-text)]">
                   O
                 </span>
@@ -181,7 +181,7 @@ export function Header({ onCtaClick }: HeaderProps) {
               <button
                 type="button"
                 onClick={onCtaClick}
-                className="hidden rounded-xl border border-[rgba(200,169,126,0.2)] bg-[rgba(200,169,126,0.06)] px-4 py-2 text-[13px] font-semibold text-[var(--ov-accent-bright)] transition-all duration-300 hover:border-[rgba(200,169,126,0.35)] hover:bg-[rgba(200,169,126,0.1)] hover:shadow-[0_0_24px_rgba(200,169,126,0.1)] md:block"
+                className="hidden rounded-xl border border-[rgba(255,77,77,0.2)] bg-[rgba(255,77,77,0.06)] px-4 py-2 text-[13px] font-semibold text-[var(--ov-accent-bright)] transition-all duration-300 hover:border-[rgba(255,77,77,0.35)] hover:bg-[rgba(255,77,77,0.1)] hover:shadow-[0_0_24px_rgba(255,77,77,0.1)] md:block"
               >
                 Open the market
               </button>
@@ -262,7 +262,7 @@ export function Header({ onCtaClick }: HeaderProps) {
                     setMobileOpen(false);
                     onCtaClick?.();
                   }}
-                  className="rounded-2xl border border-[rgba(200,169,126,0.25)] bg-[rgba(200,169,126,0.08)] px-6 py-3.5 text-base font-semibold text-[var(--ov-accent-bright)] transition-all duration-300 hover:border-[rgba(200,169,126,0.4)] hover:bg-[rgba(200,169,126,0.14)]"
+                  className="rounded-2xl border border-[rgba(255,77,77,0.25)] bg-[rgba(255,77,77,0.08)] px-6 py-3.5 text-base font-semibold text-[var(--ov-accent-bright)] transition-all duration-300 hover:border-[rgba(255,77,77,0.4)] hover:bg-[rgba(255,77,77,0.14)]"
                 >
                   Open the market
                 </button>

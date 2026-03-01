@@ -48,16 +48,16 @@ export function WinnerPath() {
         variants={winnerReveal}
         initial="hidden"
         animate={isInView ? "visible" : "hidden"}
-        className="group relative overflow-hidden rounded-[1.75rem] border border-[rgba(200,169,126,0.22)] bg-[linear-gradient(180deg,rgba(30,28,22,0.62),rgba(17,17,19,0.96))] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.45)]"
+        className="group relative overflow-hidden rounded-[1.75rem] border border-[rgba(255,77,77,0.22)] bg-[linear-gradient(180deg,rgba(30,28,22,0.62),rgba(17,17,19,0.96))] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.45)]"
       >
         {/* Winner glow pulse — gold accent */}
         <motion.div
           className="pointer-events-none absolute inset-0 rounded-[1.75rem]"
           animate={{
             boxShadow: [
-              "inset 0 0 40px rgba(200,169,126,0.04), 0 0 60px rgba(200,169,126,0.03)",
-              "inset 0 0 60px rgba(200,169,126,0.08), 0 0 80px rgba(200,169,126,0.06)",
-              "inset 0 0 40px rgba(200,169,126,0.04), 0 0 60px rgba(200,169,126,0.03)",
+              "inset 0 0 40px rgba(255,77,77,0.04), 0 0 60px rgba(255,77,77,0.03)",
+              "inset 0 0 60px rgba(255,77,77,0.08), 0 0 80px rgba(255,77,77,0.06)",
+              "inset 0 0 40px rgba(255,77,77,0.04), 0 0 60px rgba(255,77,77,0.03)",
             ],
           }}
           transition={{

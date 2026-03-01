@@ -95,7 +95,7 @@ export function ClosureSection({
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient(ellipse 50% 40% at 50% 80%, rgba(200,169,126,0.03), transparent 50%), radial-gradient(ellipse 60% 40% at 30% 20%, rgba(255,255,255,0.02), transparent 50%)",
+            "radial-gradient(ellipse 50% 40% at 50% 80%, rgba(255,77,77,0.03), transparent 50%), radial-gradient(ellipse 60% 40% at 30% 20%, rgba(255,255,255,0.02), transparent 50%)",
         }}
       />
 
@@ -151,7 +151,7 @@ export function ClosureSection({
                   <div className="overflow-hidden rounded-[1.25rem] border border-[var(--ov-border)] bg-[linear-gradient(180deg,rgba(25,25,28,0.6),rgba(17,17,19,0.8))] p-5 sm:rounded-[1.5rem] sm:p-6">
                     <div className="mb-3 flex items-center gap-3">
                       {/* Icon */}
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[rgba(200,169,126,0.18)] bg-[rgba(200,169,126,0.05)] sm:size-11">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[rgba(255,77,77,0.18)] bg-[rgba(255,77,77,0.05)] sm:size-11">
                         <svg
                           className="size-4.5 text-[var(--ov-accent)] sm:size-5"
                           fill="none"
@@ -170,7 +170,7 @@ export function ClosureSection({
                         Step {String(index + 1).padStart(2, "0")}
                       </span>
                       {isLast && (
-                        <span className="rounded-full border border-[rgba(200,169,126,0.18)] bg-[rgba(200,169,126,0.05)] px-2.5 py-0.5 text-[9px] font-semibold tracking-[0.16em] text-[var(--ov-accent-bright)] uppercase">
+                        <span className="rounded-full border border-[rgba(255,77,77,0.18)] bg-[rgba(255,77,77,0.05)] px-2.5 py-0.5 text-[9px] font-semibold tracking-[0.16em] text-[var(--ov-accent-bright)] uppercase">
                           Loop closed
                         </span>
                       )}
@@ -219,7 +219,7 @@ export function ClosureSection({
                   <div className="flex gap-6 overflow-hidden rounded-[1.5rem] border border-[var(--ov-border)] bg-[linear-gradient(180deg,rgba(25,25,28,0.6),rgba(17,17,19,0.8))] p-6">
                     {/* Icon */}
                     <div className="shrink-0">
-                      <div className="flex size-14 items-center justify-center rounded-2xl border border-[rgba(200,169,126,0.18)] bg-[rgba(200,169,126,0.05)]">
+                      <div className="flex size-14 items-center justify-center rounded-2xl border border-[rgba(255,77,77,0.18)] bg-[rgba(255,77,77,0.05)]">
                         <svg
                           className="size-6 text-[var(--ov-accent)]"
                           fill="none"
@@ -242,7 +242,7 @@ export function ClosureSection({
                           Step {String(index + 1).padStart(2, "0")}
                         </span>
                         {isLast && (
-                          <span className="rounded-full border border-[rgba(200,169,126,0.18)] bg-[rgba(200,169,126,0.05)] px-2.5 py-0.5 text-[9px] font-semibold tracking-[0.16em] text-[var(--ov-accent-bright)] uppercase">
+                          <span className="rounded-full border border-[rgba(255,77,77,0.18)] bg-[rgba(255,77,77,0.05)] px-2.5 py-0.5 text-[9px] font-semibold tracking-[0.16em] text-[var(--ov-accent-bright)] uppercase">
                             Loop closed
                           </span>
                         )}
@@ -287,14 +287,14 @@ export function ClosureSection({
           animate={isInView ? "visible" : "hidden"}
           className="mx-auto mt-16 max-w-4xl sm:mt-20"
         >
-          <div className="relative overflow-hidden rounded-[2rem] border border-[rgba(200,169,126,0.2)] bg-[linear-gradient(180deg,rgba(30,28,22,0.55),rgba(17,17,19,0.95))] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.45)] sm:p-8 lg:p-10">
+          <div className="relative overflow-hidden rounded-[2rem] border border-[rgba(255,77,77,0.2)] bg-[linear-gradient(180deg,rgba(30,28,22,0.55),rgba(17,17,19,0.95))] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.45)] sm:p-8 lg:p-10">
             {/* Inner accent glow */}
             <div
               className="pointer-events-none absolute inset-0"
               aria-hidden="true"
               style={{
                 background:
-                  "radial-gradient(circle at 70% 30%, rgba(200,169,126,0.05), transparent 40%), radial-gradient(circle at 20% 80%, rgba(200,169,126,0.03), transparent 40%)",
+                  "radial-gradient(circle at 70% 30%, rgba(255,77,77,0.05), transparent 40%), radial-gradient(circle at 20% 80%, rgba(255,77,77,0.03), transparent 40%)",
               }}
             />
 
@@ -303,7 +303,7 @@ export function ClosureSection({
               className="pointer-events-none absolute inset-0 rounded-[2rem]"
               style={{
                 boxShadow:
-                  "inset 0 0 50px rgba(200,169,126,0.05), 0 0 60px rgba(200,169,126,0.04)",
+                  "inset 0 0 50px rgba(255,77,77,0.05), 0 0 60px rgba(255,77,77,0.04)",
               }}
               animate={{ opacity: [0.4, 1, 0.4] }}
               transition={{
@@ -319,7 +319,7 @@ export function ClosureSection({
                   <span className="ov-chip-human rounded-full px-3 py-1 text-[10px] font-semibold tracking-[0.18em] uppercase">
                     Tradespeople marketplace
                   </span>
-                  <span className="rounded-full border border-[rgba(200,169,126,0.18)] bg-[rgba(200,169,126,0.05)] px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[var(--ov-accent-bright)] uppercase">
+                  <span className="rounded-full border border-[rgba(255,77,77,0.18)] bg-[rgba(255,77,77,0.05)] px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[var(--ov-accent-bright)] uppercase">
                     Booking confirmed
                   </span>
                 </div>

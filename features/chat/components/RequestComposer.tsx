@@ -74,12 +74,12 @@ export function RequestComposer({
       <div
         className={`relative flex flex-col gap-3 rounded-[1.5rem] border p-4 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur transition-shadow duration-500 sm:flex-row sm:items-center ${
           isLanding
-            ? "border-[rgba(200,169,126,0.16)] bg-[rgba(17,17,19,0.8)] sm:p-5"
+            ? "border-[rgba(255,77,77,0.16)] bg-[rgba(17,17,19,0.8)] sm:p-5"
             : "border-[var(--ov-border)] bg-[rgba(17,17,19,0.88)]"
         } ${
           isFocused
             ? isLanding
-              ? "shadow-[0_0_48px_rgba(200,169,126,0.1),0_20px_50px_rgba(0,0,0,0.4)]"
+              ? "shadow-[0_0_48px_rgba(255,77,77,0.1),0_20px_50px_rgba(0,0,0,0.4)]"
               : "shadow-[0_0_48px_rgba(255,255,255,0.04),0_20px_50px_rgba(0,0,0,0.4)]"
             : ""
         }`}
@@ -90,7 +90,7 @@ export function RequestComposer({
           style={{
             opacity: isFocused ? 1 : 0,
             boxShadow: isLanding
-              ? "inset 0 0 28px rgba(200,169,126,0.05), 0 0 40px rgba(200,169,126,0.04)"
+              ? "inset 0 0 28px rgba(255,77,77,0.05), 0 0 40px rgba(255,77,77,0.04)"
               : "inset 0 0 28px rgba(255,255,255,0.03), 0 0 40px rgba(255,255,255,0.02)",
           }}
         />
@@ -111,7 +111,7 @@ export function RequestComposer({
           }}
           className={`relative z-[1] h-13 rounded-[1.2rem] border px-4 text-sm text-[var(--ov-text)] placeholder:text-[var(--ov-text-muted)] ${
             isLanding
-              ? "border-[rgba(200,169,126,0.14)] bg-[var(--ov-surface-0)]"
+              ? "border-[rgba(255,77,77,0.14)] bg-[var(--ov-surface-0)]"
               : "border-[var(--ov-border)] bg-[var(--ov-surface-0)]"
           }`}
         />
@@ -122,7 +122,7 @@ export function RequestComposer({
           disabled={disabled || value.trim().length === 0}
           className={`relative z-[1] rounded-[1.2rem] px-5 font-semibold ${
             isLanding
-              ? "border border-[rgba(200,169,126,0.25)] bg-[rgba(200,169,126,0.12)] text-[var(--ov-accent-bright)] hover:bg-[rgba(200,169,126,0.2)] hover:shadow-[0_0_24px_rgba(200,169,126,0.1)]"
+              ? "border border-[rgba(255,77,77,0.25)] bg-[rgba(255,77,77,0.12)] text-[var(--ov-accent-bright)] hover:bg-[rgba(255,77,77,0.2)] hover:shadow-[0_0_24px_rgba(255,77,77,0.1)]"
               : "bg-[var(--ov-text)] text-[var(--ov-void)] hover:bg-[var(--ov-text-muted)]"
           }`}
         >
@@ -151,7 +151,7 @@ export function RequestComposer({
               disabled={disabled}
               className={`rounded-full border px-3.5 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ov-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ov-void)] disabled:pointer-events-none disabled:opacity-50 ${
                 isLanding
-                  ? "border-[rgba(200,169,126,0.16)] bg-[rgba(200,169,126,0.05)] text-[var(--ov-accent-bright)] hover:border-[rgba(200,169,126,0.3)] hover:bg-[rgba(200,169,126,0.1)]"
+                  ? "border-[rgba(255,77,77,0.16)] bg-[rgba(255,77,77,0.05)] text-[var(--ov-accent-bright)] hover:border-[rgba(255,77,77,0.3)] hover:bg-[rgba(255,77,77,0.1)]"
                   : "border-[var(--ov-border)] bg-[var(--ov-surface-0)] text-[var(--ov-text-muted)] hover:border-[var(--ov-border-strong)] hover:text-[var(--ov-text)]"
               }`}
             >

@@ -46,9 +46,10 @@
   --color-ov-human-glow: var(--ov-human-glow);
   --color-ov-human-subtle: var(--ov-human-subtle);
 
-  /* ── Accent (Warm gold — tasteful, used sparingly) ───────────────────── */
+  /* ── Accent (OpenClaw red — used sparingly) ────────────────────────── */
   --color-ov-accent: var(--ov-accent);
   --color-ov-accent-bright: var(--ov-accent-bright);
+  --color-ov-accent-dark: var(--ov-accent-dark);
   --color-ov-accent-glow: var(--ov-accent-glow);
   --color-ov-accent-subtle: var(--ov-accent-subtle);
 

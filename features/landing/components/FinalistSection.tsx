@@ -185,7 +185,7 @@ function FinalistCard({
       className={cn(
         "group relative flex flex-col overflow-hidden rounded-[1.75rem] border",
         isWinner
-          ? "border-[rgba(200,169,126,0.25)] bg-[linear-gradient(180deg,rgba(30,28,22,0.6),rgba(17,17,19,0.95))] shadow-[0_28px_80px_rgba(0,0,0,0.5)]"
+          ? "border-[rgba(255,77,77,0.25)] bg-[linear-gradient(180deg,rgba(30,28,22,0.6),rgba(17,17,19,0.95))] shadow-[0_28px_80px_rgba(0,0,0,0.5)]"
           : "border-[var(--ov-border)] bg-[linear-gradient(180deg,rgba(25,25,28,0.7),rgba(17,17,19,0.9))] shadow-[0_20px_60px_rgba(0,0,0,0.35)] hover:border-[var(--ov-border-strong)]",
       )}
       style={{ transition: "border-color 0.2s ease" }}
@@ -196,7 +196,7 @@ function FinalistCard({
           className="pointer-events-none absolute inset-0 rounded-[1.75rem]"
           style={{
             boxShadow:
-              "inset 0 0 50px rgba(200,169,126,0.07), 0 0 60px rgba(200,169,126,0.05)",
+              "inset 0 0 50px rgba(255,77,77,0.07), 0 0 60px rgba(255,77,77,0.05)",
           }}
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{
@@ -216,7 +216,7 @@ function FinalistCard({
               className={cn(
                 "flex size-9 items-center justify-center rounded-xl font-mono text-xs font-bold",
                 isWinner
-                  ? "border border-[rgba(200,169,126,0.2)] bg-[rgba(200,169,126,0.08)] text-[var(--ov-accent-bright)]"
+                  ? "border border-[rgba(255,77,77,0.2)] bg-[rgba(255,77,77,0.08)] text-[var(--ov-accent-bright)]"
                   : "bg-[var(--ov-surface-1)] text-[var(--ov-text-muted)]",
               )}
             >
@@ -361,7 +361,7 @@ function FinalistCard({
               className={cn(
                 "rounded-xl px-3 py-2.5 text-[12px] leading-5",
                 isWinner
-                  ? "bg-[rgba(200,169,126,0.06)] text-[var(--ov-accent-bright)]"
+                  ? "bg-[rgba(255,77,77,0.06)] text-[var(--ov-accent-bright)]"
                   : "bg-[rgba(255,255,255,0.03)] text-[var(--ov-text)]",
               )}
             >
@@ -377,7 +377,7 @@ function FinalistCard({
 
         {/* Winner guarantee banner */}
         {isWinner && (
-          <div className="mt-4 rounded-xl border border-[rgba(200,169,126,0.18)] bg-[rgba(200,169,126,0.04)] px-4 py-3">
+            <div className="mt-4 rounded-xl border border-[rgba(255,77,77,0.18)] bg-[rgba(255,77,77,0.04)] px-4 py-3">
             <p className="text-[10px] font-semibold tracking-[0.18em] text-[var(--ov-accent)] uppercase">
               Guarantee
             </p>
@@ -410,7 +410,7 @@ export function FinalistSection() {
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient(ellipse 50% 40% at 50% 10%, rgba(200,169,126,0.03), transparent 50%), radial-gradient(ellipse 40% 30% at 80% 70%, rgba(255,255,255,0.02), transparent 50%)",
+            "radial-gradient(ellipse 50% 40% at 50% 10%, rgba(255,77,77,0.03), transparent 50%), radial-gradient(ellipse 40% 30% at 80% 70%, rgba(255,255,255,0.02), transparent 50%)",
         }}
       />
 
@@ -471,14 +471,14 @@ export function FinalistSection() {
             variants={decisionReveal}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
-            className="group relative overflow-hidden rounded-[1.75rem] border border-[rgba(200,169,126,0.22)] bg-[linear-gradient(180deg,rgba(30,28,22,0.62),rgba(17,17,19,0.96))] p-6 sm:p-8 shadow-[0_28px_80px_rgba(0,0,0,0.45)]"
+            className="group relative overflow-hidden rounded-[1.75rem] border border-[rgba(255,77,77,0.22)] bg-[linear-gradient(180deg,rgba(30,28,22,0.62),rgba(17,17,19,0.96))] p-6 sm:p-8 shadow-[0_28px_80px_rgba(0,0,0,0.45)]"
           >
             {/* Pulsing glow — opacity animation (GPU-compositable) */}
             <motion.div
               className="pointer-events-none absolute inset-0 rounded-[1.75rem]"
               style={{
                 boxShadow:
-                  "inset 0 0 60px rgba(200,169,126,0.07), 0 0 70px rgba(200,169,126,0.05)",
+                  "inset 0 0 60px rgba(255,77,77,0.07), 0 0 70px rgba(255,77,77,0.05)",
               }}
               animate={{ opacity: [0.4, 1, 0.4] }}
               transition={{

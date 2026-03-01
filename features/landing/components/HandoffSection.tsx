@@ -77,7 +77,7 @@ const flowSteps = [
     label: "Natural language",
     description: "You describe the job",
     color: "var(--ov-accent-bright)",
-    borderColor: "rgba(200,169,126,0.25)",
+    borderColor: "rgba(255,77,77,0.25)",
   },
   {
     label: "Parsed intent",
@@ -112,7 +112,7 @@ export function HandoffSection() {
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient(ellipse 50% 40% at 20% 20%, rgba(255,255,255,0.03), transparent 50%), radial-gradient(ellipse 40% 35% at 80% 70%, rgba(200,169,126,0.02), transparent 50%)",
+            "radial-gradient(ellipse 50% 40% at 20% 20%, rgba(255,255,255,0.03), transparent 50%), radial-gradient(ellipse 40% 35% at 80% 70%, rgba(255,77,77,0.02), transparent 50%)",
         }}
       />
 
@@ -162,7 +162,7 @@ export function HandoffSection() {
                 animate={isInView ? "visible" : "hidden"}
                 className="flex justify-end"
               >
-                <article className="max-w-[88%] rounded-[1.25rem] rounded-tr-md border border-[rgba(200,169,126,0.18)] bg-[rgba(200,169,126,0.04)] px-5 py-4">
+                <article className="max-w-[88%] rounded-[1.25rem] rounded-tr-md border border-[rgba(255,77,77,0.18)] bg-[rgba(255,77,77,0.04)] px-5 py-4">
                   <div className="mb-2 flex items-center gap-2">
                     <div className="size-1.5 rounded-full bg-[var(--ov-accent)]" />
                     <span className="font-mono text-[9px] font-medium tracking-[0.14em] text-[var(--ov-accent-bright)] uppercase">
@@ -310,7 +310,7 @@ export function HandoffSection() {
               variants={railReveal}
               initial="hidden"
               animate={isInView ? "visible" : "hidden"}
-              className="rounded-[1.5rem] border border-[rgba(200,169,126,0.12)] bg-[rgba(200,169,126,0.02)] px-5 py-4"
+              className="rounded-[1.5rem] border border-[rgba(255,77,77,0.12)] bg-[rgba(255,77,77,0.02)] px-5 py-4"
             >
               <p className="text-[13px] leading-6 text-[var(--ov-text-muted)]">
                 <span className="font-semibold text-[var(--ov-accent-bright)]">

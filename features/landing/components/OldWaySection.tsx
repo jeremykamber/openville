@@ -194,7 +194,7 @@ export function OldWaySection() {
                     aria-hidden="true"
                     style={{
                       background:
-                        "radial-gradient(circle, rgba(200,169,126,0.04) 0%, transparent 60%)",
+                        "radial-gradient(circle, rgba(255,77,77,0.04) 0%, transparent 60%)",
                     }}
                   />
                 )}

@@ -42,11 +42,12 @@
   --ov-negotiation: #d4d4d8;
   --ov-negotiation-glow: rgba(212, 212, 216, 0.14);
 
-  /* ── Tasteful accent (used only for winner highlights & key CTAs) ───── */
-  --ov-accent: #c8a97e;
-  --ov-accent-bright: #dfc19e;
-  --ov-accent-glow: rgba(200, 169, 126, 0.18);
-  --ov-accent-subtle: rgba(200, 169, 126, 0.06);
+  /* ── OpenClaw Red accent (winner highlights & key CTAs) ─────────────── */
+  --ov-accent: #ff4d4d;
+  --ov-accent-bright: #ff6b6b;
+  --ov-accent-dark: #991b1b;
+  --ov-accent-glow: rgba(255, 77, 77, 0.18);
+  --ov-accent-subtle: rgba(255, 77, 77, 0.06);
 
   /* ── shadcn/ui Token Bridge ────────────────────────────────────────────── */
   --background: var(--ov-void);
@@ -231,7 +232,7 @@ body {
 }
 
 .ov-chip-human {
-  border-color: rgba(200, 169, 126, 0.22);
+  border-color: rgba(255, 77, 77, 0.22);
   background: var(--ov-accent-subtle);
   color: var(--ov-accent-bright);
 }

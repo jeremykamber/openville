@@ -250,7 +250,7 @@ function renderConnections(stage: MarketGraphStage) {
           y2={`${connection.to.y}%`}
           stroke={
             stage === "winner" && index === 0
-              ? "rgba(200, 169, 126, 0.65)"
+              ? "rgba(255, 77, 77, 0.65)"
               : "rgba(255, 255, 255, 0.12)"
           }
           strokeWidth={stage === "winner" && index === 0 ? 2 : 1}

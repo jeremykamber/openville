@@ -189,7 +189,7 @@ export function HeroSection({
           className="absolute left-1/2 top-[38%] h-[500px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(200,169,126,0.06) 0%, rgba(200,169,126,0.02) 30%, transparent 65%)",
+              "radial-gradient(circle, rgba(255,77,77,0.06) 0%, rgba(255,77,77,0.02) 30%, transparent 65%)",
           }}
         />
         {/* Secondary glow */}
@@ -205,7 +205,7 @@ export function HeroSection({
           className="absolute right-[20%] top-[55%] h-[250px] w-[350px] rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(200,169,126,0.03) 0%, transparent 55%)",
+              "radial-gradient(circle, rgba(255,77,77,0.03) 0%, transparent 55%)",
           }}
         />
       </motion.div>
@@ -254,7 +254,7 @@ export function HeroSection({
         aria-hidden="true"
         style={{
           background:
-            "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 20%, rgba(200,169,126,0.08) 50%, rgba(255,255,255,0.04) 80%, transparent 100%)",
+            "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 20%, rgba(255,77,77,0.08) 50%, rgba(255,255,255,0.04) 80%, transparent 100%)",
         }}
       />
 

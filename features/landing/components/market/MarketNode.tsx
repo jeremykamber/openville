@@ -40,9 +40,9 @@ const clusterNodeClasses: Record<ServiceCluster, string> = {
 const stateClasses: Record<NodeState, string> = {
   base: "size-2 sm:size-2.5 opacity-95",
   survivor: "size-2.5 sm:size-3 shadow-[0_0_16px_rgba(255,255,255,0.12)]",
-  finalist: "size-3 sm:size-3.5 shadow-[0_0_20px_rgba(200,169,126,0.18)]",
+  finalist: "size-3 sm:size-3.5 shadow-[0_0_20px_rgba(255,77,77,0.18)]",
   winner:
-    "size-3.5 sm:size-4 border-[rgba(200,169,126,0.35)] bg-[rgba(200,169,126,0.18)] shadow-[0_0_28px_rgba(200,169,126,0.22)]",
+    "size-3.5 sm:size-4 border-[rgba(255,77,77,0.35)] bg-[rgba(255,77,77,0.18)] shadow-[0_0_28px_rgba(255,77,77,0.22)]",
   dimmed: "size-1.5 sm:size-2 opacity-20 saturate-0",
 };
 
@@ -117,7 +117,7 @@ export const MarketNode = memo(function MarketNode({
                 "absolute left-1/2 top-full mt-1 w-max max-w-[6rem] -translate-x-1/2 rounded-md border px-1 py-0.5 text-center shadow-[0_12px_30px_rgba(0,0,0,0.4)] sm:mt-1.5 sm:max-w-[9rem] sm:rounded-lg sm:px-2 sm:py-1",
                 hideLabelOnMobile && "hidden sm:block",
                 state === "winner"
-                  ? "border-[rgba(200,169,126,0.22)] bg-[var(--ov-surface-1)]"
+                  ? "border-[rgba(255,77,77,0.22)] bg-[var(--ov-surface-1)]"
                   : "border-[var(--ov-border)] bg-[var(--ov-surface-0)]",
               )}
             >

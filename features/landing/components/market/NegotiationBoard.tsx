@@ -131,7 +131,7 @@ function NegotiationCard({
       className={cn(
         "group rounded-[1.5rem] border p-4 shadow-[0_24px_60px_rgba(0,0,0,0.4)] sm:rounded-[1.75rem] sm:p-5",
         finalist.outcome === "winner"
-          ? "border-[rgba(200,169,126,0.22)] bg-[linear-gradient(180deg,rgba(30,28,22,0.55),rgba(17,17,19,0.96))]"
+          ? "border-[rgba(255,77,77,0.22)] bg-[linear-gradient(180deg,rgba(30,28,22,0.55),rgba(17,17,19,0.96))]"
           : "border-[var(--ov-border)] bg-[linear-gradient(180deg,rgba(25,25,28,0.92),rgba(17,17,19,0.92))]",
       )}
     >
