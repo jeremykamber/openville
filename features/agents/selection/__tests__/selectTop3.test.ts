@@ -46,7 +46,7 @@ describe('selectTop3', () => {
     
     await expect(
       selectTop3(tooFewCandidates, mockPreferences, mockScope)
-    ).rejects.toThrow('At least 3 candidates required');
+    ).rejects.toThrow('At least 3 candidates required for selection');
   });
 
   it('should return top 3 with enriched candidate data', async () => {
@@ -89,6 +89,6 @@ describe('selectTop3', () => {
 
     await expect(
       selectTop3(mockCandidates, mockPreferences, mockScope, { providerType: 'mock' })
-    ).rejects.toThrow('Invalid agentId');
+    ).rejects.toThrow(/Invalid agentId/);
   });
 });

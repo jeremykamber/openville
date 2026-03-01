@@ -1,7 +1,7 @@
 import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 import { createChatModel } from '../reasoning/providers';
 import { Candidate, UserPreferences, JobScope } from '../selection/types';
-import { Negotiation, NegotiationMessage } from './types';
+import { Negotiation, NegotiationMessage, NegotiationResult } from './types';
 import { defaultNegotiationRepository as repo } from './db/SupabaseNegotiationRepository';
 import {
   BUYER_AGENT_SYSTEM_PROMPT,
@@ -145,7 +145,7 @@ export async function proposeNegotiationResult(
   finalPrice: number,
   scope: { description?: string; rooms?: number },
   options: NegotiateOptions = {}
-): Promise<{ resultId: string; response: string; accepted: boolean }> {
+): Promise<{ result: NegotiationResult; response: string; accepted: boolean }> {
   const negotiation = await repo.getNegotiation(negotiationId);
   if (!negotiation || negotiation.status !== 'active') {
     throw new Error('Negotiation not found or not active');
@@ -172,7 +172,7 @@ Do you accept or reject this proposal? Respond with ACCEPT or REJECT and explain
   const responseText = response.content as string;
   const accepted = /\bACCEPT\b/i.test(responseText);
   
-  await repo.respondToResult(result.id, accepted ? 'accepted' : 'rejected', responseText);
+  const updatedResult = await repo.respondToResult(result.id, accepted ? 'accepted' : 'rejected', responseText);
 
   if (accepted) {
     await repo.updateNegotiationStatus(negotiationId, 'completed', 
@@ -180,7 +180,7 @@ Do you accept or reject this proposal? Respond with ACCEPT or REJECT and explain
   }
 
   return {
-    resultId: result.id,
+    result: updatedResult,
     response: responseText,
     accepted,
   };
