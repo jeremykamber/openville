@@ -6,18 +6,24 @@ export const CandidateSchema = z.object({
   hourlyRate: z.number().optional(),
   description: z.string().optional(),
   specialties: z.array(z.string()).optional(),
-});
+  rating: z.number().optional(),
+  basePrice: z.number().optional(),
+}).passthrough();
 
 export const UserPreferencesSchema = z.object({
   budget: z.number().optional(),
-  priority: z.enum(['price', 'quality', 'speed']).optional(),
+  priority: z.enum(['cost', 'quality', 'speed', 'rating']).optional(),
   additionalRequirements: z.string().optional(),
-});
+  dealBreakers: z.array(z.string()).optional(),
+}).passthrough();
 
 export const JobScopeSchema = z.object({
   description: z.string(),
   rooms: z.number().optional(),
-});
+  jobType: z.string().optional(),
+  location: z.string().optional(),
+  urgency: z.enum(['flexible', 'urgent', 'immediate']).optional(),
+}).passthrough();
 
 export const StartNegotiationSchema = z.object({
   buyerAgentId: z.string(),
@@ -37,10 +43,17 @@ export const SendMessageSchema = z.object({
 export const ProposeNegotiationSchema = z.object({
   proposerId: z.string(),
   finalPrice: z.number().int().positive(),
-  scope: z.object({
-    description: z.string().optional(),
-    rooms: z.number().int().positive().optional(),
-  }),
+  scope: z
+    .object({
+      description: z.string().optional(),
+      rooms: z.number().int().positive().optional(),
+    })
+    .refine(
+      (scope) => scope.description !== undefined || scope.rooms !== undefined,
+      {
+        message: 'scope must include at least a description or rooms',
+      }
+    ),
 });
 
 export const CancelNegotiationSchema = z.object({

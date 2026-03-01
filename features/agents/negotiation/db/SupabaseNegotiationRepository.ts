@@ -32,8 +32,7 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
       .maybeSingle();
 
     if (error) {
-      console.error(`Error fetching negotiation ${id}:`, error);
-      return null;
+      throw new Error(`Failed to get negotiation ${id}: ${error.message}`);
     }
     return data ? this.mapDbToNegotiation(data) : null;
   }
