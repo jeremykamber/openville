@@ -1,33 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { startNegotiation } from '@/features/agents/negotiation/negotiate';
-import { getMessages } from '@/features/agents/negotiation/db/negotiations';
-import { Candidate, UserPreferences, JobScope } from '@/features/agents/selection/types';
-
-interface StartNegotiationRequest {
-  buyerAgentId: string;
-  candidate: Candidate;
-  preferences: UserPreferences;
-  scope: JobScope;
-  jobId?: string;
-}
+import { defaultNegotiationRepository as repo } from '@/features/agents/negotiation/db/SupabaseNegotiationRepository';
+import { StartNegotiationSchema } from '@/features/agents/negotiation/schemas/NegotiationSchemas';
 
 export async function POST(request: NextRequest) {
   try {
-    const body: StartNegotiationRequest = await request.json();
-    const { buyerAgentId, candidate, preferences, scope, jobId } = body;
+    const rawBody = await request.json();
+    const validated = StartNegotiationSchema.safeParse(rawBody);
+    
+    if (!validated.success) {
+      return NextResponse.json({ error: 'Invalid request body', details: validated.error.format() }, { status: 400 });
+    }
 
-    if (!buyerAgentId) {
-      return NextResponse.json({ error: 'buyerAgentId is required' }, { status: 400 });
-    }
-    if (!candidate?.agentId) {
-      return NextResponse.json({ error: 'candidate with agentId is required' }, { status: 400 });
-    }
-    if (!preferences) {
-      return NextResponse.json({ error: 'preferences is required' }, { status: 400 });
-    }
-    if (!scope) {
-      return NextResponse.json({ error: 'scope is required' }, { status: 400 });
-    }
+    const { buyerAgentId, candidate, preferences, scope, jobId } = validated.data;
 
     const providerType = process.env.USE_MOCK_LLM === 'true' 
       ? 'mock' 
@@ -35,14 +20,14 @@ export async function POST(request: NextRequest) {
 
     const negotiation = await startNegotiation(
       buyerAgentId, 
-      candidate, 
-      preferences, 
-      scope, 
+      candidate as any, 
+      preferences as any, 
+      scope as any, 
       jobId,
       { providerType: providerType as any }
     );
 
-    const messages = await getMessages(negotiation.id);
+    const messages = await repo.getMessages(negotiation.id);
 
     return NextResponse.json({ negotiation, messages });
   } catch (error) {

@@ -39,7 +39,7 @@ export async function runNegotiations(
       outcomes.push({
         negotiationId: negotiation.id,
         candidateId: selected.candidate.agentId,
-        status: 'completed',
+        status: negotiation.status === 'active' ? 'completed' : (negotiation.status as any),
         summary: negotiation.summary,
       });
     } catch (error) {

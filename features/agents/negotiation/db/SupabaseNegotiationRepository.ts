@@ -29,10 +29,13 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
       .from('negotiations')
       .select()
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
-    if (error) return null;
-    return this.mapDbToNegotiation(data);
+    if (error) {
+      console.error(`Error fetching negotiation ${id}:`, error);
+      return null;
+    }
+    return data ? this.mapDbToNegotiation(data) : null;
   }
 
   async addMessage(
