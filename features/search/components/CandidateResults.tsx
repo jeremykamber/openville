@@ -67,12 +67,12 @@ export function CandidateResults({
             Candidate board ({data?.resultCount ?? 0})
           </h2>
         </div>
-        <p className="rounded-full border border-[rgba(103,215,255,0.18)] bg-[rgba(103,215,255,0.1)] px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[var(--ov-signal-strong)] uppercase">
+        <p className="rounded-full border border-[var(--ov-signal-border)] bg-[var(--ov-signal-soft)] px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[var(--ov-signal-strong)] uppercase">
           Ranked by relevance, reliability, and your priorities
         </p>
       </div>
       {data?.followUpQuestion ? (
-        <div className="rounded-2xl border border-[rgba(124,170,255,0.14)] bg-[rgba(13,23,38,0.72)] px-4 py-3 text-sm leading-7 text-[var(--ov-text-muted)]">
+        <div className="rounded-2xl border border-[var(--ov-border-medium)] bg-[var(--ov-surface-card)] px-4 py-3 text-sm leading-7 text-[var(--ov-text-muted)]">
           {data.followUpQuestion}
         </div>
       ) : null}

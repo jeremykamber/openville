@@ -18,7 +18,7 @@ export function FollowUpPrompt({
   }
 
   return (
-    <Card className="border-[rgba(124,170,255,0.16)] bg-[rgba(9,17,29,0.84)] shadow-[0_20px_50px_rgba(2,6,15,0.35)]">
+    <Card className="border-[var(--ov-border-medium)] bg-[var(--ov-surface-card)] shadow-[0_20px_50px_var(--ov-shadow)]">
       <CardHeader className="gap-3">
         <CardTitle className="font-display text-xl text-[var(--ov-text)]">
           Context snapshot
@@ -26,7 +26,7 @@ export function FollowUpPrompt({
       </CardHeader>
       <CardContent className="space-y-4">
         {followUpQuestion ? (
-          <p className="rounded-2xl border border-dashed border-[rgba(124,170,255,0.18)] bg-[rgba(13,23,38,0.72)] px-4 py-3 text-sm text-[var(--ov-text-muted)]">
+          <p className="rounded-2xl border border-dashed border-[var(--ov-signal-border)] bg-[var(--ov-surface-card)] px-4 py-3 text-sm text-[var(--ov-text-muted)]">
             {followUpQuestion}
           </p>
         ) : null}

@@ -29,13 +29,16 @@ interface CandidateCardProps {
 
 export function CandidateCard({ candidate, rank }: CandidateCardProps) {
   return (
-    <Card className="overflow-hidden border-[rgba(124,170,255,0.16)] bg-[linear-gradient(180deg,rgba(19,32,51,0.92),rgba(7,17,29,0.94))] shadow-[0_24px_60px_rgba(2,6,15,0.42)]">
+    <Card 
+      className="overflow-hidden border-[var(--ov-border-medium)] shadow-[0_24px_60px_var(--ov-shadow-strong)]"
+      style={{ background: "var(--ov-gradient-card-strong)" }}
+    >
       <CardHeader className="gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Badge className="border-0 bg-[rgba(103,215,255,0.14)] text-[var(--ov-signal-strong)]">
+          <Badge className="border-0 bg-[var(--ov-signal-soft)] text-[var(--ov-signal-strong)]">
             Rank #{rank}
           </Badge>
-          <Badge className="border-0 bg-[rgba(255,209,102,0.14)] text-[var(--ov-winner)]">
+          <Badge className="border-0 bg-[var(--ov-winner-soft)] text-[var(--ov-winner)]">
             Score {candidate.score}
           </Badge>
         </div>
@@ -56,7 +59,7 @@ export function CandidateCard({ candidate, rank }: CandidateCardProps) {
           {candidate.specialties.map((specialty) => (
             <Badge
               key={specialty}
-              className="border-0 bg-[rgba(124,170,255,0.1)] text-[var(--ov-text)]"
+              className="border-0 bg-[var(--ov-border-soft)] text-[var(--ov-text)]"
             >
               {specialty}
             </Badge>

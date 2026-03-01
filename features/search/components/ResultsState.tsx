@@ -17,7 +17,7 @@ export function ResultsState({
   onAction,
 }: ResultsStateProps) {
   return (
-    <Card className="border-[rgba(124,170,255,0.16)] bg-[rgba(9,17,29,0.84)] shadow-[0_20px_50px_rgba(2,6,15,0.35)]">
+    <Card className="border-[var(--ov-border-medium)] bg-[var(--ov-surface-card)] shadow-[0_20px_50px_var(--ov-shadow)]">
       <CardHeader>
         <CardTitle className="font-display text-xl text-[var(--ov-text)]">
           {title}
@@ -30,7 +30,7 @@ export function ResultsState({
             type="button"
             variant="outline"
             onClick={onAction}
-            className="border-[rgba(103,215,255,0.24)] bg-[rgba(103,215,255,0.08)] text-[var(--ov-signal-strong)] hover:bg-[rgba(103,215,255,0.14)] hover:text-[var(--ov-text)]"
+            className="border-[var(--ov-signal-border)] bg-[var(--ov-signal-soft)] text-[var(--ov-signal-strong)] hover:bg-[var(--ov-signal-hover)] hover:text-[var(--ov-text)]"
           >
             {actionLabel}
           </Button>

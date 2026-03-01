@@ -29,10 +29,10 @@ export function RequestComposer({
   return (
     <div className="space-y-3">
       <div
-        className={`flex flex-col gap-3 rounded-[1.5rem] border p-4 shadow-[0_20px_50px_rgba(2,6,15,0.35)] backdrop-blur sm:flex-row sm:items-center ${
+        className={`flex flex-col gap-3 rounded-[1.5rem] border p-4 shadow-[0_20px_50px_var(--ov-shadow)] backdrop-blur sm:flex-row sm:items-center ${
           isLanding
-            ? "border-[rgba(124,170,255,0.16)] bg-[rgba(8,15,27,0.72)] sm:p-5"
-            : "border-[rgba(124,170,255,0.12)] bg-[rgba(7,17,29,0.78)]"
+            ? "border-[var(--ov-border-medium)] bg-[var(--ov-surface-card)] sm:p-5"
+            : "border-[var(--ov-border-soft)] bg-[var(--ov-surface-deep)]"
         }`}
       >
         <Input
@@ -48,8 +48,8 @@ export function RequestComposer({
           }}
           className={`h-13 rounded-[1.2rem] border px-4 text-sm text-[var(--ov-text)] placeholder:text-[var(--ov-text-muted)] ${
             isLanding
-              ? "border-[rgba(124,170,255,0.18)] bg-[rgba(13,23,38,0.88)]"
-              : "border-[rgba(124,170,255,0.14)] bg-[rgba(13,23,38,0.94)]"
+              ? "border-[var(--ov-signal-border)] bg-[var(--ov-surface-0)]"
+              : "border-[var(--ov-border-medium)] bg-[var(--ov-surface-deep)]"
           }`}
         />
         <Button
@@ -59,8 +59,8 @@ export function RequestComposer({
           disabled={disabled || value.trim().length === 0}
           className={`rounded-[1.2rem] px-5 font-semibold ${
             isLanding
-              ? "bg-[var(--ov-human)] text-[#06111d] hover:bg-[#f7cb90]"
-              : "bg-[var(--ov-signal)] text-[#06111d] hover:bg-[var(--ov-signal-strong)]"
+              ? "bg-[var(--ov-human)] text-[var(--ov-text-on-accent)] hover:bg-[#e8a882]"
+              : "bg-[var(--ov-signal)] text-[var(--ov-text-on-accent)] hover:bg-[var(--ov-signal-strong)]"
           }`}
         >
           {disabled
@@ -84,8 +84,8 @@ export function RequestComposer({
               disabled={disabled}
               className={`rounded-full border px-3.5 py-1.5 text-sm transition-colors disabled:pointer-events-none disabled:opacity-50 ${
                 isLanding
-                  ? "border-[rgba(242,191,122,0.2)] bg-[rgba(242,191,122,0.08)] text-[var(--ov-human)] hover:border-[rgba(242,191,122,0.38)] hover:text-[#f7cb90]"
-                  : "border-[rgba(124,170,255,0.16)] bg-[rgba(9,17,29,0.74)] text-[var(--ov-text-muted)] hover:border-[rgba(103,215,255,0.32)] hover:text-[var(--ov-text)]"
+                  ? "border-[var(--ov-human-border)] bg-[var(--ov-human-bg)] text-[var(--ov-human)] hover:border-[var(--ov-human-hover)] hover:text-[var(--ov-human)]"
+                  : "border-[var(--ov-border-medium)] bg-[var(--ov-surface-deep)] text-[var(--ov-text-muted)] hover:border-[var(--ov-signal-hover)] hover:text-[var(--ov-text)]"
               }`}
             >
               {example}
