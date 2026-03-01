@@ -101,7 +101,7 @@ export function HandoffSection() {
     target: sectionRef,
     offset: ["start end", "end start"],
   });
-  const contentOpacity = useTransform(scrollYProgress, [0.1, 0.5], [1, 0]);
+  const contentOpacity = useTransform(scrollYProgress, [0.15, 0.85], [1, 0]);
 
   const isInView = useInView(sectionRef, { once: true, amount: 0.12 });
 

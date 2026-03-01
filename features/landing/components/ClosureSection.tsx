@@ -85,7 +85,7 @@ export function ClosureSection({
     target: sectionRef,
     offset: ["start end", "end start"],
   });
-  const contentOpacity = useTransform(scrollYProgress, [0.1, 0.5], [1, 0]);
+  const contentOpacity = useTransform(scrollYProgress, [0.15, 0.85], [1, 0]);
 
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.1 });

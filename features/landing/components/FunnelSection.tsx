@@ -64,7 +64,7 @@ export function FunnelSection() {
     target: sectionRef,
     offset: ["start end", "end start"],
   });
-  const contentOpacity = useTransform(scrollYProgress, [0.1, 0.5], [1, 0]);
+  const contentOpacity = useTransform(scrollYProgress, [0.15, 0.85], [1, 0]);
 
   const stage = useAutoStage();
   const stageIndex = STAGE_ORDER.indexOf(stage);
