@@ -427,7 +427,7 @@ export function FinalistSection() {
     <section
       ref={sectionRef}
       id="negotiation"
-      className="relative px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
+      className="relative bg-[var(--ov-surface-0)] px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
       aria-label="Negotiation -- three finalists compete on price, scope, and certainty"
     >
       {/* Ambient glow */}
@@ -463,6 +463,16 @@ export function FinalistSection() {
             and timeline. One loses on incomplete coverage. One loses on
             scheduling risk. The winner is chosen with explainable reasoning.
           </p>
+        </motion.div>
+
+        {/* Horizontal divider */}
+        <motion.div
+          variants={lineReveal}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          className="mx-auto my-10 max-w-lg origin-center"
+        >
+          <div className="ov-divider" />
         </motion.div>
 
         {/* Finalist cards */}

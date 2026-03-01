@@ -81,7 +81,7 @@ export function OldWaySection() {
     <section
       ref={sectionRef}
       id="problem"
-      className="relative px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
+      className="relative bg-[var(--ov-surface-0)] px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
       aria-label="Before AI -- the old way of finding tradespeople"
     >
       {/* Ambient glow */}
@@ -120,6 +120,16 @@ export function OldWaySection() {
             while you wait for callbacks. The problem was never finding a
             plumber. It was figuring out which one to trust with your home.
           </p>
+        </motion.div>
+
+        {/* Horizontal divider */}
+        <motion.div
+          variants={lineReveal}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          className="mx-auto my-10 max-w-lg origin-center"
+        >
+          <div className="ov-divider" />
         </motion.div>
 
         {/* Pain point bento grid */}

@@ -19,6 +19,7 @@ interface HeaderProps {
 const NAV_LINKS: NavLink[] = [
   { label: "Problem", href: "#problem" },
   { label: "How it works", href: "#handoff" },
+  { label: "Communication", href: "#communication" },
   { label: "The Market", href: "#funnel" },
   { label: "Negotiation", href: "#negotiation" },
 ];
