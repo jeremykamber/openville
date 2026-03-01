@@ -1,5 +1,6 @@
 import { SelectedCandidate, UserPreferences, JobScope } from '../selection/types';
-import { startNegotiation } from './negotiate';
+import { startNegotiation, NegotiateOptions } from './negotiate';
+import { NegotiationStatus } from './types';
 
 export interface RunNegotiationsOptions {
   buyerAgentId: string;
@@ -7,14 +8,14 @@ export interface RunNegotiationsOptions {
   preferences: UserPreferences;
   scope: JobScope;
   jobId?: string;
-  providerType?: 'openai' | 'openrouter' | 'mock';
+  providerType?: NegotiateOptions['providerType'];
   maxRounds?: number;
 }
 
 export interface NegotiationOutcome {
   negotiationId: string;
   candidateId: string;
-  status: 'completed' | 'cancelled' | 'failed';
+  status: 'completed' | 'cancelled' | 'failed' | NegotiationStatus;
   finalPrice?: number;
   summary?: string;
 }
@@ -39,7 +40,7 @@ export async function runNegotiations(
       outcomes.push({
         negotiationId: negotiation.id,
         candidateId: selected.candidate.agentId,
-        status: 'completed',
+        status: negotiation.status,
         summary: negotiation.summary,
       });
     } catch (error) {

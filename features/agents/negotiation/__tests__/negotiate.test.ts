@@ -17,8 +17,8 @@ vi.mock('../../reasoning/providers', () => {
 
 // Mock the negotiation DB module to avoid calling supabase in these tests
 // Use a relative path that matches how negotiate.ts imports the db module
-vi.mock('../db/negotiations', () => {
-  return {
+vi.mock('../db/SupabaseNegotiationRepository', () => {
+  const mockRepo = {
     createNegotiation: vi.fn(async (buyerAgentId: string, providerAgentId: string) => ({
       id: 'neg-1',
       buyerAgentId,
@@ -51,11 +51,14 @@ vi.mock('../db/negotiations', () => {
     createNegotiationResult: vi.fn(async (negotiationId: string) => ({ id: 'res-1', negotiationId })),
     respondToResult: vi.fn(async (id: string, status: any, msg?: string) => ({ id, status, responseMessage: msg })),
   };
+  return {
+    defaultNegotiationRepository: mockRepo,
+  };
 });
 
 import { startNegotiation, sendBuyerMessage, proposeNegotiationResult } from '../negotiate';
 import * as providers from '../../reasoning/providers';
-import * as db from '../db/negotiations';
+import { defaultNegotiationRepository as db } from '../db/SupabaseNegotiationRepository';
 
 describe('negotiate engine (unit)', () => {
   beforeEach(() => {
@@ -71,9 +74,9 @@ describe('negotiate engine (unit)', () => {
 
     expect(negotiation).toHaveProperty('id');
     // db.createNegotiation should have been called
-    expect((db as any).createNegotiation).toHaveBeenCalled();
+    expect(db.createNegotiation).toHaveBeenCalled();
     // addMessage should be called at least twice (buyer and provider initial)
-    expect((db as any).addMessage).toHaveBeenCalledTimes(2);
+    expect(db.addMessage).toHaveBeenCalledTimes(2);
   });
 
   it('sendBuyerMessage produces provider and buyer auto responses', async () => {
@@ -85,7 +88,7 @@ describe('negotiate engine (unit)', () => {
     expect(res.providerResponse).toBeDefined();
     expect(res.buyerResponse).toBeDefined();
     // messages persisted via addMessage
-    expect((db as any).addMessage).toHaveBeenCalled();
+    expect(db.addMessage).toHaveBeenCalled();
   });
 
   it('proposeNegotiationResult triggers acceptance flow', async () => {
@@ -95,7 +98,7 @@ describe('negotiate engine (unit)', () => {
     const result = await proposeNegotiationResult('neg-1', 'buyer-1', 123, { description: 'scope' });
 
     expect(result.accepted).toBe(true);
-    expect((db as any).respondToResult).toHaveBeenCalled();
-    expect((db as any).updateNegotiationStatus).toHaveBeenCalled();
+    expect(db.respondToResult).toHaveBeenCalled();
+    expect(db.updateNegotiationStatus).toHaveBeenCalled();
   });
 });

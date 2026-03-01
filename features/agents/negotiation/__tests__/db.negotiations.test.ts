@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
-import * as db from '../db/negotiations';
+import { defaultNegotiationRepository as db } from '../db/SupabaseNegotiationRepository';
 
 // We'll mock supabaseAdmin to emulate DB insert/select
-// mock the supabase server import path that the db module uses
+// mock the supabase server import path that the repository uses
 vi.mock('@/lib/supabase/server', () => ({
   supabaseAdmin: {
     from: () => ({
@@ -14,9 +14,9 @@ vi.mock('@/lib/supabase/server', () => ({
   },
 }));
 
-describe('db/negotiations integration-like mapping', () => {
+describe('SupabaseNegotiationRepository integration-like mapping', () => {
   it('createNegotiation returns mapped Negotiation', async () => {
-    const n = await (db as any).createNegotiation('b1', 'p1');
+    const n = await db.createNegotiation('b1', 'p1');
     expect(n).toHaveProperty('id', 'neg-1');
     expect(n.buyerAgentId).toBe('b1');
   });

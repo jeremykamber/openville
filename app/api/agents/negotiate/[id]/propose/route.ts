@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { proposeNegotiationResult } from '@/features/agents/negotiation/negotiate';
-
-interface ProposeResultRequest {
-  proposerId: string;
-  finalPrice: number;
-  scope: {
-    description?: string;
-    rooms?: number;
-  };
-}
+import { proposeNegotiationResult, NegotiateOptions } from '@/features/agents/negotiation/negotiate';
+import { ProposeNegotiationSchema } from '@/features/agents/negotiation/schemas/NegotiationSchemas';
 
 export async function POST(
   request: NextRequest,
@@ -16,15 +8,14 @@ export async function POST(
 ) {
   try {
     const { id: negotiationId } = await params;
-    const body: ProposeResultRequest = await request.json();
-    const { proposerId, finalPrice, scope } = body;
+    const rawBody = await request.json();
+    const validated = ProposeNegotiationSchema.safeParse(rawBody);
 
-    if (!proposerId) {
-      return NextResponse.json({ error: 'proposerId is required' }, { status: 400 });
+    if (!validated.success) {
+      return NextResponse.json({ error: 'Invalid request body', details: validated.error.format() }, { status: 400 });
     }
-    if (!finalPrice || finalPrice <= 0) {
-      return NextResponse.json({ error: 'finalPrice must be a positive number' }, { status: 400 });
-    }
+
+    const { proposerId, finalPrice, scope } = validated.data;
 
     const providerType = process.env.USE_MOCK_LLM === 'true' 
       ? 'mock' 
@@ -35,7 +26,7 @@ export async function POST(
       proposerId,
       finalPrice,
       scope,
-      { providerType: providerType as any }
+      { providerType: providerType as NegotiateOptions['providerType'] }
     );
 
     return NextResponse.json(result);

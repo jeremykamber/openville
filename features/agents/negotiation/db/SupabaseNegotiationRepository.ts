@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase/server';
-import { Negotiation, NegotiationMessage, NegotiationResult } from '../types';
+import { Negotiation, NegotiationMessage, NegotiationResult, NegotiationStatus, NegotiationTurn } from '../types';
 import { NegotiationRepository } from './NegotiationRepository';
 
 export class SupabaseNegotiationRepository implements NegotiationRepository {
@@ -29,10 +29,12 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
       .from('negotiations')
       .select()
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
-    if (error) return null;
-    return this.mapDbToNegotiation(data);
+    if (error) {
+      throw new Error(`Failed to get negotiation ${id}: ${error.message}`);
+    }
+    return data ? this.mapDbToNegotiation(data) : null;
   }
 
   async addMessage(
@@ -66,7 +68,7 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
       .order('created_at', { ascending: true });
 
     if (error) throw new Error(`Failed to get messages: ${error.message}`);
-    return data.map((row: any) => this.mapDbToMessage(row));
+    return (data || []).map((row) => this.mapDbToMessage(row));
   }
 
   async updateNegotiationStatus(
@@ -131,48 +133,48 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
     return this.mapDbToResult(data);
   }
 
-  private mapDbToNegotiation(row: any): Negotiation {
+  private mapDbToNegotiation(row: Record<string, unknown>): Negotiation {
     return {
-      id: row.id,
-      buyerAgentId: row.buyer_agent_id,
-      providerAgentId: row.provider_agent_id,
-      jobId: row.job_id,
-      status: row.status,
-      currentTurn: row.current_turn,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-      endedAt: row.ended_at ? new Date(row.ended_at) : undefined,
-      summary: row.summary,
+      id: row.id as string,
+      buyerAgentId: row.buyer_agent_id as string,
+      providerAgentId: row.provider_agent_id as string,
+      jobId: row.job_id as string | undefined,
+      status: row.status as NegotiationStatus,
+      currentTurn: row.current_turn as NegotiationTurn,
+      createdAt: new Date(row.created_at as string),
+      updatedAt: new Date(row.updated_at as string),
+      endedAt: row.ended_at ? new Date(row.ended_at as string) : undefined,
+      summary: row.summary as string | undefined,
     };
   }
 
-  private mapDbToMessage(row: any): NegotiationMessage {
+  private mapDbToMessage(row: Record<string, unknown>): NegotiationMessage {
     return {
-      id: row.id,
-      negotiationId: row.negotiation_id,
-      sender: row.sender,
-      senderType: row.sender_type,
-      content: row.content,
-      messageType: row.message_type,
-      createdAt: new Date(row.created_at),
+      id: row.id as string,
+      negotiationId: row.negotiation_id as string,
+      sender: row.sender as string,
+      senderType: row.sender_type as 'buyer' | 'provider',
+      content: row.content as string,
+      messageType: row.message_type as 'message' | 'proposal' | 'cancellation',
+      createdAt: new Date(row.created_at as string),
     };
   }
 
-  private mapDbToResult(row: any): NegotiationResult {
+  private mapDbToResult(row: Record<string, unknown>): NegotiationResult {
     return {
-      id: row.id,
-      negotiationId: row.negotiation_id,
-      proposedBy: row.proposed_by,
-      status: row.status,
-      finalPrice: row.final_price,
+      id: row.id as string,
+      negotiationId: row.negotiation_id as string,
+      proposedBy: row.proposed_by as string,
+      status: row.status as 'pending' | 'accepted' | 'rejected',
+      finalPrice: row.final_price as number | undefined,
       scope: row.scope_description ? {
-        description: row.scope_description,
-        rooms: row.scope_rooms,
-        details: row.scope_details,
+        description: row.scope_description as string,
+        rooms: row.scope_rooms as number,
+        details: row.scope_details as Record<string, unknown>,
       } : undefined,
-      createdAt: new Date(row.created_at),
-      respondedAt: row.responded_at ? new Date(row.responded_at) : undefined,
-      responseMessage: row.response_message,
+      createdAt: new Date(row.created_at as string),
+      respondedAt: row.responded_at ? new Date(row.responded_at as string) : undefined,
+      responseMessage: row.response_message as string | undefined,
     };
   }
 }
