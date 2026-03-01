@@ -1,4 +1,5 @@
 import type { ChatMessage } from "@/features/shared/contracts/ChatMessage";
+import { createMessageId } from "@/features/chat/utils/createMessageId";
 import type { InitialChatResponse } from "@/features/shared/contracts/SearchContracts";
 import { buildAssistantReply } from "@/features/shared/mocks/chat";
 import { inferPreferencesFromRequest } from "@/features/shared/mocks/preferences";
@@ -9,7 +10,7 @@ export interface ChatRepository {
 
 function buildMessage(content: string): ChatMessage {
   return {
-    id: `assistant-${Date.now()}`,
+    id: createMessageId("assistant"),
     role: "assistant",
     content,
     timestamp: new Date().toISOString(),

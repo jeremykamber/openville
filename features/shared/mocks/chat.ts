@@ -8,15 +8,32 @@ export function buildAssistantReply(message: string): {
     throw new Error("The mock assistant intentionally failed for this request.");
   }
 
+  const hasBudgetSignal =
+    normalized.includes("budget") ||
+    normalized.includes("cost") ||
+    normalized.includes("$") ||
+    normalized.includes("cheap") ||
+    normalized.includes("tight");
+  const hasReliabilitySignal =
+    normalized.includes("reliability") ||
+    normalized.includes("reliable") ||
+    normalized.includes("quality");
+  const hasDeadlineSignal =
+    normalized.includes("tomorrow") ||
+    normalized.includes("today") ||
+    normalized.includes("pm") ||
+    normalized.includes("deadline") ||
+    normalized.includes("asap");
+
   const followUpQuestion =
-    normalized.includes("budget") || normalized.includes("$")
+    hasBudgetSignal && hasReliabilitySignal && hasDeadlineSignal
       ? null
-      : "Do you want the cheapest option, the fastest option, or the best quality option?";
+      : "What matters most for this market run: tighter cost control, stronger reliability, or full-scope coverage?";
 
   return {
     response: followUpQuestion
-      ? "I have enough to start searching, but I am flagging one follow-up so the ranking can reflect your priorities."
-      : "I have enough context to search and rank the best matches for you right now.",
+      ? "I can open the market now, but one more signal will tighten the ranking before negotiation begins."
+      : "I have enough context. I am opening the market and ranking the strongest operators now.",
     followUpQuestion,
   };
 }

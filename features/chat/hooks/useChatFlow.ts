@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import type { ChatMessage } from "@/features/shared/contracts/ChatMessage";
 import type { UserPreferences } from "@/features/shared/contracts/UserPreferences";
+import { createMessageId } from "@/features/chat/utils/createMessageId";
 import { mergeUserPreferences } from "@/features/shared/mocks/preferences";
 import {
   mockChatRepository,
@@ -13,7 +14,7 @@ import { useRankedResults } from "@/features/search/hooks/useRankedResults";
 
 function createUserMessage(content: string): ChatMessage {
   return {
-    id: `user-${Date.now()}`,
+    id: createMessageId("user"),
     role: "user",
     content,
     timestamp: new Date().toISOString(),
@@ -23,7 +24,7 @@ function createUserMessage(content: string): ChatMessage {
 
 function createSystemMessage(content: string): ChatMessage {
   return {
-    id: "system-intro",
+    id: createMessageId("system"),
     role: "system",
     content,
     timestamp: new Date().toISOString(),
@@ -34,7 +35,7 @@ function createSystemMessage(content: string): ChatMessage {
 export function useChatFlow(repository: ChatRepository = mockChatRepository) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     createSystemMessage(
-      "Describe the job you need done. Mention urgency, budget, or quality priorities if you know them.",
+      "Describe the scope, deadline, and trade-offs. Your agent will open the market and rank the strongest operators.",
     ),
   ]);
   const [input, setInput] = useState("");

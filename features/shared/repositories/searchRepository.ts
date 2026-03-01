@@ -15,6 +15,7 @@ function wait(ms: number) {
 
 function matchesQuery(candidate: Candidate, query: string) {
   const normalized = query.toLowerCase();
+  const queryTokens = normalized.split(/[^a-z0-9]+/).filter(Boolean);
   const haystack = [
     candidate.name,
     candidate.headline,
@@ -23,19 +24,37 @@ function matchesQuery(candidate: Candidate, query: string) {
   ]
     .join(" ")
     .toLowerCase();
+  const eventKeywords = [
+    "event",
+    "launch",
+    "av",
+    "staff",
+    "staffing",
+    "ops",
+    "onsite",
+    "on-site",
+    "backup",
+    "crew",
+    "support",
+  ];
 
-  return haystack.includes(normalized) || normalized.includes("gutter");
+  return (
+    haystack.includes(normalized) ||
+    queryTokens.some((token) => haystack.includes(token)) ||
+    eventKeywords.some((keyword) => normalized.includes(keyword))
+  );
 }
 
 function scoreCandidate(
   candidate: Candidate,
   budgetPriority: SearchRequest["userPreferences"]["budgetPriority"],
+  timeline: SearchRequest["userPreferences"]["timeline"],
   qualityPriority: SearchRequest["userPreferences"]["qualityPriority"],
 ) {
   let score = candidate.score;
 
   if (budgetPriority === "low_cost" && candidate.startingPrice !== null) {
-    score += Math.max(0, 220 - candidate.startingPrice) / 10;
+    score += Math.max(0, 5000 - candidate.startingPrice) / 125;
   }
 
   if (budgetPriority === "premium" && candidate.rating >= 4.9) {
@@ -43,7 +62,14 @@ function scoreCandidate(
   }
 
   if (qualityPriority === "high") {
-    score += candidate.rating;
+    score += candidate.rating * 1.1;
+  }
+
+  if (
+    timeline === "asap" &&
+    /today|90 minutes|1 pm|12:30 pm/i.test(candidate.availabilityLabel)
+  ) {
+    score += 3;
   }
 
   return score;
@@ -76,6 +102,7 @@ export const mockSearchRepository: SearchRepository = {
           scoreCandidate(
             candidate,
             request.userPreferences.budgetPriority,
+            request.userPreferences.timeline,
             request.userPreferences.qualityPriority,
           ).toFixed(1),
         ),

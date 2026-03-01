@@ -12,27 +12,46 @@ export function inferPreferencesFromRequest(
   request: string,
 ): Partial<UserPreferences> {
   const normalized = request.toLowerCase();
-
-  return {
-    budgetPriority: normalized.includes("cheap") || normalized.includes("budget")
+  const budgetPriority =
+    normalized.includes("cheap") ||
+    normalized.includes("budget") ||
+    normalized.includes("cost") ||
+    normalized.includes("tight")
       ? "low_cost"
-      : normalized.includes("best") || normalized.includes("premium")
+      : normalized.includes("best") ||
+          normalized.includes("premium") ||
+          normalized.includes("highest quality")
         ? "premium"
-        : "balanced",
-    timeline: normalized.includes("today") || normalized.includes("asap")
+        : "balanced";
+  const timeline =
+    normalized.includes("today") ||
+    normalized.includes("asap") ||
+    normalized.includes("tomorrow") ||
+    normalized.includes("4 pm") ||
+    normalized.includes("deadline")
       ? "asap"
       : normalized.includes("week")
         ? "this_week"
-        : "flexible",
-    qualityPriority:
-      normalized.includes("best") || normalized.includes("quality")
-        ? "high"
-        : "standard",
-    maxBudget: normalized.includes("$150") || normalized.includes("150")
-      ? 150
-      : normalized.includes("$200") || normalized.includes("200")
-        ? 200
-        : null,
+        : "flexible";
+  const qualityPriority =
+    normalized.includes("reliable") ||
+    normalized.includes("reliability") ||
+    normalized.includes("best") ||
+    normalized.includes("quality")
+      ? "high"
+      : "standard";
+  const maxBudgetMatch = normalized.match(/\$?(\d{3,5})(k)?/);
+  const maxBudget = maxBudgetMatch
+    ? maxBudgetMatch[2]
+      ? Number(maxBudgetMatch[1]) * 1000
+      : Number(maxBudgetMatch[1])
+    : null;
+
+  return {
+    budgetPriority,
+    timeline,
+    qualityPriority,
+    maxBudget,
     notes: request.trim(),
   };
 }

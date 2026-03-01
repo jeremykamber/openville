@@ -21,7 +21,7 @@ export function CandidateResults({
     return (
       <ResultsState
         title="No results yet"
-        body="Submit a request and the app will rank the best matching agents using the mock repository boundary."
+        body="Submit a request to find and rank the best matching agents for your job."
       />
     );
   }
@@ -30,7 +30,7 @@ export function CandidateResults({
     return (
       <ResultsState
         title="Ranking candidates"
-        body="The mock search repository is simulating an async API call so the UI behaves like it will against the real backend."
+        body="Searching for available agents and ranking them by your priorities."
       />
     );
   }
@@ -60,14 +60,22 @@ export function CandidateResults({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold text-foreground">
-          Ranked matches ({data?.resultCount ?? 0})
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Powered by the async mock repository boundary
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="ov-kicker">Ranked survivors</p>
+          <h2 className="mt-2 font-display text-2xl text-[var(--ov-text)]">
+            Candidate board ({data?.resultCount ?? 0})
+          </h2>
+        </div>
+        <p className="rounded-full border border-[rgba(103,215,255,0.18)] bg-[rgba(103,215,255,0.1)] px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[var(--ov-signal-strong)] uppercase">
+          Ranked by relevance, reliability, and your priorities
         </p>
       </div>
+      {data?.followUpQuestion ? (
+        <div className="rounded-2xl border border-[rgba(124,170,255,0.14)] bg-[rgba(13,23,38,0.72)] px-4 py-3 text-sm leading-7 text-[var(--ov-text-muted)]">
+          {data.followUpQuestion}
+        </div>
+      ) : null}
       <div className="grid gap-4">
         {data?.candidates.map((candidate, index) => (
           <CandidateCard

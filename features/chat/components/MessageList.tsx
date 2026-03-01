@@ -18,12 +18,12 @@ export function MessageList({ messages }: MessageListProps) {
           <article
             key={message.id}
             className={cn(
-              "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-7 shadow-sm",
+              "max-w-[88%] rounded-[1.4rem] px-4 py-3 text-sm leading-7 shadow-[0_16px_40px_rgba(2,6,15,0.28)]",
               isUser
-                ? "ml-auto bg-primary text-primary-foreground"
+                ? "ml-auto border border-[rgba(242,191,122,0.24)] bg-[rgba(242,191,122,0.12)] text-[var(--ov-text)]"
                 : isSystem
-                  ? "border border-dashed border-border bg-muted/50 text-muted-foreground"
-                  : "bg-secondary text-secondary-foreground",
+                  ? "border border-dashed border-[rgba(124,170,255,0.16)] bg-[rgba(13,23,38,0.68)] text-[var(--ov-text-muted)]"
+                  : "border border-[rgba(124,170,255,0.16)] bg-[rgba(19,32,51,0.82)] text-[var(--ov-text)]",
             )}
           >
             <p>{message.content}</p>
