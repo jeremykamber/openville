@@ -78,19 +78,33 @@ export function OpenvilleWorkspace() {
 
   const isStoryMode = mode !== "active";
 
+  const handleActiveNavClick = useCallback(
+    (href: string) => {
+      // Switch back to story mode and scroll to section
+      setMode("story");
+      window.scrollTo({ top: 0, behavior: "instant" });
+      // After mode switch, scroll to the section
+      setTimeout(() => {
+        const el = document.querySelector(href);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 600); // Wait for transition animation
+    },
+    [],
+  );
+
   return (
     <div className="ov-shell min-h-screen">
-      {/* Header — only in story mode, hides on transition to active */}
-      <AnimatePresence>
-        {isStoryMode && (
-          <motion.div
-            key="header"
-            exit={{ opacity: 0, y: -20, transition: { duration: 0.3, ease: EASE } }}
-          >
-            <Header />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Header — visible in both story and active modes */}
+      <motion.div
+        key="header"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: EASE }}
+      >
+        <Header onNavClick={handleActiveNavClick} />
+      </motion.div>
 
       <AnimatePresence mode="wait">
         {mode !== "active" ? (

@@ -12,6 +12,10 @@ interface NavLink {
   href: string;
 }
 
+interface HeaderProps {
+  onNavClick?: (href: string) => void;
+}
+
 const NAV_LINKS: NavLink[] = [
   { label: "Problem", href: "#problem" },
   { label: "How it works", href: "#handoff" },
@@ -59,60 +63,26 @@ const mobileLinkItem = {
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function Header() {
+export function Header({ onNavClick }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
 
-  // Scroll-aware: transparent at top, solid on scroll, hide on scroll down, show on scroll up
-  useEffect(() => {
-    function handleScroll() {
-      if (ticking.current) return;
-      ticking.current = true;
-
-      requestAnimationFrame(() => {
-        const currentY = window.scrollY;
-        setScrolled(currentY > 40);
-
-        // Only hide/show after passing the hero fold
-        if (currentY > 300) {
-          setHidden(currentY > lastScrollY.current && currentY - lastScrollY.current > 5);
-        } else {
-          setHidden(false);
-        }
-
-        lastScrollY.current = currentY;
-        ticking.current = false;
-      });
-    }
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Lock body scroll when mobile menu open
-  useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mobileOpen]);
-
   const handleNavClick = useCallback(
     (href: string) => {
       setMobileOpen(false);
-      const el = document.querySelector(href);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (onNavClick) {
+        onNavClick(href);
+      } else {
+        const el = document.querySelector(href);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       }
     },
-    [],
+    [onNavClick],
   );
 
   return (

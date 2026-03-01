@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView } from "motion/react";
+import { motion, useInView, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
 import { painPoints } from "@/features/landing/data/storyboard-fixtures";
 import { EASE } from "@/lib/motion";
@@ -68,6 +68,13 @@ const bentoClasses = [
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function OldWaySection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+  const contentOpacity = useTransform(scrollYProgress, [0.1, 0.5], [1, 0]);
+
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.15 });
 
@@ -88,7 +95,10 @@ export function OldWaySection() {
         }}
       />
 
-      <div className="relative z-[1] mx-auto max-w-6xl">
+      <motion.div
+        style={{ opacity: contentOpacity }}
+        className="relative z-[1] mx-auto max-w-6xl"
+      >
         {/* Section header — centered for impact */}
         <motion.div
           variants={sectionHeader}
@@ -202,7 +212,7 @@ export function OldWaySection() {
             );
           })}
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 }

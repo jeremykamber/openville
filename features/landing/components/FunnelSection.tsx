@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "motion/react";
+import { useState, useEffect, useRef } from "react";
+import { motion, useScroll, useTransform } from "motion/react";
 import {
   AgentMarketGraph,
   type MarketGraphStage,
@@ -59,11 +59,19 @@ function useAutoStage(): MarketGraphStage {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function FunnelSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+  const contentOpacity = useTransform(scrollYProgress, [0.1, 0.5], [1, 0]);
+
   const stage = useAutoStage();
   const stageIndex = STAGE_ORDER.indexOf(stage);
 
   return (
     <section
+      ref={sectionRef}
       id="funnel"
       className="relative px-4 py-28 sm:px-6 sm:py-36 lg:px-8"
       aria-label="The Agent Economy -- market funnel visualization"
@@ -78,7 +86,10 @@ export function FunnelSection() {
         }}
       />
 
-      <div className="relative z-[1] mx-auto max-w-6xl space-y-4 sm:space-y-5">
+      <motion.div
+        style={{ opacity: contentOpacity }}
+        className="relative z-[1] mx-auto max-w-6xl space-y-4 sm:space-y-5"
+      >
         {/* Top bar */}
         <div className="flex flex-col gap-3 rounded-[1.75rem] border border-[var(--ov-border)] bg-[rgba(9,9,11,0.96)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:rounded-[2rem] sm:px-6 sm:py-4">
           <div className="min-w-0 flex-1 overflow-x-auto">
@@ -171,7 +182,7 @@ export function FunnelSection() {
             </span>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }
