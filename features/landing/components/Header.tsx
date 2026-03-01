@@ -181,7 +181,19 @@ export function Header({ onCtaClick }: HeaderProps) {
               <button
                 type="button"
                 onClick={onCtaClick}
-                className="hidden rounded-xl border border-[rgba(255,77,77,0.2)] bg-[rgba(255,77,77,0.06)] px-4 py-2 text-[13px] font-semibold text-[var(--ov-accent-bright)] transition-all duration-300 hover:border-[rgba(255,77,77,0.35)] hover:bg-[rgba(255,77,77,0.1)] hover:shadow-[0_0_24px_rgba(255,77,77,0.1)] md:block"
+                className="hidden rounded-xl border border-[rgba(255,77,77,0.3)] px-4 py-2 text-[13px] font-semibold text-white shadow-[0_0_20px_rgba(255,77,77,0.12)] md:block"
+                style={{
+                  background: "linear-gradient(135deg, #ff4d4d, #991b1b)",
+                  transition: "box-shadow 0.3s ease, border-color 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 32px rgba(255,77,77,0.25)";
+                  e.currentTarget.style.borderColor = "rgba(255,77,77,0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 20px rgba(255,77,77,0.12)";
+                  e.currentTarget.style.borderColor = "rgba(255,77,77,0.3)";
+                }}
               >
                 Open the market
               </button>
@@ -262,7 +274,11 @@ export function Header({ onCtaClick }: HeaderProps) {
                     setMobileOpen(false);
                     onCtaClick?.();
                   }}
-                  className="rounded-2xl border border-[rgba(255,77,77,0.25)] bg-[rgba(255,77,77,0.08)] px-6 py-3.5 text-base font-semibold text-[var(--ov-accent-bright)] transition-all duration-300 hover:border-[rgba(255,77,77,0.4)] hover:bg-[rgba(255,77,77,0.14)]"
+                  className="rounded-2xl border border-[rgba(255,77,77,0.3)] px-6 py-3.5 text-base font-semibold text-white shadow-[0_0_24px_rgba(255,77,77,0.15)]"
+                  style={{
+                    background: "linear-gradient(135deg, #ff4d4d, #991b1b)",
+                    transition: "box-shadow 0.3s ease, border-color 0.3s ease",
+                  }}
                 >
                   Open the market
                 </button>

@@ -50,6 +50,13 @@ export function WinnerPath() {
         animate={isInView ? "visible" : "hidden"}
         className="group relative overflow-hidden rounded-[1.75rem] border border-[rgba(255,77,77,0.22)] bg-[linear-gradient(180deg,rgba(30,28,22,0.62),rgba(17,17,19,0.96))] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.45)]"
       >
+        {/* Gradient top accent line */}
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-px"
+          style={{
+            background: "linear-gradient(90deg, transparent, #ff4d4d, #991b1b, transparent)",
+          }}
+        />
         {/* Winner glow pulse — gold accent */}
         <motion.div
           className="pointer-events-none absolute inset-0 rounded-[1.75rem]"

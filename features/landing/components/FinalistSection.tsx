@@ -190,6 +190,16 @@ function FinalistCard({
       )}
       style={{ transition: "border-color 0.2s ease" }}
     >
+      {/* Winner gradient top accent line */}
+      {isWinner && (
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-px rounded-t-[1.75rem]"
+          style={{
+            background: "linear-gradient(90deg, transparent, #ff4d4d, #991b1b, transparent)",
+          }}
+        />
+      )}
+
       {/* Winner pulsing glow border — opacity animation (GPU-compositable) */}
       {isWinner && (
         <motion.div
@@ -216,9 +226,14 @@ function FinalistCard({
               className={cn(
                 "flex size-9 items-center justify-center rounded-xl font-mono text-xs font-bold",
                 isWinner
-                  ? "border border-[rgba(255,77,77,0.2)] bg-[rgba(255,77,77,0.08)] text-[var(--ov-accent-bright)]"
+                  ? "border border-[rgba(255,77,77,0.25)] text-white"
                   : "bg-[var(--ov-surface-1)] text-[var(--ov-text-muted)]",
               )}
+              style={
+                isWinner
+                  ? { background: "linear-gradient(135deg, #ff4d4d, #991b1b)" }
+                  : undefined
+              }
             >
               {String(index + 1).padStart(2, "0")}
             </div>
@@ -300,7 +315,7 @@ function FinalistCard({
                 className={cn(
                   "h-full rounded-full",
                   isWinner
-                    ? "bg-[linear-gradient(90deg,var(--ov-accent),var(--ov-accent-bright))]"
+                    ? "bg-[linear-gradient(90deg,var(--ov-accent-dark),var(--ov-accent),var(--ov-accent-bright))]"
                     : "bg-[rgba(255,255,255,0.15)]",
                 )}
                 initial={{ width: 0 }}
@@ -377,7 +392,12 @@ function FinalistCard({
 
         {/* Winner guarantee banner */}
         {isWinner && (
-            <div className="mt-4 rounded-xl border border-[rgba(255,77,77,0.18)] bg-[rgba(255,77,77,0.04)] px-4 py-3">
+            <div
+              className="mt-4 rounded-xl border border-[rgba(255,77,77,0.2)] px-4 py-3"
+              style={{
+                background: "linear-gradient(135deg, rgba(255,77,77,0.06), rgba(153,27,27,0.04))",
+              }}
+            >
             <p className="text-[10px] font-semibold tracking-[0.18em] text-[var(--ov-accent)] uppercase">
               Guarantee
             </p>
@@ -473,6 +493,13 @@ export function FinalistSection() {
             animate={isInView ? "visible" : "hidden"}
             className="group relative overflow-hidden rounded-[1.75rem] border border-[rgba(255,77,77,0.22)] bg-[linear-gradient(180deg,rgba(30,28,22,0.62),rgba(17,17,19,0.96))] p-6 sm:p-8 shadow-[0_28px_80px_rgba(0,0,0,0.45)]"
           >
+            {/* Gradient top accent line */}
+            <div
+              className="pointer-events-none absolute inset-x-0 top-0 h-px"
+              style={{
+                background: "linear-gradient(90deg, transparent, #ff4d4d, #991b1b, transparent)",
+              }}
+            />
             {/* Pulsing glow — opacity animation (GPU-compositable) */}
             <motion.div
               className="pointer-events-none absolute inset-0 rounded-[1.75rem]"

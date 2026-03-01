@@ -58,7 +58,7 @@ export function Footer() {
         aria-hidden="true"
         style={{
           background:
-            "linear-gradient(90deg, transparent 0%, rgba(255,77,77,0.15) 50%, transparent 100%)",
+            "linear-gradient(90deg, transparent 0%, rgba(153,27,27,0.2) 30%, rgba(255,77,77,0.2) 50%, rgba(153,27,27,0.2) 70%, transparent 100%)",
         }}
       />
 

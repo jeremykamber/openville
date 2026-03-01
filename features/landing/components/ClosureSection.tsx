@@ -151,7 +151,12 @@ export function ClosureSection({
                   <div className="overflow-hidden rounded-[1.25rem] border border-[var(--ov-border)] bg-[linear-gradient(180deg,rgba(25,25,28,0.6),rgba(17,17,19,0.8))] p-5 sm:rounded-[1.5rem] sm:p-6">
                     <div className="mb-3 flex items-center gap-3">
                       {/* Icon */}
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[rgba(255,77,77,0.18)] bg-[rgba(255,77,77,0.05)] sm:size-11">
+                      <div
+                        className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[rgba(255,77,77,0.22)] sm:size-11"
+                        style={{
+                          background: "linear-gradient(135deg, rgba(255,77,77,0.08), rgba(153,27,27,0.06))",
+                        }}
+                      >
                         <svg
                           className="size-4.5 text-[var(--ov-accent)] sm:size-5"
                           fill="none"
@@ -219,7 +224,12 @@ export function ClosureSection({
                   <div className="flex gap-6 overflow-hidden rounded-[1.5rem] border border-[var(--ov-border)] bg-[linear-gradient(180deg,rgba(25,25,28,0.6),rgba(17,17,19,0.8))] p-6">
                     {/* Icon */}
                     <div className="shrink-0">
-                      <div className="flex size-14 items-center justify-center rounded-2xl border border-[rgba(255,77,77,0.18)] bg-[rgba(255,77,77,0.05)]">
+                      <div
+                        className="flex size-14 items-center justify-center rounded-2xl border border-[rgba(255,77,77,0.22)]"
+                        style={{
+                          background: "linear-gradient(135deg, rgba(255,77,77,0.08), rgba(153,27,27,0.06))",
+                        }}
+                      >
                         <svg
                           className="size-6 text-[var(--ov-accent)]"
                           fill="none"
@@ -288,6 +298,13 @@ export function ClosureSection({
           className="mx-auto mt-16 max-w-4xl sm:mt-20"
         >
           <div className="relative overflow-hidden rounded-[2rem] border border-[rgba(255,77,77,0.2)] bg-[linear-gradient(180deg,rgba(30,28,22,0.55),rgba(17,17,19,0.95))] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.45)] sm:p-8 lg:p-10">
+            {/* Gradient top accent line */}
+            <div
+              className="pointer-events-none absolute inset-x-0 top-0 h-px"
+              style={{
+                background: "linear-gradient(90deg, transparent, #ff4d4d, #991b1b, transparent)",
+              }}
+            />
             {/* Inner accent glow */}
             <div
               className="pointer-events-none absolute inset-0"

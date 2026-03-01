@@ -122,9 +122,17 @@ export function RequestComposer({
           disabled={disabled || value.trim().length === 0}
           className={`relative z-[1] rounded-[1.2rem] px-5 font-semibold ${
             isLanding
-              ? "border border-[rgba(255,77,77,0.25)] bg-[rgba(255,77,77,0.12)] text-[var(--ov-accent-bright)] hover:bg-[rgba(255,77,77,0.2)] hover:shadow-[0_0_24px_rgba(255,77,77,0.1)]"
+              ? "border border-[rgba(255,77,77,0.3)] text-white shadow-[0_0_20px_rgba(255,77,77,0.12)] hover:shadow-[0_0_32px_rgba(255,77,77,0.22)]"
               : "bg-[var(--ov-text)] text-[var(--ov-void)] hover:bg-[var(--ov-text-muted)]"
           }`}
+          style={
+            isLanding
+              ? {
+                  background: "linear-gradient(135deg, #ff4d4d, #991b1b)",
+                  transition: "box-shadow 0.3s ease",
+                }
+              : undefined
+          }
         >
           {disabled
             ? "Opening market..."

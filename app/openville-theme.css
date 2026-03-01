@@ -257,8 +257,8 @@ body {
   background: linear-gradient(
     135deg,
     var(--ov-text) 0%,
-    var(--ov-text-muted) 50%,
-    var(--ov-accent) 100%
+    var(--ov-accent-bright) 45%,
+    var(--ov-accent-dark) 100%
   );
   background-clip: text;
   -webkit-background-clip: text;
