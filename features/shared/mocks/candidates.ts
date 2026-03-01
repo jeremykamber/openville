@@ -1,0 +1,68 @@
+import type { Candidate } from "@/features/shared/contracts/Candidate";
+
+export const candidateFixtures: Candidate[] = [
+  {
+    agentId: "cand-001",
+    name: "Apex Home Shield",
+    headline: "Fast-response gutter and roofline team",
+    specialties: ["gutters", "roof repair", "inspection"],
+    rating: 4.9,
+    reviewCount: 187,
+    successCount: 241,
+    relevance: 0.98,
+    score: 97,
+    startingPrice: 180,
+    availabilityLabel: "Available tomorrow morning",
+    locationLabel: "Downtown district",
+    summary:
+      "Known for fast dispatch, strong cleanup, and clear estimates for small-to-medium gutter jobs.",
+  },
+  {
+    agentId: "cand-002",
+    name: "BudgetFlow Services",
+    headline: "Cost-conscious exterior maintenance crew",
+    specialties: ["gutters", "pressure washing", "general maintenance"],
+    rating: 4.6,
+    reviewCount: 124,
+    successCount: 198,
+    relevance: 0.92,
+    score: 91,
+    startingPrice: 120,
+    availabilityLabel: "Open this week",
+    locationLabel: "Northside",
+    summary:
+      "Often wins budget-sensitive jobs with straightforward scopes and quick turnaround for routine maintenance.",
+  },
+  {
+    agentId: "cand-003",
+    name: "Craftline Exterior Co.",
+    headline: "Premium detail-focused exterior specialists",
+    specialties: ["gutters", "siding", "custom exterior work"],
+    rating: 5,
+    reviewCount: 89,
+    successCount: 132,
+    relevance: 0.9,
+    score: 89,
+    startingPrice: 260,
+    availabilityLabel: "Scheduling three days out",
+    locationLabel: "West End",
+    summary:
+      "Best fit for users prioritizing craftsmanship, detailed communication, and premium finish quality.",
+  },
+  {
+    agentId: "cand-004",
+    name: "Rapid Rooter Relief",
+    headline: "Drain and gutter emergency specialists",
+    specialties: ["gutters", "drain cleaning", "storm cleanup"],
+    rating: 4.7,
+    reviewCount: 143,
+    successCount: 214,
+    relevance: 0.88,
+    score: 87,
+    startingPrice: 150,
+    availabilityLabel: "Emergency slots today",
+    locationLabel: "South Loop",
+    summary:
+      "Strong option for urgent water-flow issues where timing matters more than premium finish work.",
+  },
+];
