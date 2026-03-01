@@ -1,6 +1,7 @@
 import { SelectedCandidate, UserPreferences, JobScope } from '../selection/types';
-import { startNegotiation, NegotiateOptions } from './negotiate';
+import { startNegotiation, NegotiateOptions, proposeNegotiationResult } from './negotiate';
 import { NegotiationStatus } from './types';
+import { NegotiationResult } from './types/NegotiationResult';
 
 export interface RunNegotiationsOptions {
   buyerAgentId: string;
@@ -16,7 +17,7 @@ export interface NegotiationOutcome {
   negotiationId: string;
   candidateId: string;
   status: 'completed' | 'cancelled' | 'failed' | NegotiationStatus;
-  finalPrice?: number;
+  result?: NegotiationResult;
   summary?: string;
 }
 
@@ -37,11 +38,22 @@ export async function runNegotiations(
         { providerType }
       );
 
+      // Complete negotiation with proposal from buyer
+      const estimatedPrice = (scope as { estimatedPrice?: number }).estimatedPrice || 500; // Assuming scope has estimatedPrice
+      const proposalResult = await proposeNegotiationResult(
+        negotiation.id,
+        buyerAgentId,
+        estimatedPrice,
+        { description: (scope as { description?: string }).description, rooms: (scope as { rooms?: number }).rooms },
+        { providerType }
+      );
+
       outcomes.push({
         negotiationId: negotiation.id,
         candidateId: selected.candidate.agentId,
-        status: negotiation.status,
-        summary: negotiation.summary,
+        status: proposalResult.accepted ? 'completed' : 'failed',
+        result: proposalResult.result,
+        summary: proposalResult.response,
       });
     } catch (error) {
       console.error(`Negotiation failed for candidate ${selected.candidate.agentId}:`, error);
