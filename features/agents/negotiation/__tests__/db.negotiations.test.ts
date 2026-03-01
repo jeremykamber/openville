@@ -3,7 +3,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as db from '../db/negotiations';
 
 // We'll mock supabaseAdmin to emulate DB insert/select
-vi.mock('@/lib/supabase/server', () => ({
+// mock the supabase server import path that the db module uses
+vi.mock('../../../lib/supabase/server', () => ({
   supabaseAdmin: {
     from: () => ({
       insert: () => ({ select: () => ({ single: async () => ({ data: {

@@ -16,7 +16,8 @@ vi.mock('@/features/agents/reasoning/providers', () => {
 });
 
 // Mock the negotiation DB module to avoid calling supabase in these tests
-vi.mock('@/features/agents/negotiation/db/negotiations', () => {
+// Use a relative path that matches how negotiate.ts imports the db module
+vi.mock('../db/negotiations', () => {
   return {
     createNegotiation: vi.fn(async (buyerAgentId: string, providerAgentId: string) => ({
       id: 'neg-1',
