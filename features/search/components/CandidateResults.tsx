@@ -101,7 +101,7 @@ export function CandidateResults({
             Candidate board ({data?.resultCount ?? 0})
           </h2>
         </div>
-        <p className="rounded-full border border-[rgba(59,130,246,0.18)] bg-[rgba(59,130,246,0.1)] px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[var(--ov-signal-bright)] uppercase">
+        <p className="rounded-full border border-[rgba(255,77,77,0.18)] bg-[rgba(255,77,77,0.08)] px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[var(--ov-accent)] uppercase">
           Ranked by relevance, reliability, and your priorities
         </p>
       </motion.div>
@@ -113,7 +113,7 @@ export function CandidateResults({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.4, ease: EASE }}
-            className="rounded-2xl border border-[rgba(124,170,255,0.14)] bg-[rgba(13,23,38,0.72)] px-4 py-3 text-sm leading-7 text-[var(--ov-text-muted)]"
+            className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm leading-7 text-[var(--ov-text-muted)]"
           >
             {data.followUpQuestion}
           </motion.div>

@@ -64,10 +64,10 @@ export function MessageList({ messages }: MessageListProps) {
               className={cn(
                 "max-w-[88%] rounded-[1.4rem] px-4 py-3 text-sm leading-7 shadow-[0_16px_40px_rgba(2,6,15,0.28)]",
                 isUser
-                  ? "ml-auto border border-[rgba(242,191,122,0.24)] bg-[rgba(242,191,122,0.12)] text-[var(--ov-text)]"
+                  ? "ml-auto border border-[rgba(255,77,77,0.20)] bg-[rgba(255,77,77,0.08)] text-[var(--ov-text)]"
                   : isSystem
-                    ? "border border-dashed border-[rgba(124,170,255,0.16)] bg-[rgba(13,23,38,0.68)] text-[var(--ov-text-muted)]"
-                    : "border border-[rgba(124,170,255,0.16)] bg-[rgba(19,32,51,0.82)] text-[var(--ov-text)]",
+                    ? "border border-dashed border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.03)] text-[var(--ov-text-muted)]"
+                    : "border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.05)] text-[var(--ov-text)]",
               )}
             >
               <p>{message.content}</p>

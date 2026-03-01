@@ -71,7 +71,7 @@ export function FollowUpPrompt({
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="rounded-[2rem] border border-[rgba(124,170,255,0.14)] bg-[linear-gradient(180deg,rgba(15,28,48,0.82),rgba(9,17,29,0.88))] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.35)] sm:p-6"
+          className="rounded-[2rem] border border-[rgba(255,255,255,0.08)] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.35)] sm:p-6"
         >
           <h3 className="font-display text-xl text-[var(--ov-text)]">
             Context snapshot
@@ -83,7 +83,7 @@ export function FollowUpPrompt({
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, ease: EASE, delay: 0.15 }}
-                className="rounded-2xl border border-dashed border-[rgba(124,170,255,0.16)] bg-[rgba(13,23,38,0.68)] px-4 py-3 text-sm leading-7 text-[var(--ov-text-muted)]"
+                className="rounded-2xl border border-dashed border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm leading-7 text-[var(--ov-text-muted)]"
               >
                 {followUpQuestion}
               </motion.p>

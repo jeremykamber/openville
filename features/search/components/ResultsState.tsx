@@ -27,7 +27,7 @@ function LoadingDots() {
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="inline-block size-1.5 rounded-full bg-[var(--ov-signal)]"
+          className="inline-block size-1.5 rounded-full bg-[var(--ov-accent)]"
           animate={{
             opacity: [0.3, 1, 0.3],
             scale: [0.85, 1.15, 0.85],
@@ -58,10 +58,10 @@ interface ResultsStateProps {
 }
 
 const variantBorder: Record<StateVariant, string> = {
-  idle: "border-[rgba(124,170,255,0.16)]",
-  loading: "border-[rgba(59,130,246,0.20)]",
+  idle: "border-[rgba(255,255,255,0.08)]",
+  loading: "border-[rgba(255,77,77,0.16)]",
   error: "border-[rgba(239,68,68,0.20)]",
-  empty: "border-[rgba(245,158,11,0.18)]",
+  empty: "border-[rgba(255,255,255,0.10)]",
 };
 
 export function ResultsState({
@@ -76,7 +76,7 @@ export function ResultsState({
       variants={stateEntrance}
       initial="hidden"
       animate="visible"
-      className={`rounded-[1.75rem] border bg-[rgba(9,17,29,0.84)] p-5 shadow-[0_20px_50px_rgba(2,6,15,0.35)] sm:p-6 ${variantBorder[variant]}`}
+      className={`rounded-[1.75rem] border bg-[rgba(255,255,255,0.02)] p-5 shadow-[0_20px_50px_rgba(2,6,15,0.35)] sm:p-6 ${variantBorder[variant]}`}
     >
       <h3 className="font-display text-xl text-[var(--ov-text)]">{title}</h3>
       {variant === "loading" && (
@@ -98,7 +98,7 @@ export function ResultsState({
             type="button"
             variant="outline"
             onClick={onAction}
-            className="border-[rgba(59,130,246,0.24)] bg-[rgba(59,130,246,0.08)] text-[var(--ov-signal-bright)] hover:bg-[rgba(59,130,246,0.14)] hover:text-[var(--ov-text)]"
+            className="border-[rgba(255,77,77,0.24)] bg-[rgba(255,77,77,0.08)] text-[var(--ov-accent)] hover:bg-[rgba(255,77,77,0.14)] hover:text-[var(--ov-text)]"
           >
             {actionLabel}
           </Button>

@@ -55,23 +55,23 @@ export function CandidateCard({ candidate, rank }: CandidateCardProps) {
   return (
     <motion.article
       variants={cardEntrance}
-      className="group relative overflow-hidden rounded-[1.75rem] border border-[rgba(124,170,255,0.14)] bg-[linear-gradient(180deg,rgba(15,31,58,0.80),rgba(10,22,40,0.85))] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.42)] transition-shadow duration-400 hover:shadow-[0_28px_72px_rgba(0,0,0,0.52),0_0_40px_rgba(59,130,246,0.06)] sm:p-6"
+      className="group relative overflow-hidden rounded-[1.75rem] border border-[rgba(255,255,255,0.08)] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.42)] transition-shadow duration-400 hover:shadow-[0_28px_72px_rgba(0,0,0,0.52),0_0_40px_rgba(255,77,77,0.04)] sm:p-6"
     >
       {/* Hover glow overlay */}
       <div
         className="pointer-events-none absolute inset-0 rounded-[1.75rem] opacity-0 transition-opacity duration-400 group-hover:opacity-100"
         style={{
           boxShadow:
-            "inset 0 0 32px rgba(59,130,246,0.05), 0 0 48px rgba(59,130,246,0.03)",
+            "inset 0 0 32px rgba(255,255,255,0.03), 0 0 48px rgba(255,77,77,0.03)",
         }}
       />
 
       <div className="relative space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Badge className="border-0 bg-[rgba(59,130,246,0.12)] text-[var(--ov-signal-bright)]">
+          <Badge className="border-0 bg-[rgba(255,77,77,0.12)] text-[var(--ov-accent)]">
             Rank #{rank}
           </Badge>
-          <Badge className="border-0 bg-[rgba(245,158,11,0.12)] text-[var(--ov-human-bright)]">
+          <Badge className="border-0 bg-[rgba(255,255,255,0.08)] text-[var(--ov-text)]">
             Score {(candidate.score * 100).toFixed(0)}
           </Badge>
         </div>
@@ -92,7 +92,7 @@ export function CandidateCard({ candidate, rank }: CandidateCardProps) {
             {candidate.specialties.map((specialty) => (
               <Badge
                 key={specialty}
-                className="border-0 bg-[rgba(59,130,246,0.10)] text-[var(--ov-text)]"
+                className="border-0 bg-[rgba(255,255,255,0.06)] text-[var(--ov-text)]"
               >
                 {specialty}
               </Badge>
