@@ -5,5 +5,11 @@ export interface Candidate {
   relevance: number;
   successCount: number;
   rating: number;
-  [key: string]: any;
+  specialties?: string[];
+  availability?: string;
+  basePrice?: number;
+  yearsExperience?: number;
+  certifications?: string[];
+  responseTime?: string;
+  [key: string]: unknown;
 }
