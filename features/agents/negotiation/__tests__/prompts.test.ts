@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { buildBuyerInitialPrompt, buildBuyerTurnPrompt, BUYER_AGENT_SYSTEM_PROMPT } from '@/features/agents/negotiation/prompts/buyerPrompts';
-import { buildProviderInitialPrompt, buildProviderTurnPrompt, PROVIDER_AGENT_SYSTEM_PROMPT } from '@/features/agents/negotiation/prompts/providerPrompts';
-import { Candidate } from '@/features/agents/selection/types/Candidate';
-import { JobScope } from '@/features/agents/selection/types/JobScope';
-import { UserPreferences } from '@/features/agents/selection/types/UserPreferences';
+import { buildBuyerInitialPrompt, buildBuyerTurnPrompt, BUYER_AGENT_SYSTEM_PROMPT } from '../prompts/buyerPrompts';
+import { buildProviderInitialPrompt, buildProviderTurnPrompt, PROVIDER_AGENT_SYSTEM_PROMPT } from '../prompts/providerPrompts';
+import { Candidate } from '../../selection/types/Candidate';
+import { JobScope } from '../../selection/types/JobScope';
+import { UserPreferences } from '../../selection/types/UserPreferences';
 
 describe('Negotiation prompts', () => {
   const candidate: Candidate = {

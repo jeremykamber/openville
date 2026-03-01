@@ -3,7 +3,7 @@ import {
   NegotiationMessageSchema,
   NegotiationResultSchema,
   NegotiationResultResponseSchema,
-} from '@/features/agents/negotiation/schemas/NegotiationSchemas';
+} from '../schemas/NegotiationSchemas';
 
 describe('Negotiation Zod Schemas', () => {
   it('validates a negotiation message', () => {
