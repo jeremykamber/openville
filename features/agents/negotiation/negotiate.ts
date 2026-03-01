@@ -1,16 +1,9 @@
-import { SystemMessage, HumanMessage } from '@langchain/core/messages';
+import { SystemMessage, HumanMessage, BaseMessage } from '@langchain/core/messages';
 import { createChatModel } from '../reasoning/providers';
 import { Candidate, UserPreferences, JobScope } from '../selection/types';
 import { Negotiation, NegotiationMessage } from './types';
-import {
-  createNegotiation,
-  getNegotiation,
-  addMessage,
-  getMessages,
-  updateNegotiationStatus,
-  createNegotiationResult,
-  respondToResult,
-} from './db/negotiations';
+import { NegotiationRepository } from './db/NegotiationRepository';
+import { defaultNegotiationRepository } from './db/SupabaseNegotiationRepository';
 import {
   BUYER_AGENT_SYSTEM_PROMPT,
   buildBuyerInitialPrompt,
@@ -25,7 +18,55 @@ import {
 export interface NegotiateOptions {
   providerType?: 'openai' | 'openrouter' | 'mock';
   temperature?: number;
+  repository?: NegotiationRepository;
 }
+
+/**
+ * Strategy for different participant roles in a negotiation
+ */
+interface NegotiationParticipant {
+  getSystemPrompt(): string;
+  getInitialPrompt(candidate: Candidate, scope: JobScope, preferences?: UserPreferences): string;
+  getTurnPrompt(negotiation: Negotiation, messages: NegotiationMessage[], candidate: Candidate, preferences?: UserPreferences): string;
+}
+
+class BuyerParticipant implements NegotiationParticipant {
+  getSystemPrompt() { return BUYER_AGENT_SYSTEM_PROMPT; }
+  getInitialPrompt(candidate: Candidate, scope: JobScope, preferences: UserPreferences) {
+    return buildBuyerInitialPrompt(candidate, scope, preferences);
+  }
+  getTurnPrompt(negotiation: Negotiation, messages: NegotiationMessage[], _candidate: Candidate, preferences: UserPreferences) {
+    return buildBuyerTurnPrompt(negotiation, messages, preferences);
+  }
+}
+
+class ProviderParticipant implements NegotiationParticipant {
+  getSystemPrompt() { return PROVIDER_AGENT_SYSTEM_PROMPT; }
+  getInitialPrompt(candidate: Candidate, scope: JobScope) {
+    return buildProviderInitialPrompt(candidate, scope);
+  }
+  getTurnPrompt(negotiation: Negotiation, messages: NegotiationMessage[], candidate: Candidate) {
+    return buildProviderTurnPrompt(negotiation, messages, candidate);
+  }
+}
+
+const participants: Record<string, NegotiationParticipant> = {
+  buyer: new BuyerParticipant(),
+  provider: new ProviderParticipant(),
+};
+
+/**
+ * Parser for LLM negotiation responses
+ */
+export const NegotiationResponseParser = {
+  isAccepted(text: string): boolean {
+    const upper = text.toUpperCase();
+    return upper.includes('ACCEPT') && !upper.includes('REJECT') && !upper.includes('COUNTER');
+  },
+  isCancelled(text: string): boolean {
+    return text.includes('CANCEL_NEGOTIATION');
+  }
+};
 
 export async function startNegotiation(
   buyerAgentId: string,
@@ -35,26 +76,30 @@ export async function startNegotiation(
   jobId?: string,
   options: NegotiateOptions = {}
 ): Promise<Negotiation> {
-  const negotiation = await createNegotiation(buyerAgentId, candidate.agentId, jobId);
+  const repo = options.repository ?? defaultNegotiationRepository;
+  const negotiation = await repo.createNegotiation(buyerAgentId, candidate.agentId, jobId);
   
   const model = createChatModel(options.providerType ?? 'openai');
   
-  const buyerPrompt = buildBuyerInitialPrompt(candidate, scope, preferences);
-  const providerPrompt = buildProviderInitialPrompt(candidate, scope);
+  const buyerParticipant = participants.buyer;
+  const providerParticipant = participants.provider;
 
+  const buyerInitial = buyerParticipant.getInitialPrompt(candidate, scope, preferences);
   const buyerResponse = await model.invoke([
-    new SystemMessage(BUYER_AGENT_SYSTEM_PROMPT),
-    new HumanMessage(buyerPrompt),
+    new SystemMessage(buyerParticipant.getSystemPrompt()),
+    new HumanMessage(buyerInitial),
   ]);
 
-  await addMessage(negotiation.id, buyerAgentId, 'buyer', buyerResponse.content as string);
+  const buyerContent = buyerResponse.content as string;
+  await repo.addMessage(negotiation.id, buyerAgentId, 'buyer', buyerContent);
 
+  const providerInitial = providerParticipant.getInitialPrompt(candidate, scope);
   const providerResponse = await model.invoke([
-    new SystemMessage(PROVIDER_AGENT_SYSTEM_PROMPT),
-    new HumanMessage(providerPrompt + `\n\nCustomer says: ${buyerResponse.content}`),
+    new SystemMessage(providerParticipant.getSystemPrompt()),
+    new HumanMessage(providerInitial + `\n\nCustomer says: ${buyerContent}`),
   ]);
 
-  await addMessage(negotiation.id, candidate.agentId, 'provider', providerResponse.content as string);
+  await repo.addMessage(negotiation.id, candidate.agentId, 'provider', providerResponse.content as string);
 
   return { ...negotiation, currentTurn: 'buyer' };
 }
@@ -67,34 +112,37 @@ export async function sendBuyerMessage(
   preferences: UserPreferences,
   options: NegotiateOptions = {}
 ): Promise<{ messages: NegotiationMessage[]; buyerResponse: string; providerResponse: string }> {
-  const negotiation = await getNegotiation(negotiationId);
+  const repo = options.repository ?? defaultNegotiationRepository;
+  const negotiation = await repo.getNegotiation(negotiationId);
   if (!negotiation || negotiation.status !== 'active') {
     throw new Error('Negotiation not found or not active');
   }
 
-  await addMessage(negotiationId, buyerAgentId, 'buyer', message);
-  const allMessages = await getMessages(negotiationId);
+  await repo.addMessage(negotiationId, buyerAgentId, 'buyer', message);
+  const allMessages = await repo.getMessages(negotiationId);
 
   const model = createChatModel(options.providerType ?? 'openai');
+  const providerParticipant = participants.provider;
   
   // Provider responds to buyer's message
-  const providerPrompt = buildProviderTurnPrompt(negotiation, allMessages, candidate);
+  const providerPrompt = providerParticipant.getTurnPrompt(negotiation, allMessages, candidate);
   const providerResponse = await model.invoke([
-    new SystemMessage(PROVIDER_AGENT_SYSTEM_PROMPT),
+    new SystemMessage(providerParticipant.getSystemPrompt()),
     new HumanMessage(providerPrompt),
   ]);
-  await addMessage(negotiationId, candidate.agentId, 'provider', providerResponse.content as string);
+  await repo.addMessage(negotiationId, candidate.agentId, 'provider', providerResponse.content as string);
 
   // Get updated messages and have buyer respond for multi-turn negotiation
-  const messagesAfterProvider = await getMessages(negotiationId);
-  const buyerTurnPrompt = buildBuyerTurnPrompt(negotiation, messagesAfterProvider, preferences);
+  const messagesAfterProvider = await repo.getMessages(negotiationId);
+  const buyerParticipant = participants.buyer;
+  const buyerTurnPrompt = buyerParticipant.getTurnPrompt(negotiation, messagesAfterProvider, candidate, preferences);
   const buyerAutoResponse = await model.invoke([
-    new SystemMessage(BUYER_AGENT_SYSTEM_PROMPT),
+    new SystemMessage(buyerParticipant.getSystemPrompt()),
     new HumanMessage(buyerTurnPrompt),
   ]);
-  await addMessage(negotiationId, buyerAgentId, 'buyer', buyerAutoResponse.content as string);
+  await repo.addMessage(negotiationId, buyerAgentId, 'buyer', buyerAutoResponse.content as string);
 
-  const updatedMessages = await getMessages(negotiationId);
+  const updatedMessages = await repo.getMessages(negotiationId);
 
   return {
     messages: updatedMessages,
@@ -112,34 +160,31 @@ export async function sendSingleMessage(
   preferences: UserPreferences,
   options: NegotiateOptions = {}
 ): Promise<{ messages: NegotiationMessage[]; response: string }> {
-  const negotiation = await getNegotiation(negotiationId);
+  const repo = options.repository ?? defaultNegotiationRepository;
+  const negotiation = await repo.getNegotiation(negotiationId);
   if (!negotiation || negotiation.status !== 'active') {
     throw new Error('Negotiation not found or not active');
   }
 
-  await addMessage(negotiationId, senderId, senderType, message);
-  const allMessages = await getMessages(negotiationId);
+  await repo.addMessage(negotiationId, senderId, senderType, message);
+  const allMessages = await repo.getMessages(negotiationId);
 
   const model = createChatModel(options.providerType ?? 'openai');
   
   const isBuyer = senderType === 'buyer';
-  const responderPrompt = isBuyer 
-    ? buildProviderTurnPrompt(negotiation, allMessages, candidate)
-    : buildBuyerTurnPrompt(negotiation, allMessages, preferences);
-  
-  const responderSystemPrompt = isBuyer 
-    ? PROVIDER_AGENT_SYSTEM_PROMPT 
-    : BUYER_AGENT_SYSTEM_PROMPT;
+  const responderType = isBuyer ? 'provider' : 'buyer';
+  const participant = participants[responderType];
 
+  const responderPrompt = participant.getTurnPrompt(negotiation, allMessages, candidate, preferences);
   const response = await model.invoke([
-    new SystemMessage(responderSystemPrompt),
+    new SystemMessage(participant.getSystemPrompt()),
     new HumanMessage(responderPrompt),
   ]);
 
   const responderId = isBuyer ? candidate.agentId : negotiation.buyerAgentId;
-  await addMessage(negotiationId, responderId, isBuyer ? 'provider' : 'buyer', response.content as string);
+  await repo.addMessage(negotiationId, responderId, responderType, response.content as string);
 
-  const updatedMessages = await getMessages(negotiationId);
+  const updatedMessages = await repo.getMessages(negotiationId);
 
   return {
     messages: updatedMessages,
@@ -154,14 +199,17 @@ export async function proposeNegotiationResult(
   scope: { description?: string; rooms?: number },
   options: NegotiateOptions = {}
 ): Promise<{ resultId: string; response: string; accepted: boolean }> {
-  const negotiation = await getNegotiation(negotiationId);
+  const repo = options.repository ?? defaultNegotiationRepository;
+  const negotiation = await repo.getNegotiation(negotiationId);
   if (!negotiation || negotiation.status !== 'active') {
     throw new Error('Negotiation not found or not active');
   }
 
-  const result = await createNegotiationResult(negotiationId, proposerId, finalPrice, scope);
+  const result = await repo.createNegotiationResult(negotiationId, proposerId, finalPrice, scope);
   
   const isBuyer = proposerId === negotiation.buyerAgentId;
+  const responderType = isBuyer ? 'provider' : 'buyer';
+  const participant = participants[responderType];
 
   const model = createChatModel(options.providerType ?? 'openai');
   
@@ -172,17 +220,17 @@ export async function proposeNegotiationResult(
 Do you accept or reject this proposal? Respond with ACCEPT or REJECT and explain your reasoning.`;
 
   const response = await model.invoke([
-    new SystemMessage(isBuyer ? PROVIDER_AGENT_SYSTEM_PROMPT : BUYER_AGENT_SYSTEM_PROMPT),
+    new SystemMessage(participant.getSystemPrompt()),
     new HumanMessage(prompt),
   ]);
 
   const responseText = response.content as string;
-  const accepted = responseText.toUpperCase().includes('ACCEPT');
+  const accepted = NegotiationResponseParser.isAccepted(responseText);
   
-  await respondToResult(result.id, accepted ? 'accepted' : 'rejected', responseText);
+  await repo.respondToResult(result.id, accepted ? 'accepted' : 'rejected', responseText);
 
   if (accepted) {
-    await updateNegotiationStatus(negotiationId, 'completed', 
+    await repo.updateNegotiationStatus(negotiationId, 'completed', 
       `Agreed on price $${finalPrice} for ${scope.description ?? `${scope.rooms} rooms`}`);
   }
 
@@ -196,17 +244,19 @@ Do you accept or reject this proposal? Respond with ACCEPT or REJECT and explain
 export async function cancelNegotiation(
   negotiationId: string,
   cancellerId: string,
-  reason: string
+  reason: string,
+  options: NegotiateOptions = {}
 ): Promise<Negotiation> {
-  const negotiation = await getNegotiation(negotiationId);
+  const repo = options.repository ?? defaultNegotiationRepository;
+  const negotiation = await repo.getNegotiation(negotiationId);
   if (!negotiation || negotiation.status !== 'active') {
     throw new Error('Negotiation not found or not active');
   }
 
-  await addMessage(negotiationId, cancellerId, cancellerId === negotiation.buyerAgentId ? 'buyer' : 'provider', 
+  await repo.addMessage(negotiationId, cancellerId, cancellerId === negotiation.buyerAgentId ? 'buyer' : 'provider', 
     `CANCEL_NEGOTIATION: ${reason}`, 'cancellation');
   
-  await updateNegotiationStatus(negotiationId, 'cancelled', reason);
+  await repo.updateNegotiationStatus(negotiationId, 'cancelled', reason);
   
-  return (await getNegotiation(negotiationId))!;
+  return (await repo.getNegotiation(negotiationId))!;
 }
