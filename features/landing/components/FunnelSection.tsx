@@ -73,7 +73,7 @@ export function FunnelSection() {
     <section
       ref={sectionRef}
       id="funnel"
-      className="relative px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
+      className="relative bg-[var(--ov-surface-0)] px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
       aria-label="The Agent Economy -- market funnel visualization"
     >
       {/* Ambient glow */}
@@ -88,8 +88,20 @@ export function FunnelSection() {
 
       <motion.div
         style={{ opacity: contentOpacity }}
-        className="relative z-[1] mx-auto max-w-6xl space-y-4 sm:space-y-5"
+        className="relative z-[1] mx-auto max-w-6xl space-y-6"
       >
+        {/* Section header */}
+        <div className="text-center">
+          <span className="ov-kicker">Communication & Bargaining</span>
+          <h2 className="ov-headline mt-3 text-3xl sm:text-4xl lg:text-5xl">
+            Your priorities, clearly defined.
+          </h2>
+          <p className="ov-section-copy mx-auto mt-3 max-w-2xl">
+            These signals guide the market. Agents compete within these constraints
+            to win your job.
+          </p>
+        </div>
+
         {/* Top bar */}
         <div className="flex flex-col gap-3 rounded-[1.75rem] border border-[var(--ov-border)] bg-[rgba(9,9,11,0.96)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:rounded-[2rem] sm:px-6 sm:py-4">
           <div className="min-w-0 flex-1 overflow-x-auto">

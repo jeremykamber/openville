@@ -10,7 +10,6 @@ import { MessageList } from "@/features/chat/components/MessageList";
 import { RequestComposer } from "@/features/chat/components/RequestComposer";
 import { useChatFlow } from "@/features/chat/hooks/useChatFlow";
 import { ClosureSection } from "@/features/landing/components/ClosureSection";
-import { CommunicationSection } from "@/features/landing/components/CommunicationSection";
 import { FinalistSection } from "@/features/landing/components/FinalistSection";
 import { Footer } from "@/features/landing/components/Footer";
 import { FunnelSection } from "@/features/landing/components/FunnelSection";
@@ -127,10 +126,7 @@ export function OpenvilleWorkspace() {
             {/* Section 3: The Handoff */}
             <HandoffSection />
 
-            {/* Section 4: Communication & Bargaining */}
-            <CommunicationSection />
-
-            {/* Section 5: The Agent Economy (Funnel) */}
+            {/* Section 4: The Agent Economy (Funnel) */}
             <FunnelSection />
 
             {/* Section 5: The Finalist Breakdown */}
