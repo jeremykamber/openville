@@ -52,6 +52,9 @@ test-results/
 *.swp
 *.swo
 
+# Local agent instructions
+AGENTS.md
+
 # Operating System files
 .DS_Store
 Thumbs.db
