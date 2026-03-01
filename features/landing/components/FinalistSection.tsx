@@ -1,8 +1,7 @@
 "use client";
 
-import { NegotiationBoard } from "@/features/landing/components/market/NegotiationBoard";
 import { PriorityRail } from "@/features/landing/components/market/PriorityRail";
-import { WinnerPath } from "@/features/landing/components/market/WinnerPath";
+import { WinnerBlock } from "@/features/landing/components/market/WinnerBlock";
 import { useInView } from "@/hooks/useInView";
 import { cn } from "@/lib/utils";
 
@@ -22,11 +21,6 @@ export function FinalistSection() {
           <h2 className="font-display text-4xl leading-tight text-[var(--ov-text)] sm:text-5xl">
             Three finalists negotiate on price, scope, and certainty.
           </h2>
-          <p className="max-w-3xl ov-section-copy">
-            This is the decision room. One finalist loses on incomplete scope.
-            One loses on cost and execution risk. One wins because it protects
-            the launch without forcing the human back into manual coordination.
-          </p>
           <PriorityRail />
         </div>
 
@@ -37,17 +31,7 @@ export function FinalistSection() {
           )}
           style={{ transitionDelay: isInView ? "120ms" : "0ms" }}
         >
-          <NegotiationBoard />
-        </div>
-
-        <div
-          className={cn(
-            "transition-all duration-700 ease-out",
-            isInView ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0",
-          )}
-          style={{ transitionDelay: isInView ? "240ms" : "0ms" }}
-        >
-          <WinnerPath />
+          <WinnerBlock />
         </div>
       </div>
     </section>

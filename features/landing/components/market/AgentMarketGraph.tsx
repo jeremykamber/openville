@@ -9,8 +9,11 @@ import {
   type MarketAgent,
 } from "@/features/landing/data/storyboard-fixtures";
 import { cn } from "@/lib/utils";
-import { ClusterLegend } from "./ClusterLegend";
 import { MarketNode } from "./MarketNode";
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
 
 export type MarketGraphStage =
   | "market"
@@ -22,13 +25,16 @@ export type MarketGraphStage =
 interface StageCopy {
   eyebrow: string;
   title: string;
-  body: string;
 }
 
 interface AgentMarketGraphProps {
   stage: MarketGraphStage;
   copy: StageCopy;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Spatial layout — cluster centers & pre-computed positions           */
+/* ------------------------------------------------------------------ */
 
 const clusterCenters: Record<MarketCluster, { x: number; y: number }> = {
   av_systems: { x: 22, y: 26 },
@@ -59,6 +65,10 @@ const finalistPositions = [
 
 const winnerPosition = { x: 50, y: 46 };
 
+/* ------------------------------------------------------------------ */
+/*  Position + state helpers (unchanged logic, same data flow)         */
+/* ------------------------------------------------------------------ */
+
 function groupedAgents(cluster: MarketCluster) {
   return marketAgents.filter((agent) => agent.cluster === cluster);
 }
@@ -72,7 +82,6 @@ function getMarketPosition(agent: MarketAgent) {
   const row = Math.floor(index / columns);
   const x = center.x + (column - 1.5) * 6.5;
   const y = center.y + (row - 1) * 7.5;
-
   return { x, y };
 }
 
@@ -101,22 +110,19 @@ function getPosition(agent: MarketAgent, stage: MarketGraphStage) {
     if (finalists.some((entry) => entry.agentId === agent.id)) {
       return getFinalistPosition(agent);
     }
-
     if (top10Agents.some((entry) => entry.id === agent.id)) {
       return getTop10Position(agent);
     }
-
     return getMarketPosition(agent);
   }
 
+  // winner stage
   if (agent.name === "RelayCrew Systems") {
     return winnerPosition;
   }
-
   if (finalists.some((entry) => entry.agentId === agent.id)) {
     return getFinalistPosition(agent);
   }
-
   return getMarketPosition(agent);
 }
 
@@ -125,36 +131,22 @@ function getNodeState(agent: MarketAgent, stage: MarketGraphStage) {
   const isFinalist = finalists.some((entry) => entry.agentId === agent.id);
   const isWinner = agent.name === "RelayCrew Systems";
 
-  if (stage === "market") {
-    return "base" as const;
-  }
+  if (stage === "market") return "base" as const;
 
   if (stage === "top10") {
     return isTop10 ? ("survivor" as const) : ("dimmed" as const);
   }
 
   if (stage === "top3" || stage === "negotiation") {
-    if (isFinalist) {
-      return "finalist" as const;
-    }
-    return isTop10 ? ("dimmed" as const) : ("dimmed" as const);
+    return isFinalist ? ("finalist" as const) : ("dimmed" as const);
   }
 
-  if (isWinner) {
-    return "winner" as const;
-  }
-
-  return isFinalist ? ("dimmed" as const) : ("dimmed" as const);
+  // winner stage
+  return isWinner ? ("winner" as const) : ("dimmed" as const);
 }
 
 function shouldShowNode(agent: MarketAgent, stage: MarketGraphStage) {
-  if (stage === "market") {
-    return true;
-  }
-
-  if (stage === "top10") {
-    return true;
-  }
+  if (stage === "market" || stage === "top10") return true;
 
   if (stage === "top3" || stage === "negotiation") {
     return top10Agents.some((entry) => entry.id === agent.id);
@@ -164,9 +156,7 @@ function shouldShowNode(agent: MarketAgent, stage: MarketGraphStage) {
 }
 
 function shouldShowLabel(agent: MarketAgent, stage: MarketGraphStage) {
-  if (stage === "market") {
-    return false;
-  }
+  if (stage === "market") return false;
 
   if (stage === "top10") {
     return top10Agents.some((entry) => entry.id === agent.id);
@@ -178,6 +168,10 @@ function shouldShowLabel(agent: MarketAgent, stage: MarketGraphStage) {
 
   return agent.name === "RelayCrew Systems";
 }
+
+/* ------------------------------------------------------------------ */
+/*  SVG connection lines with draw-in animation                        */
+/* ------------------------------------------------------------------ */
 
 function renderConnections(stage: MarketGraphStage) {
   const connections =
@@ -192,8 +186,9 @@ function renderConnections(stage: MarketGraphStage) {
             to: getTop10Position(agent),
           }))
         : finalists.map((finalist) => {
-            const agent = marketAgents.find((entry) => entry.id === finalist.agentId);
-
+            const agent = marketAgents.find(
+              (entry) => entry.id === finalist.agentId,
+            );
             return {
               from: stage === "winner" ? winnerPosition : { x: 50, y: 50 },
               to: agent ? getFinalistPosition(agent) : winnerPosition,
@@ -202,107 +197,130 @@ function renderConnections(stage: MarketGraphStage) {
 
   return (
     <svg className="absolute inset-0 h-full w-full" aria-hidden="true">
-      {connections.map((connection, index) => (
-        <line
-          key={`${connection.to.x}-${connection.to.y}-${index}`}
-          x1={`${connection.from.x}%`}
-          y1={`${connection.from.y}%`}
-          x2={`${connection.to.x}%`}
-          y2={`${connection.to.y}%`}
-          stroke={
-            stage === "winner" && index === 0
-              ? "rgba(255, 209, 102, 0.82)"
-              : "rgba(103, 215, 255, 0.22)"
-          }
-          strokeWidth={stage === "winner" && index === 0 ? 2.5 : 1.25}
-          strokeDasharray={stage === "market" ? "6 10" : undefined}
-        />
-      ))}
+      {connections.map((connection, index) => {
+        const isWinnerLine = stage === "winner" && index === 0;
+        // Calculate approximate line length for dash animation
+        const dx = connection.to.x - connection.from.x;
+        const dy = connection.to.y - connection.from.y;
+        const length = Math.sqrt(dx * dx + dy * dy) * 8;
+
+        return (
+          <line
+            key={`${stage}-${connection.to.x}-${connection.to.y}-${index}`}
+            x1={`${connection.from.x}%`}
+            y1={`${connection.from.y}%`}
+            x2={`${connection.to.x}%`}
+            y2={`${connection.to.y}%`}
+            strokeWidth={isWinnerLine ? 2.5 : 1}
+            strokeDasharray={stage === "market" ? "6 10" : `${length}`}
+            strokeDashoffset={stage === "market" ? undefined : "0"}
+            style={{
+              stroke: isWinnerLine ? "var(--ov-stroke-winner)" : "var(--ov-stroke-default)",
+              transition: "stroke-dashoffset 0.8s ease-out, opacity 0.6s ease-out",
+            }}
+          />
+        );
+      })}
     </svg>
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  Stage badge text                                                    */
+/* ------------------------------------------------------------------ */
+
+const stageBadge: Record<MarketGraphStage, string> = {
+  market: "50 \u2192 MARKET OPEN",
+  top10: "10 \u2192 SURVIVORS",
+  top3: "3 \u2192 FINALISTS",
+  negotiation: "3 \u2192 NEGOTIATION LIVE",
+  winner: "1 \u2192 WINNER SELECTED",
+};
+
+/* ------------------------------------------------------------------ */
+/*  Component                                                          */
+/* ------------------------------------------------------------------ */
+
 export function AgentMarketGraph({ stage, copy }: AgentMarketGraphProps) {
   return (
-    <div className="grid gap-8 xl:grid-cols-[0.95fr_1.35fr]">
-      <div className="space-y-6">
-        <div className="space-y-4">
-          <p className="ov-kicker">{copy.eyebrow}</p>
-          <h3 className="font-display text-3xl leading-tight text-[var(--ov-text)] sm:text-4xl">
-            {copy.title}
-          </h3>
-          <p className="ov-section-copy max-w-xl">{copy.body}</p>
-        </div>
-        <ClusterLegend />
+    <div
+      className="relative w-screen h-screen"
+      style={{
+        /* Break out of any parent padding to touch viewport edges */
+        marginLeft: "calc(-50vw + 50%)",
+        marginRight: "calc(-50vw + 50%)",
+      }}
+    >
+      {/* Ambient background — no borders, no panel, just atmosphere */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_40%_40%,var(--ov-signal-soft),transparent_55%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_60%,var(--ov-negotiation-soft),transparent_45%)]" />
+      <div className="absolute inset-0 ov-grid opacity-[0.12]" />
+
+      {/* Center glow — reacts to stage */}
+      <div
+        className={cn(
+          "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-all duration-1000 ease-out",
+          stage === "winner"
+            ? "h-64 w-64 bg-[var(--ov-winner-soft)]"
+            : stage === "negotiation"
+              ? "h-48 w-48 bg-[var(--ov-negotiation-soft)]"
+              : "h-40 w-40 bg-[var(--ov-signal-soft)]",
+        )}
+      />
+
+      {/* Graph field */}
+      <div className="absolute inset-0">
+        {renderConnections(stage)}
+        {marketAgents.map((agent) => {
+          if (!shouldShowNode(agent, stage)) return null;
+
+          const position = getPosition(agent, stage);
+          const nodeState = getNodeState(agent, stage);
+
+          return (
+            <MarketNode
+              key={agent.id}
+              x={position.x}
+              y={position.y}
+              label={agent.label}
+              name={agent.name}
+              cluster={agent.cluster}
+              state={nodeState}
+              showLabel={shouldShowLabel(agent, stage)}
+              subtitle={
+                stage === "winner"
+                  ? agent.name === "RelayCrew Systems"
+                    ? "Lowest execution risk"
+                    : undefined
+                  : nodeState === "finalist"
+                    ? agent.specialty
+                    : undefined
+              }
+            />
+          );
+        })}
       </div>
 
-      <div className="ov-panel-strong relative min-h-[34rem] overflow-hidden rounded-[2rem] p-5 sm:p-7">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(103,215,255,0.08),transparent_48%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,17,29,0.08),rgba(7,17,29,0.24))]" />
-        <div className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[rgba(103,215,255,0.06)] blur-3xl" />
-        <div className="absolute inset-0 ov-grid opacity-30" />
+      {/* Bottom-left: stage copy overlay */}
+      <div className="absolute bottom-8 left-6 z-10 max-w-sm sm:bottom-12 sm:left-10">
+        <p className="ov-kicker">{copy.eyebrow}</p>
+        <h3 className="mt-2 font-display text-2xl leading-tight text-[var(--ov-text)] sm:text-3xl lg:text-4xl">
+          {copy.title}
+        </h3>
+      </div>
 
-        <div className="relative h-full min-h-[28rem]">
-          {renderConnections(stage)}
-          {marketAgents.map((agent) => {
-            if (!shouldShowNode(agent, stage)) {
-              return null;
-            }
-
-            const position = getPosition(agent, stage);
-            const nodeState = getNodeState(agent, stage);
-
-            return (
-              <MarketNode
-                key={agent.id}
-                x={position.x}
-                y={position.y}
-                label={agent.label}
-                name={agent.name}
-                cluster={agent.cluster}
-                state={nodeState}
-                showLabel={shouldShowLabel(agent, stage)}
-                subtitle={
-                  stage === "winner"
-                    ? agent.name === "RelayCrew Systems"
-                      ? "Lowest execution risk"
-                      : undefined
-                    : nodeState === "finalist"
-                      ? agent.specialty
-                      : undefined
-                }
-              />
-            );
-          })}
-
-          <div className="absolute bottom-0 left-0 right-0">
-            <div className="rounded-[1.5rem] border border-[rgba(124,170,255,0.14)] bg-[rgba(8,15,27,0.74)] px-4 py-3 text-sm text-[var(--ov-text-muted)] shadow-[0_20px_50px_rgba(2,6,15,0.45)]">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[rgba(103,215,255,0.14)] px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[var(--ov-signal-strong)] uppercase">
-                  {stage === "market"
-                    ? "50 visible agents"
-                    : stage === "top10"
-                      ? "Top 10 survivors"
-                      : stage === "winner"
-                        ? "Winner justified"
-                        : "Final negotiation"}
-                </span>
-                <span
-                  className={cn(
-                    "rounded-full px-3 py-1 text-[10px] font-semibold tracking-[0.18em] uppercase",
-                    stage === "winner"
-                      ? "ov-chip-human"
-                      : "ov-chip-success",
-                  )}
-                >
-                  {stage === "winner"
-                    ? "Explainable selection"
-                    : "Deterministic narrowing"}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Bottom-right: stage badge */}
+      <div className="absolute bottom-8 right-6 z-10 sm:bottom-12 sm:right-10">
+        <span
+          className={cn(
+            "rounded-full border px-4 py-1.5 text-[11px] font-semibold tracking-[0.2em] uppercase transition-colors duration-500",
+            stage === "winner"
+              ? "border-[var(--ov-winner-border)] bg-[var(--ov-winner-soft)] text-[var(--ov-winner)]"
+              : "border-[var(--ov-signal-border)] bg-[var(--ov-signal-soft)] text-[var(--ov-signal-strong)]",
+          )}
+        >
+          {stageBadge[stage]}
+        </span>
       </div>
     </div>
   );

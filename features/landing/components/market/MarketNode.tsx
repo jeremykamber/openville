@@ -17,21 +17,22 @@ interface MarketNodeProps {
 }
 
 const clusterNodeClasses: Record<MarketCluster, string> = {
-  av_systems: "border-[rgba(103,215,255,0.22)] bg-[rgba(103,215,255,0.16)]",
+  av_systems: "border-[var(--ov-cluster-av-border)] bg-[var(--ov-cluster-av-bg)]",
   staffing_ops:
-    "border-[rgba(255,178,77,0.24)] bg-[rgba(255,178,77,0.16)]",
-  logistics: "border-[rgba(103,211,154,0.22)] bg-[rgba(103,211,154,0.14)]",
-  venue_ops: "border-[rgba(155,233,255,0.18)] bg-[rgba(155,233,255,0.12)]",
+    "border-[var(--ov-cluster-staffing-border)] bg-[var(--ov-cluster-staffing-bg)]",
+  logistics: "border-[var(--ov-cluster-logistics-border)] bg-[var(--ov-cluster-logistics-bg)]",
+  venue_ops: "border-[var(--ov-cluster-venue-border)] bg-[var(--ov-cluster-venue-bg)]",
   backup_support:
-    "border-[rgba(255,209,102,0.2)] bg-[rgba(255,209,102,0.14)]",
+    "border-[var(--ov-cluster-backup-border)] bg-[var(--ov-cluster-backup-bg)]",
 };
 
 const stateClasses: Record<NodeState, string> = {
-  base: "size-3 opacity-95",
-  survivor: "size-4 shadow-[0_0_22px_rgba(103,215,255,0.35)]",
-  finalist: "size-5 shadow-[0_0_28px_rgba(255,178,77,0.34)]",
-  winner: "size-6 border-[rgba(255,209,102,0.4)] bg-[rgba(255,209,102,0.2)] shadow-[0_0_38px_rgba(255,209,102,0.38)]",
-  dimmed: "size-2.5 opacity-20 saturate-0",
+  base: "size-3 [animation:ov-pulse_3s_ease-in-out_infinite]",
+  survivor: "size-4 shadow-[0_0_22px_var(--ov-glow-signal)]",
+  finalist: "size-5 shadow-[0_0_28px_var(--ov-glow-negotiation)]",
+  winner:
+    "size-6 border-[var(--ov-glow-winner)] bg-[var(--ov-winner-soft)] shadow-[0_0_38px_var(--ov-glow-winner)] [animation:ov-pulse_2s_ease-in-out_infinite]",
+  dimmed: "size-1 opacity-15 saturate-0",
 };
 
 export function MarketNode({
@@ -63,10 +64,10 @@ export function MarketNode({
       {showLabel ? (
         <div
           className={cn(
-            "absolute left-1/2 top-full mt-2 w-max max-w-[11rem] -translate-x-1/2 rounded-xl border px-3 py-2 text-center shadow-[0_18px_40px_rgba(2,6,15,0.45)]",
+            "absolute left-1/2 top-full mt-2 w-max max-w-[11rem] -translate-x-1/2 rounded-xl border px-3 py-2 text-center shadow-[0_18px_40px_var(--ov-shadow-strong)]",
             state === "winner"
-              ? "border-[rgba(255,209,102,0.24)] bg-[rgba(19,32,51,0.98)]"
-              : "border-[rgba(124,170,255,0.16)] bg-[rgba(9,17,29,0.92)]",
+              ? "border-[var(--ov-winner-border)] bg-[var(--ov-surface-1)]"
+              : "border-[var(--ov-border-medium)] bg-[var(--ov-surface-0)]",
           )}
         >
           <p className="text-[11px] font-semibold tracking-[0.14em] text-[var(--ov-text)] uppercase">

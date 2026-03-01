@@ -4,79 +4,48 @@ import { pastFragments } from "@/features/landing/data/storyboard-fixtures";
 import { useInView } from "@/hooks/useInView";
 import { cn } from "@/lib/utils";
 
-const fragmentLayout = [
-  "sm:translate-x-2 sm:-rotate-6",
-  "sm:-translate-y-6 sm:translate-x-14 sm:rotate-3",
-  "sm:translate-y-8 sm:-translate-x-5 sm:-rotate-3",
-  "sm:-translate-y-3 sm:translate-x-10 sm:rotate-5",
-  "sm:translate-y-5 sm:-translate-x-8 sm:-rotate-4",
+/* Each shard gets a unique scatter position — rotation, offset, opacity */
+const shardStyles: React.CSSProperties[] = [
+  { top: "8%", left: "6%", transform: "rotate(-7deg)", opacity: 0.7 },
+  { top: "26%", left: "52%", transform: "rotate(4deg)", opacity: 0.5 },
+  { top: "48%", left: "14%", transform: "rotate(-3deg)", opacity: 0.85 },
+  { top: "62%", left: "44%", transform: "rotate(6deg)", opacity: 0.45 },
+  { top: "80%", left: "8%", transform: "rotate(-5deg)", opacity: 0.6 },
 ];
-
-const fragmentTone = {
-  quote: "border-[rgba(242,191,122,0.22)] bg-[rgba(42,28,12,0.44)]",
-  call: "border-[rgba(255,178,77,0.2)] bg-[rgba(45,26,10,0.42)]",
-  schedule: "border-[rgba(148,164,188,0.2)] bg-[rgba(29,34,44,0.48)]",
-  staffing: "border-[rgba(242,191,122,0.18)] bg-[rgba(39,26,13,0.42)]",
-  ops: "border-[rgba(148,164,188,0.18)] bg-[rgba(22,29,41,0.52)]",
-} as const;
 
 export function OldWaySection() {
   const { ref, isInView } = useInView<HTMLElement>({ threshold: 0.2 });
 
   return (
-    <section ref={ref} className="px-4 py-18 sm:px-6 sm:py-24 lg:px-8">
-      <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-center">
+    <section ref={ref} className="px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+      <div className="mx-auto grid max-w-6xl items-center gap-8 lg:grid-cols-2">
+        {/* Left: chaotic shard field */}
         <div
           className={cn(
-            "space-y-5 transition-all duration-700 ease-out",
+            "relative h-64 select-none overflow-hidden blur-[0.5px] saturate-[0.4] transition-all duration-700 ease-out sm:h-80",
+            isInView ? "opacity-100" : "opacity-0",
+          )}
+        >
+          {pastFragments.map((fragment, index) => (
+            <span
+              key={fragment.id}
+              className="absolute text-sm font-medium leading-none text-[var(--ov-text-muted)] sm:text-base"
+              style={shardStyles[index]}
+            >
+              {fragment.detail}
+            </span>
+          ))}
+        </div>
+
+        {/* Right: one bold line */}
+        <p
+          className={cn(
+            "font-display text-3xl leading-tight text-[var(--ov-text)] transition-all duration-700 ease-out sm:text-4xl lg:text-5xl",
             isInView ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0",
           )}
         >
-          <p className="ov-kicker">The Past</p>
-          <h2 className="font-display text-4xl leading-tight text-[var(--ov-text)] sm:text-5xl">
-            Before AI, saving an event meant running the whole market yourself.
-          </h2>
-          <p className="ov-section-copy">
-            Quotes lived in one tab, staffing texts in another, and the clock
-            kept moving either way. The problem was never just finding one
-            vendor. It was stitching together a full response while the deadline
-            was already slipping.
-          </p>
-        </div>
-
-        <div
-          className={cn(
-            "ov-panel relative overflow-hidden rounded-[2rem] p-5 transition-all duration-700 ease-out sm:p-7",
-            isInView ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0",
-          )}
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(242,191,122,0.12),transparent_30%)]" />
-          <div className="grid gap-4 sm:grid-cols-2">
-            {pastFragments.map((fragment, index) => (
-              <article
-                key={fragment.id}
-                className={cn(
-                  "rounded-[1.5rem] border border-dashed px-5 py-4 text-left shadow-[0_20px_50px_rgba(4,8,15,0.3)] transition-all duration-700 ease-out",
-                  fragmentTone[fragment.type],
-                  fragmentLayout[index],
-                  isInView
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-8 opacity-0",
-                )}
-                style={{
-                  transitionDelay: isInView ? `${index * 110}ms` : "0ms",
-                }}
-              >
-                <p className="text-[10px] font-semibold tracking-[0.2em] text-[var(--ov-human)] uppercase">
-                  {fragment.title}
-                </p>
-                <p className="mt-3 text-sm leading-7 text-[var(--ov-text)]">
-                  {fragment.detail}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
+          This is what everyone else is still doing.
+        </p>
       </div>
     </section>
   );
