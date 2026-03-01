@@ -76,7 +76,8 @@ export class OpenRouterChatModel implements ChatModel {
       });
 
       const content = response.choices[0]?.message?.content ?? '{}';
-      return JSON.parse(content) as z.infer<Z>;
+      const parsed = JSON.parse(content);
+      return schema.parse(parsed) as z.infer<Z>;
     };
   }
 }
