@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { startNegotiation } from '@/features/agents/negotiation/negotiate';
+import { startNegotiation, NegotiateOptions } from '@/features/agents/negotiation/negotiate';
 import { defaultNegotiationRepository as repo } from '@/features/agents/negotiation/db/SupabaseNegotiationRepository';
 import { StartNegotiationSchema } from '@/features/agents/negotiation/schemas/NegotiationSchemas';
+import { Candidate, UserPreferences, JobScope } from '@/features/agents/selection/types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,11 +21,11 @@ export async function POST(request: NextRequest) {
 
     const negotiation = await startNegotiation(
       buyerAgentId, 
-      candidate as any, 
-      preferences as any, 
-      scope as any, 
+      candidate as Candidate, 
+      preferences as UserPreferences, 
+      scope as JobScope, 
       jobId,
-      { providerType: providerType as any }
+      { providerType: providerType as NegotiateOptions['providerType'] }
     );
 
     const messages = await repo.getMessages(negotiation.id);

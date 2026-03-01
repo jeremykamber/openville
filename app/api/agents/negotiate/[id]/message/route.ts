@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendBuyerMessage } from '@/features/agents/negotiation/negotiate';
+import { sendBuyerMessage, NegotiateOptions } from '@/features/agents/negotiation/negotiate';
 import { SendMessageSchema } from '@/features/agents/negotiation/schemas/NegotiationSchemas';
+import { Candidate, UserPreferences } from '@/features/agents/selection/types';
 
 export async function POST(
   request: NextRequest,
@@ -25,9 +26,9 @@ export async function POST(
       negotiationId,
       buyerAgentId,
       message,
-      candidate as any,
-      preferences as any,
-      { providerType: providerType as any }
+      candidate as Candidate,
+      preferences as UserPreferences,
+      { providerType: providerType as NegotiateOptions['providerType'] }
     );
 
     return NextResponse.json(result);

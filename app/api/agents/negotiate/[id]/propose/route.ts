@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { proposeNegotiationResult } from '@/features/agents/negotiation/negotiate';
+import { proposeNegotiationResult, NegotiateOptions } from '@/features/agents/negotiation/negotiate';
 import { ProposeNegotiationSchema } from '@/features/agents/negotiation/schemas/NegotiationSchemas';
 
 export async function POST(
@@ -26,7 +26,7 @@ export async function POST(
       proposerId,
       finalPrice,
       scope,
-      { providerType: providerType as any }
+      { providerType: providerType as NegotiateOptions['providerType'] }
     );
 
     return NextResponse.json(result);
