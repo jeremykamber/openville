@@ -729,7 +729,7 @@ export async function sendBuyerMessage(
   candidate: Candidate,
   preferences: UserPreferences,
   options: NegotiateOptions = {}
-): Promise<{ messages: NegotiationMessage[]; response: string }> {
+): Promise<{ messages: NegotiationMessage[]; buyerResponse: string; providerResponse: string }> {
   const negotiation = await getNegotiation(negotiationId);
   if (!negotiation || negotiation.status !== 'active') {
     throw new Error('Negotiation not found or not active');
@@ -739,19 +739,74 @@ export async function sendBuyerMessage(
   const allMessages = await getMessages(negotiationId);
 
   const model = createChatModel(options.providerType ?? 'openai');
+  
+  // Provider responds to buyer's message
   const providerPrompt = buildProviderTurnPrompt(negotiation, allMessages, candidate);
-
   const providerResponse = await model.invoke([
     new SystemMessage(PROVIDER_AGENT_SYSTEM_PROMPT),
     new HumanMessage(providerPrompt),
   ]);
-
   await addMessage(negotiationId, candidate.agentId, 'provider', providerResponse.content as string);
+
+  // Get updated messages and have buyer respond for multi-turn negotiation
+  const messagesAfterProvider = await getMessages(negotiationId);
+  const buyerTurnPrompt = buildBuyerTurnPrompt(negotiation, messagesAfterProvider, preferences);
+  const buyerAutoResponse = await model.invoke([
+    new SystemMessage(BUYER_AGENT_SYSTEM_PROMPT),
+    new HumanMessage(buyerTurnPrompt),
+  ]);
+  await addMessage(negotiationId, buyerAgentId, 'buyer', buyerAutoResponse.content as string);
+
   const updatedMessages = await getMessages(negotiationId);
 
   return {
     messages: updatedMessages,
-    response: providerResponse.content as string,
+    buyerResponse: buyerAutoResponse.content as string,
+    providerResponse: providerResponse.content as string,
+  };
+}
+
+export async function sendSingleMessage(
+  negotiationId: string,
+  senderId: string,
+  senderType: 'buyer' | 'provider',
+  message: string,
+  candidate: Candidate,
+  preferences: UserPreferences,
+  options: NegotiateOptions = {}
+): Promise<{ messages: NegotiationMessage[]; response: string }> {
+  const negotiation = await getNegotiation(negotiationId);
+  if (!negotiation || negotiation.status !== 'active') {
+    throw new Error('Negotiation not found or not active');
+  }
+
+  await addMessage(negotiationId, senderId, senderType, message);
+  const allMessages = await getMessages(negotiationId);
+
+  const model = createChatModel(options.providerType ?? 'openai');
+  
+  const isBuyer = senderType === 'buyer';
+  const responderPrompt = isBuyer 
+    ? buildProviderTurnPrompt(negotiation, allMessages, candidate)
+    : buildBuyerTurnPrompt(negotiation, allMessages, preferences);
+  
+  const responderSystemPrompt = isBuyer 
+    ? PROVIDER_AGENT_SYSTEM_PROMPT 
+    : BUYER_AGENT_SYSTEM_PROMPT;
+
+  const response = await model.invoke([
+    new SystemMessage(responderSystemPrompt),
+    new HumanMessage(responderPrompt),
+  ]);
+
+  const responderId = isBuyer ? candidate.agentId : negotiation.buyerAgentId;
+  await addMessage(negotiationId, responderId, isBuyer ? 'provider' : 'buyer', response.content as string);
+
+  const updatedMessages = await getMessages(negotiationId);
+
+  return {
+    messages: updatedMessages,
+    response: response.content as string,
   };
 }
 
@@ -906,10 +961,16 @@ export async function POST(request: NextRequest) {
 **File**: `app/api/agents/negotiate/[id]/message/route.ts`
 **Changes**: Create POST endpoint for sending messages
 
+This endpoint handles the full negotiation turn:
+1. Client sends buyer's message
+2. Provider LLM responds
+3. Buyer LLM auto-responds (enabling multi-turn autonomous negotiation)
+
+**Response**: Returns `{ messages, buyerResponse, providerResponse }`
+
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
 import { sendBuyerMessage } from '@/features/agents/negotiation/negotiate';
-import { getMessages } from '@/features/agents/negotiation/db/negotiations';
 
 interface SendMessageRequest {
   buyerAgentId: string;
