@@ -1,16 +1,21 @@
 "use client";
 
+import { motion } from "motion/react";
+
 import {
   finalists,
   marketAgents,
   marketClusters,
   top10Agents,
-  type MarketCluster,
+  type ServiceCluster,
   type MarketAgent,
 } from "@/features/landing/data/storyboard-fixtures";
 import { cn } from "@/lib/utils";
+import { EASE } from "@/lib/motion";
 import { ClusterLegend } from "./ClusterLegend";
 import { MarketNode } from "./MarketNode";
+
+// ── Types ────────────────────────────────────────────────────────────────────
 
 export type MarketGraphStage =
   | "market"
@@ -19,47 +24,85 @@ export type MarketGraphStage =
   | "negotiation"
   | "winner";
 
-interface StageCopy {
-  eyebrow: string;
-  title: string;
-  body: string;
-}
-
 interface AgentMarketGraphProps {
   stage: MarketGraphStage;
-  copy: StageCopy;
 }
 
-const clusterCenters: Record<MarketCluster, { x: number; y: number }> = {
-  av_systems: { x: 22, y: 26 },
-  staffing_ops: { x: 20, y: 67 },
-  logistics: { x: 49, y: 76 },
-  venue_ops: { x: 66, y: 35 },
-  backup_support: { x: 81, y: 64 },
+// ── Stage copy — lives here so the component renders all 5 layers
+// simultaneously (absolute-positioned crossfade). No mount/unmount,
+// no layout shift, no container resize. ───────────────────────────────────────
+
+const STAGE_COPY_MAP: Record<
+  MarketGraphStage,
+  { eyebrow: string; title: string; body: string }
+> = {
+  market: {
+    eyebrow: "The Market",
+    title: "Fifty specialist agents wake up and compete for the job.",
+    body: "Plumbers, electricians, HVAC techs, general contractors, and landscapers all push for the work at once.",
+  },
+  top10: {
+    eyebrow: "The Narrowing",
+    title: "The market cuts itself down to the ten strongest fits.",
+    body: "Wrong service category, weak availability, and poor trade-offs drop out before you ever see them.",
+  },
+  top3: {
+    eyebrow: "Top Three",
+    title: "Three finalists survive once reliability, scope, and pricing matter most.",
+    body: "At this point the question is no longer who can respond. It is who can fix both issues in one visit, on time, and within budget.",
+  },
+  negotiation: {
+    eyebrow: "Negotiation",
+    title: "Three finalists negotiate on rate, scope, and availability.",
+    body: "Your agent pressures the finalists for better terms while protecting the timeline and full job scope.",
+  },
+  winner: {
+    eyebrow: "The Decision",
+    title: "One winner is selected, and the reason is visible.",
+    body: "The final choice is not magic. It is a clear trade-off between cost, scope coverage, and scheduling certainty.",
+  },
+};
+
+// ── Layout positions ─────────────────────────────────────────────────────────
+// All y-coordinates MUST stay within 6-62% so nodes + their labels never
+// reach the status-bar zone at the bottom of the panel. The status bar
+// is in normal document flow below the node area — not absolute-positioned —
+// so the two zones are physically separated.
+
+const clusterCenters: Record<ServiceCluster, { x: number; y: number }> = {
+  plumbing: { x: 22, y: 16 },
+  electrical: { x: 20, y: 46 },
+  hvac: { x: 50, y: 58 },
+  general_contractor: { x: 68, y: 22 },
+  landscaping: { x: 80, y: 48 },
 };
 
 const top10Positions = [
-  { x: 22, y: 30 },
-  { x: 42, y: 30 },
-  { x: 62, y: 30 },
-  { x: 82, y: 30 },
-  { x: 22, y: 52 },
-  { x: 42, y: 52 },
-  { x: 62, y: 52 },
-  { x: 82, y: 52 },
-  { x: 36, y: 74 },
-  { x: 68, y: 74 },
+  { x: 20, y: 16 },
+  { x: 40, y: 16 },
+  { x: 60, y: 16 },
+  { x: 80, y: 16 },
+  { x: 20, y: 38 },
+  { x: 40, y: 38 },
+  { x: 60, y: 38 },
+  { x: 80, y: 38 },
+  { x: 35, y: 58 },
+  { x: 65, y: 58 },
 ];
 
 const finalistPositions = [
-  { x: 30, y: 60 },
-  { x: 70, y: 60 },
-  { x: 50, y: 28 },
+  { x: 25, y: 44 },
+  { x: 75, y: 44 },
+  { x: 50, y: 16 },
 ];
 
-const winnerPosition = { x: 50, y: 46 };
+const winnerPosition = { x: 50, y: 34 };
 
-function groupedAgents(cluster: MarketCluster) {
+const WINNER_NAME = "ClearFlow Plumbing";
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function groupedAgents(cluster: ServiceCluster) {
   return marketAgents.filter((agent) => agent.cluster === cluster);
 }
 
@@ -70,8 +113,8 @@ function getMarketPosition(agent: MarketAgent) {
   const columns = 4;
   const column = index % columns;
   const row = Math.floor(index / columns);
-  const x = center.x + (column - 1.5) * 6.5;
-  const y = center.y + (row - 1) * 7.5;
+  const x = center.x + (column - 1.5) * 5;
+  const y = center.y + (row - 1) * 5;
 
   return { x, y };
 }
@@ -109,7 +152,7 @@ function getPosition(agent: MarketAgent, stage: MarketGraphStage) {
     return getMarketPosition(agent);
   }
 
-  if (agent.name === "RelayCrew Systems") {
+  if (agent.name === WINNER_NAME) {
     return winnerPosition;
   }
 
@@ -123,7 +166,7 @@ function getPosition(agent: MarketAgent, stage: MarketGraphStage) {
 function getNodeState(agent: MarketAgent, stage: MarketGraphStage) {
   const isTop10 = top10Agents.some((entry) => entry.id === agent.id);
   const isFinalist = finalists.some((entry) => entry.agentId === agent.id);
-  const isWinner = agent.name === "RelayCrew Systems";
+  const isWinner = agent.name === WINNER_NAME;
 
   if (stage === "market") {
     return "base" as const;
@@ -137,30 +180,14 @@ function getNodeState(agent: MarketAgent, stage: MarketGraphStage) {
     if (isFinalist) {
       return "finalist" as const;
     }
-    return isTop10 ? ("dimmed" as const) : ("dimmed" as const);
+    return "dimmed" as const;
   }
 
   if (isWinner) {
     return "winner" as const;
   }
 
-  return isFinalist ? ("dimmed" as const) : ("dimmed" as const);
-}
-
-function shouldShowNode(agent: MarketAgent, stage: MarketGraphStage) {
-  if (stage === "market") {
-    return true;
-  }
-
-  if (stage === "top10") {
-    return true;
-  }
-
-  if (stage === "top3" || stage === "negotiation") {
-    return top10Agents.some((entry) => entry.id === agent.id);
-  }
-
-  return finalists.some((entry) => entry.agentId === agent.id);
+  return "dimmed" as const;
 }
 
 function shouldShowLabel(agent: MarketAgent, stage: MarketGraphStage) {
@@ -176,45 +203,57 @@ function shouldShowLabel(agent: MarketAgent, stage: MarketGraphStage) {
     return finalists.some((entry) => entry.agentId === agent.id);
   }
 
-  return agent.name === "RelayCrew Systems";
+  return agent.name === WINNER_NAME;
 }
+
+function shouldHideLabelOnMobile(stage: MarketGraphStage) {
+  return stage === "top10";
+}
+
+// ── Connection lines — plain SVG, no motion ─────────────────────────────────
 
 function renderConnections(stage: MarketGraphStage) {
   const connections =
     stage === "market"
       ? marketClusters.map((cluster) => ({
-          from: { x: 50, y: 50 },
+          from: { x: 50, y: 38 },
           to: clusterCenters[cluster.id],
         }))
       : stage === "top10"
         ? top10Agents.map((agent) => ({
-            from: { x: 50, y: 50 },
+            from: { x: 50, y: 38 },
             to: getTop10Position(agent),
           }))
         : finalists.map((finalist) => {
-            const agent = marketAgents.find((entry) => entry.id === finalist.agentId);
+            const agent = marketAgents.find(
+              (entry) => entry.id === finalist.agentId,
+            );
 
             return {
-              from: stage === "winner" ? winnerPosition : { x: 50, y: 50 },
+              from: stage === "winner" ? winnerPosition : { x: 50, y: 38 },
               to: agent ? getFinalistPosition(agent) : winnerPosition,
             };
           });
 
   return (
-    <svg className="absolute inset-0 h-full w-full" aria-hidden="true">
+    <svg
+      className="absolute inset-0 h-full w-full"
+      aria-hidden="true"
+      role="presentation"
+    >
       {connections.map((connection, index) => (
         <line
-          key={`${connection.to.x}-${connection.to.y}-${index}`}
+          key={`${stage}-${connection.to.x}-${connection.to.y}-${index}`}
           x1={`${connection.from.x}%`}
           y1={`${connection.from.y}%`}
           x2={`${connection.to.x}%`}
           y2={`${connection.to.y}%`}
           stroke={
             stage === "winner" && index === 0
-              ? "rgba(255, 209, 102, 0.82)"
-              : "rgba(103, 215, 255, 0.22)"
+              ? "rgba(200, 169, 126, 0.65)"
+              : "rgba(255, 255, 255, 0.12)"
           }
-          strokeWidth={stage === "winner" && index === 0 ? 2.5 : 1.25}
+          strokeWidth={stage === "winner" && index === 0 ? 2 : 1}
           strokeDasharray={stage === "market" ? "6 10" : undefined}
         />
       ))}
@@ -222,86 +261,146 @@ function renderConnections(stage: MarketGraphStage) {
   );
 }
 
-export function AgentMarketGraph({ stage, copy }: AgentMarketGraphProps) {
+// ── Component ────────────────────────────────────────────────────────────────
+//
+// LAYOUT FIX: The battlefield panel uses an EXPLICIT fixed height at each
+// breakpoint. No aspect-ratio. The interior is a flex column:
+//   1. Node zone (flex-1, position:relative) — nodes live here as % coords
+//   2. Status bar (fixed height, normal flow) — physically below the node zone
+//
+// This guarantees:
+//   - The panel NEVER grows or shrinks from animation content
+//   - Nodes CANNOT touch the status bar (they are in separate DOM zones)
+//   - The status bar is always at the bottom
+
+export function AgentMarketGraph({ stage }: AgentMarketGraphProps) {
   return (
-    <div className="grid gap-8 xl:grid-cols-[0.95fr_1.35fr]">
+    <div className="grid items-start gap-6 xl:grid-cols-[0.95fr_1.35fr] xl:gap-8">
       <div className="space-y-6">
-        <div className="space-y-4">
-          <p className="ov-kicker">{copy.eyebrow}</p>
-          <h3 className="font-display text-3xl leading-tight text-[var(--ov-text)] sm:text-4xl">
-            {copy.title}
-          </h3>
-          <p className="ov-section-copy max-w-xl">{copy.body}</p>
+        {/* Copy — absolute-layered crossfade so the container height is
+            FIXED and never changes regardless of text length per stage.
+            Each stage's text is absolute-positioned inside a fixed-height
+            box. Only opacity changes — no mount/unmount, no layout shift. */}
+        <div className="relative h-[10rem] overflow-hidden sm:h-[12rem]">
+          {(["market", "top10", "top3", "negotiation", "winner"] as const).map(
+            (s) => (
+              <motion.div
+                key={s}
+                animate={{ opacity: stage === s ? 1 : 0 }}
+                transition={{ duration: 0.35, ease: EASE }}
+                className="absolute inset-0 space-y-4"
+                aria-hidden={stage !== s}
+              >
+                <p className="ov-kicker">{STAGE_COPY_MAP[s].eyebrow}</p>
+                <h3 className="font-display text-3xl leading-tight text-[var(--ov-text)] sm:text-4xl">
+                  {STAGE_COPY_MAP[s].title}
+                </h3>
+                <p className="ov-section-copy max-w-xl">
+                  {STAGE_COPY_MAP[s].body}
+                </p>
+              </motion.div>
+            ),
+          )}
         </div>
         <ClusterLegend />
       </div>
 
-      <div className="ov-panel-strong relative min-h-[34rem] overflow-hidden rounded-[2rem] p-5 sm:p-7">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(103,215,255,0.08),transparent_48%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,17,29,0.08),rgba(7,17,29,0.24))]" />
-        <div className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[rgba(103,215,255,0.06)] blur-3xl" />
-        <div className="absolute inset-0 ov-grid opacity-30" />
+      {/* ── Battlefield panel ─────────────────────────────────────────────
+           EXPLICIT fixed height. Flex column. No aspect-ratio. overflow-hidden
+           clips anything that escapes. The height values are chosen to give a
+           roughly 4:3 feel without relying on the aspect-ratio property. */}
+      <div className="ov-panel-strong flex h-[20rem] flex-col overflow-hidden rounded-[2rem] sm:h-[26rem] lg:h-[30rem]">
+        {/* ── Node zone (flex-1) ── takes all remaining space above status bar */}
+        <div className="relative flex-1 overflow-hidden">
+          {/* Background layers */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.04),transparent_48%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,9,11,0.08),rgba(9,9,11,0.24))]" />
+          <div className="absolute left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[rgba(255,255,255,0.03)] blur-3xl sm:h-40 sm:w-40" />
+          <div className="absolute inset-0 ov-grid opacity-30" />
 
-        <div className="relative h-full min-h-[28rem]">
-          {renderConnections(stage)}
-          {marketAgents.map((agent) => {
-            if (!shouldShowNode(agent, stage)) {
-              return null;
-            }
+          {/* Node area — fills the node zone. Percentage positions are
+              relative to this container. */}
+          <div className="absolute inset-0">
+            {renderConnections(stage)}
 
-            const position = getPosition(agent, stage);
-            const nodeState = getNodeState(agent, stage);
+            {marketAgents.map((agent) => {
+              const position = getPosition(agent, stage);
+              const nodeState = getNodeState(agent, stage);
 
-            return (
-              <MarketNode
-                key={agent.id}
-                x={position.x}
-                y={position.y}
-                label={agent.label}
-                name={agent.name}
-                cluster={agent.cluster}
-                state={nodeState}
-                showLabel={shouldShowLabel(agent, stage)}
-                subtitle={
-                  stage === "winner"
-                    ? agent.name === "RelayCrew Systems"
-                      ? "Lowest execution risk"
-                      : undefined
-                    : nodeState === "finalist"
-                      ? agent.specialty
-                      : undefined
-                }
-              />
-            );
-          })}
-
-          <div className="absolute bottom-0 left-0 right-0">
-            <div className="rounded-[1.5rem] border border-[rgba(124,170,255,0.14)] bg-[rgba(8,15,27,0.74)] px-4 py-3 text-sm text-[var(--ov-text-muted)] shadow-[0_20px_50px_rgba(2,6,15,0.45)]">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[rgba(103,215,255,0.14)] px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[var(--ov-signal-strong)] uppercase">
-                  {stage === "market"
-                    ? "50 visible agents"
-                    : stage === "top10"
-                      ? "Top 10 survivors"
-                      : stage === "winner"
-                        ? "Winner justified"
-                        : "Final negotiation"}
-                </span>
-                <span
-                  className={cn(
-                    "rounded-full px-3 py-1 text-[10px] font-semibold tracking-[0.18em] uppercase",
+              return (
+                <MarketNode
+                  key={agent.id}
+                  x={position.x}
+                  y={position.y}
+                  label={agent.label}
+                  name={agent.name}
+                  cluster={agent.cluster}
+                  state={nodeState}
+                  showLabel={shouldShowLabel(agent, stage)}
+                  hideLabelOnMobile={shouldHideLabelOnMobile(stage)}
+                  subtitle={
                     stage === "winner"
-                      ? "ov-chip-human"
-                      : "ov-chip-success",
-                  )}
-                >
-                  {stage === "winner"
-                    ? "Explainable selection"
-                    : "Deterministic narrowing"}
-                </span>
-              </div>
-            </div>
+                      ? agent.name === WINNER_NAME
+                        ? "Full scope, best reliability"
+                        : undefined
+                      : nodeState === "finalist"
+                        ? agent.specialty
+                        : undefined
+                  }
+                />
+              );
+            })}
           </div>
+        </div>
+
+        {/* ── Status bar zone ── FIXED height, all children absolute.
+             No flow-based sizing at all. The height is hardcoded so the
+             status bar never grows or shrinks regardless of content. */}
+        <div className="relative h-10 shrink-0 mx-3 mb-3 mt-1 sm:mx-5 sm:mb-4 sm:mt-2 sm:h-11">
+          {(["market", "top10", "top3", "negotiation", "winner"] as const).map(
+            (s) => {
+              const isActive = stage === s;
+              const chipLabel =
+                s === "market"
+                  ? "50 visible agents"
+                  : s === "top10"
+                    ? "Top 10 survivors"
+                    : s === "winner"
+                      ? "Winner justified"
+                      : "Final negotiation";
+              const secondChipLabel =
+                s === "winner"
+                  ? "Explainable selection"
+                  : "Deterministic narrowing";
+
+              return (
+                <motion.div
+                  key={s}
+                  animate={{ opacity: isActive ? 1 : 0 }}
+                  transition={{ duration: 0.35, ease: EASE }}
+                  className="absolute inset-0 ov-panel flex items-center rounded-[1.25rem] px-3 sm:rounded-[1.5rem] sm:px-4"
+                  aria-hidden={!isActive}
+                  style={{ pointerEvents: isActive ? "auto" : "none" }}
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="ov-chip-signal rounded-full px-2.5 py-0.5 text-[8px] font-semibold tracking-[0.18em] uppercase sm:px-3 sm:py-1 sm:text-[10px]">
+                      {chipLabel}
+                    </span>
+                    <span
+                      className={cn(
+                        "rounded-full px-2.5 py-0.5 text-[8px] font-semibold tracking-[0.18em] uppercase sm:px-3 sm:py-1 sm:text-[10px]",
+                        s === "winner"
+                          ? "ov-chip-human"
+                          : "ov-chip-success",
+                      )}
+                    >
+                      {secondChipLabel}
+                    </span>
+                  </div>
+                </motion.div>
+              );
+            },
+          )}
         </div>
       </div>
     </div>

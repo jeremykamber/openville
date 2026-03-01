@@ -1,193 +1,349 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   OPENVILLE — Monochrome Precision Design System
+   "Editorial clarity meets spatial computing."
+   Black, white, and deliberate accent. Nothing decorative.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 :root {
   --radius: 0.625rem;
-  --ov-bg-0: #07111d;
-  --ov-bg-1: #0d1726;
-  --ov-bg-2: #132033;
-  --ov-surface-0: rgba(9, 17, 29, 0.88);
-  --ov-surface-1: rgba(19, 32, 51, 0.92);
-  --ov-border: rgba(124, 170, 255, 0.2);
-  --ov-text: #eef4ff;
-  --ov-text-muted: #94a4bc;
-  --ov-human: #f2bf7a;
-  --ov-human-soft: rgba(242, 191, 122, 0.14);
-  --ov-signal: #67d7ff;
-  --ov-signal-strong: #9be9ff;
-  --ov-negotiation: #ffb24d;
-  --ov-winner: #ffd166;
-  --ov-eliminated: #536176;
-  --ov-success: #67d39a;
-  --background: var(--ov-bg-0);
+
+  /* ── Core Surfaces ─────────────────────────────────────────────────────── */
+  --ov-void: #09090b;
+  --ov-surface-0: #111113;
+  --ov-surface-1: #19191c;
+  --ov-surface-2: #222225;
+
+  /* ── Borders ───────────────────────────────────────────────────────────── */
+  --ov-border: rgba(255, 255, 255, 0.08);
+  --ov-border-strong: rgba(255, 255, 255, 0.14);
+
+  /* ── Text ───────────────────────────────────────────────────────────────── */
+  --ov-text: #fafafa;
+  --ov-text-muted: #a1a1aa;
+  --ov-text-dim: #52525b;
+
+  /* ── Signal (AI / Primary Accent) ──────────────────────────────────────── */
+  --ov-signal: #e4e4e7;
+  --ov-signal-bright: #fafafa;
+  --ov-signal-glow: rgba(255, 255, 255, 0.12);
+  --ov-signal-subtle: rgba(255, 255, 255, 0.04);
+
+  /* ── Human (Warm accent — used sparingly for CTAs and user elements) ──── */
+  --ov-human: #f5f5f4;
+  --ov-human-bright: #ffffff;
+  --ov-human-glow: rgba(255, 255, 255, 0.15);
+  --ov-human-subtle: rgba(255, 255, 255, 0.05);
+
+  /* ── Semantic ───────────────────────────────────────────────────────────── */
+  --ov-success: #a1a1aa;
+  --ov-success-glow: rgba(161, 161, 170, 0.18);
+  --ov-danger: #ef4444;
+  --ov-danger-glow: rgba(239, 68, 68, 0.18);
+  --ov-negotiation: #d4d4d8;
+  --ov-negotiation-glow: rgba(212, 212, 216, 0.14);
+
+  /* ── Tasteful accent (used only for winner highlights & key CTAs) ───── */
+  --ov-accent: #c8a97e;
+  --ov-accent-bright: #dfc19e;
+  --ov-accent-glow: rgba(200, 169, 126, 0.18);
+  --ov-accent-subtle: rgba(200, 169, 126, 0.06);
+
+  /* ── shadcn/ui Token Bridge ────────────────────────────────────────────── */
+  --background: var(--ov-void);
   --foreground: var(--ov-text);
-  --card: rgba(8, 15, 27, 0.92);
+  --card: var(--ov-surface-0);
   --card-foreground: var(--ov-text);
-  --popover: rgba(8, 15, 27, 0.96);
+  --popover: var(--ov-surface-0);
   --popover-foreground: var(--ov-text);
-  --primary: var(--ov-signal);
-  --primary-foreground: #06111d;
-  --secondary: rgba(13, 23, 38, 0.92);
+  --primary: var(--ov-text);
+  --primary-foreground: var(--ov-void);
+  --secondary: var(--ov-surface-1);
   --secondary-foreground: var(--ov-text);
-  --muted: rgba(19, 32, 51, 0.9);
+  --muted: var(--ov-surface-1);
   --muted-foreground: var(--ov-text-muted);
-  --accent: rgba(103, 215, 255, 0.14);
+  --accent: var(--ov-signal-subtle);
   --accent-foreground: var(--ov-text);
-  --destructive: #ef6a61;
+  --destructive: var(--ov-danger);
   --border: var(--ov-border);
-  --input: rgba(122, 169, 255, 0.14);
-  --ring: rgba(155, 233, 255, 0.55);
-  --chart-1: var(--ov-signal);
-  --chart-2: var(--ov-success);
-  --chart-3: var(--ov-negotiation);
-  --chart-4: var(--ov-winner);
-  --chart-5: #8193ab;
-  --accent-blue: var(--ov-signal);
-  --accent-amber: var(--ov-negotiation);
-  --sidebar: rgba(9, 17, 29, 0.95);
+  --input: rgba(255, 255, 255, 0.06);
+  --ring: var(--ov-signal-glow);
+
+  /* ── Chart Tokens ──────────────────────────────────────────────────────── */
+  --chart-1: var(--ov-text);
+  --chart-2: var(--ov-text-muted);
+  --chart-3: var(--ov-text-dim);
+  --chart-4: var(--ov-accent);
+  --chart-5: var(--ov-border-strong);
+
+  /* ── Sidebar Tokens ────────────────────────────────────────────────────── */
+  --sidebar: var(--ov-surface-0);
   --sidebar-foreground: var(--ov-text);
-  --sidebar-primary: var(--ov-signal);
-  --sidebar-primary-foreground: #06111d;
-  --sidebar-accent: rgba(19, 32, 51, 0.92);
+  --sidebar-primary: var(--ov-text);
+  --sidebar-primary-foreground: var(--ov-void);
+  --sidebar-accent: var(--ov-surface-1);
   --sidebar-accent-foreground: var(--ov-text);
   --sidebar-border: var(--ov-border);
-  --sidebar-ring: rgba(155, 233, 255, 0.55);
+  --sidebar-ring: var(--ov-signal-glow);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Base Resets
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 html {
   color-scheme: dark;
-  scroll-behavior: smooth;
 }
 
 body {
-  min-height: 100vh;
-  background-color: var(--background);
-  color: var(--foreground);
-  background-image:
-    radial-gradient(circle at top left, rgba(103, 215, 255, 0.16), transparent 28%),
-    radial-gradient(circle at top right, rgba(255, 178, 77, 0.12), transparent 24%),
-    linear-gradient(180deg, rgba(14, 23, 38, 0.96) 0%, rgba(7, 17, 29, 1) 100%);
+  min-height: 100dvh;
+  background-color: var(--ov-void);
+  color: var(--ov-text);
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background: rgba(103, 215, 255, 0.26);
+  background: rgba(255, 255, 255, 0.18);
   color: var(--ov-text);
 }
 
-.ov-shell {
-  background:
-    radial-gradient(circle at 20% 0%, rgba(103, 215, 255, 0.12), transparent 28%),
-    radial-gradient(circle at 85% 10%, rgba(255, 178, 77, 0.08), transparent 22%),
-    linear-gradient(180deg, rgba(13, 23, 38, 0.92) 0%, rgba(7, 17, 29, 0.98) 100%);
-}
+/* ═══════════════════════════════════════════════════════════════════════════
+   Grid Overlay — Subtle structural grid for depth
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 .ov-grid {
   background-image:
-    linear-gradient(rgba(124, 170, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(124, 170, 255, 0.05) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   background-position: center;
-  background-size: 42px 42px;
+  background-size: 48px 48px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Panel System — Layered monochrome surfaces
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 .ov-panel {
   border: 1px solid var(--ov-border);
-  background:
-    linear-gradient(180deg, rgba(19, 32, 51, 0.92) 0%, rgba(9, 17, 29, 0.9) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(25, 25, 28, 0.80) 0%,
+    rgba(17, 17, 19, 0.85) 100%
+  );
   box-shadow:
-    0 20px 60px rgba(2, 6, 15, 0.45),
-    inset 0 1px 0 rgba(155, 233, 255, 0.05);
-  backdrop-filter: blur(18px);
+    0 1px 0 0 rgba(255, 255, 255, 0.02) inset,
+    0 16px 48px rgba(0, 0, 0, 0.50);
 }
 
 .ov-panel-strong {
-  border: 1px solid rgba(155, 233, 255, 0.22);
-  background:
-    linear-gradient(180deg, rgba(19, 32, 51, 0.96) 0%, rgba(9, 17, 29, 0.96) 100%);
+  border: 1px solid var(--ov-border-strong);
+  background: linear-gradient(
+    180deg,
+    rgba(25, 25, 28, 0.92) 0%,
+    rgba(17, 17, 19, 0.95) 100%
+  );
   box-shadow:
-    0 28px 80px rgba(2, 6, 15, 0.55),
-    inset 0 1px 0 rgba(155, 233, 255, 0.07);
-  backdrop-filter: blur(22px);
+    0 1px 0 0 rgba(255, 255, 255, 0.03) inset,
+    0 20px 56px rgba(0, 0, 0, 0.55);
 }
+
+.ov-panel-elevated {
+  border: 1px solid var(--ov-border-strong);
+  background: linear-gradient(
+    180deg,
+    rgba(25, 25, 28, 0.90) 0%,
+    rgba(17, 17, 19, 0.92) 100%
+  );
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.03) inset,
+    0 24px 64px rgba(0, 0, 0, 0.58),
+    0 0 0 1px rgba(0, 0, 0, 0.30);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Shell — Root layout wrapper
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ov-shell {
+  position: relative;
+  background-color: var(--ov-void);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Typography Utilities
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 .ov-kicker {
   color: var(--ov-text-muted);
-  font-family: var(--font-space-grotesk);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.24em;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
-.ov-section-copy {
-  color: var(--ov-text-muted);
-  font-size: 1rem;
-  line-height: 1.8;
+.ov-headline {
+  font-family: var(--font-display);
+  font-weight: 300;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--ov-text);
 }
 
+.ov-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--ov-text-muted);
+}
+
+.ov-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.ov-section-copy {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 400;
+  line-height: 1.8;
+  color: var(--ov-text-muted);
+  max-width: 40rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Chip / Tag System — Monochrome with accent variants
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 .ov-chip {
-  border: 1px solid rgba(155, 233, 255, 0.18);
-  background: rgba(8, 15, 27, 0.78);
+  border: 1px solid var(--ov-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ov-text-muted);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+}
+
+.ov-chip-signal {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--ov-text);
-  box-shadow: inset 0 1px 0 rgba(155, 233, 255, 0.06);
 }
 
 .ov-chip-human {
-  border: 1px solid rgba(242, 191, 122, 0.24);
-  background: rgba(242, 191, 122, 0.12);
-  color: var(--ov-human);
+  border-color: rgba(200, 169, 126, 0.22);
+  background: var(--ov-accent-subtle);
+  color: var(--ov-accent-bright);
 }
 
 .ov-chip-success {
-  border: 1px solid rgba(103, 211, 154, 0.24);
-  background: rgba(103, 211, 154, 0.12);
-  color: var(--ov-success);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ov-text-muted);
 }
 
-.ov-hairline {
-  border-color: rgba(124, 170, 255, 0.16);
+.ov-chip-negotiation {
+  border-color: rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ov-text-muted);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Text Gradient — Monochrome with optional accent
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 .ov-text-gradient {
-  background: linear-gradient(135deg, #eef4ff 0%, #9be9ff 48%, #ffd166 100%);
+  background: linear-gradient(
+    135deg,
+    var(--ov-text) 0%,
+    var(--ov-text-muted) 50%,
+    var(--ov-accent) 100%
+  );
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
 }
 
-@keyframes ov-float {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
+.ov-text-gradient-signal {
+  background: linear-gradient(
+    135deg,
+    var(--ov-text) 0%,
+    var(--ov-text-muted) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
 
-  50% {
-    transform: translate3d(0, -10px, 0);
-  }
+/* ═══════════════════════════════════════════════════════════════════════════
+   Dividers
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ov-hairline {
+  border-color: var(--ov-border);
+}
+
+.ov-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--ov-border) 20%,
+    var(--ov-border) 80%,
+    transparent 100%
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Film Grain — SVG filter for editorial texture
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ov-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  mix-blend-mode: overlay;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Animations — Purposeful motion
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes ov-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -6px, 0); }
 }
 
 @keyframes ov-pulse {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
-
-  50% {
-    opacity: 1;
-  }
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 
-@keyframes ov-drift {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-
-  50% {
-    transform: translate3d(8px, -8px, 0);
-  }
-
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
+@keyframes ov-breathe {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
 }
+
+@keyframes ov-scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-50% - 0.5rem)); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Reduced Motion — Accessibility first
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -202,4 +358,30 @@ body {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
   }
+
+  .ov-grain {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Scrollbar — Minimal, on-brand
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
 }

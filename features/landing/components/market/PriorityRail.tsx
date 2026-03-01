@@ -1,6 +1,6 @@
 "use client";
 
-import { storyPriorities } from "@/features/landing/data/storyboard-fixtures";
+import { handoffPreferences } from "@/features/landing/data/storyboard-fixtures";
 
 interface PriorityRailProps {
   emphasizeHuman?: boolean;
@@ -9,14 +9,18 @@ interface PriorityRailProps {
 export function PriorityRail({ emphasizeHuman = false }: PriorityRailProps) {
   return (
     <div className="flex flex-wrap gap-2">
-      {storyPriorities.map((priority) => (
+      {handoffPreferences.map((pref) => (
         <div
-          key={priority.label}
+          key={pref.label}
           className={`rounded-full px-3 py-1.5 text-xs font-medium tracking-[0.14em] uppercase ${
-            emphasizeHuman ? "ov-chip-human" : "ov-chip"
+            emphasizeHuman
+              ? pref.source === "inferred"
+                ? "ov-chip-signal"
+                : "ov-chip-human"
+              : "ov-chip"
           }`}
         >
-          {priority.label}: {priority.value}
+          {pref.label}: {pref.value}
         </div>
       ))}
     </div>

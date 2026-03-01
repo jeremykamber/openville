@@ -1,21 +1,60 @@
 "use client";
 
-import { marketClusters } from "@/features/landing/data/storyboard-fixtures";
+import { useRef } from "react";
+import { motion, useInView } from "motion/react";
+import {
+  marketClusters,
+  type ServiceCluster,
+} from "@/features/landing/data/storyboard-fixtures";
+import { EASE } from "@/lib/motion";
 
-const clusterStyles = {
-  av_systems: "bg-[rgba(103,215,255,0.18)] text-[var(--ov-signal-strong)]",
-  staffing_ops: "bg-[rgba(255,178,77,0.18)] text-[var(--ov-negotiation)]",
-  logistics: "bg-[rgba(103,211,154,0.18)] text-[var(--ov-success)]",
-  venue_ops: "bg-[rgba(155,233,255,0.12)] text-[var(--ov-text)]",
-  backup_support: "bg-[rgba(255,209,102,0.16)] text-[var(--ov-winner)]",
-} as const;
+// ── Motion config (no blur) ─────────────────────────────────────────────────
+
+const legendStagger = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+};
+
+const legendItem = {
+  hidden: { opacity: 0, x: -12 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.45, ease: EASE },
+  },
+};
+
+// ── Cluster styles — monochrome with subtle differentiation ─────────────────
+
+const clusterStyles: Record<ServiceCluster, string> = {
+  plumbing: "bg-[rgba(255,255,255,0.08)] text-[var(--ov-text)]",
+  electrical: "bg-[rgba(255,255,255,0.06)] text-[var(--ov-text)]",
+  hvac: "bg-[rgba(255,255,255,0.06)] text-[var(--ov-text-muted)]",
+  general_contractor:
+    "bg-[rgba(255,255,255,0.05)] text-[var(--ov-text-muted)]",
+  landscaping: "bg-[rgba(255,255,255,0.05)] text-[var(--ov-text-muted)]",
+};
+
+// ── Component ────────────────────────────────────────────────────────────────
 
 export function ClusterLegend() {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, amount: 0.3 });
+
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+    <motion.div
+      ref={ref}
+      variants={legendStagger}
+      initial="hidden"
+      animate={isInView ? "visible" : "hidden"}
+      className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1"
+    >
       {marketClusters.map((cluster) => (
-        <div
+        <motion.div
           key={cluster.id}
+          variants={legendItem}
           className="ov-panel rounded-2xl px-4 py-3 text-sm text-[var(--ov-text-muted)]"
         >
           <div className="flex items-center justify-between gap-3">
@@ -25,15 +64,17 @@ export function ClusterLegend() {
               >
                 {cluster.shortLabel}
               </span>
-              <p className="font-medium text-[var(--ov-text)]">{cluster.label}</p>
+              <p className="font-medium text-[var(--ov-text)]">
+                {cluster.label}
+              </p>
             </div>
             <span className="font-mono text-xs text-[var(--ov-text-muted)]">
               {cluster.count}
             </span>
           </div>
           <p className="mt-2 text-xs leading-6">{cluster.description}</p>
-        </div>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }

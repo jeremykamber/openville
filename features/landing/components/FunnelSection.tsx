@@ -1,76 +1,174 @@
 "use client";
 
-import { AgentMarketGraph, type MarketGraphStage } from "@/features/landing/components/market/AgentMarketGraph";
+import { useState, useEffect } from "react";
+import { motion } from "motion/react";
+import {
+  AgentMarketGraph,
+  type MarketGraphStage,
+} from "@/features/landing/components/market/AgentMarketGraph";
 import { PriorityRail } from "@/features/landing/components/market/PriorityRail";
-import { useScrollProgress } from "@/hooks/useScrollProgress";
+import { EASE } from "@/lib/motion";
 
-const STAGES: { threshold: number; stage: MarketGraphStage }[] = [
-  { threshold: 0.18, stage: "market" },
-  { threshold: 0.38, stage: "top10" },
-  { threshold: 0.58, stage: "top3" },
-  { threshold: 0.78, stage: "negotiation" },
-  { threshold: 1, stage: "winner" },
+// ── Stage definitions ────────────────────────────────────────────────────────
+
+const STAGE_ORDER: MarketGraphStage[] = [
+  "market",
+  "top10",
+  "top3",
+  "negotiation",
+  "winner",
 ];
 
-const STAGE_COPY: Record<
+// Duration (ms) each stage is visible before auto-advancing.
+const STAGE_DWELL_MS = 2400;
+
+const STAGE_INDICATORS: Record<
   MarketGraphStage,
-  { eyebrow: string; title: string; body: string }
+  { label: string; chipClass: string; count: string }
 > = {
-  market: {
-    eyebrow: "The Market",
-    title: "Fifty specialist agents wake up and compete for the job.",
-    body: "AV crews, staffing reps, venue ops, logistics, and contingency agents all push for the work at once.",
-  },
-  top10: {
-    eyebrow: "The Narrowing",
-    title: "The market cuts itself down to the ten strongest fits.",
-    body: "Weak scope, soft availability, and poor trade-offs drop out before you ever see them.",
-  },
-  top3: {
-    eyebrow: "Top Three",
-    title: "Three finalists survive once reliability, scope, and certainty matter most.",
-    body: "At this point the question is no longer who can respond. It is who can cover the whole launch without introducing new risk.",
-  },
+  market: { label: "Market open", chipClass: "ov-chip-signal", count: "50" },
+  top10: { label: "Ranked survivors", chipClass: "ov-chip-signal", count: "10" },
+  top3: { label: "Finalists", chipClass: "ov-chip-negotiation", count: "3" },
   negotiation: {
-    eyebrow: "Negotiation",
-    title: "Three finalists negotiate on price, scope, and certainty.",
-    body: "Your agent pressures the finalists for better terms while protecting the deadline and full event scope.",
+    label: "Negotiation live",
+    chipClass: "ov-chip-negotiation",
+    count: "3",
   },
-  winner: {
-    eyebrow: "The Decision",
-    title: "One winner is selected, and the reason is visible.",
-    body: "The final choice is not magic. It is a clear trade-off between cost, scope coverage, and execution risk.",
-  },
+  winner: { label: "Winner selected", chipClass: "ov-chip-success", count: "1" },
 };
 
-function getStage(progress: number) {
-  return STAGES.find((entry) => progress <= entry.threshold)?.stage ?? "winner";
+// ── Auto-play hook ──────────────────────────────────────────────────────────
+// Starts immediately on mount and loops forever. No scroll or visibility
+// dependency — the animation is always running so the user sees the full
+// workflow cycle no matter when they reach this section.
+
+function useAutoStage(): MarketGraphStage {
+  const [stageIndex, setStageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStageIndex((prev) => (prev + 1) % STAGE_ORDER.length);
+    }, STAGE_DWELL_MS);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return STAGE_ORDER[stageIndex];
 }
 
+// ── Component ────────────────────────────────────────────────────────────────
+
 export function FunnelSection() {
-  const { ref, progress } = useScrollProgress<HTMLElement>();
-  const stage = getStage(progress);
+  const stage = useAutoStage();
+  const stageIndex = STAGE_ORDER.indexOf(stage);
 
   return (
-    <section ref={ref} className="px-4 py-18 sm:px-6 sm:py-24 lg:px-8">
-      <div className="relative mx-auto max-w-6xl" style={{ minHeight: "280vh" }}>
-        <div className="sticky top-6 space-y-6">
-          <div className="flex flex-col gap-4 rounded-[2rem] border border-[rgba(124,170,255,0.12)] bg-[rgba(7,17,29,0.72)] px-5 py-4 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <section
+      id="funnel"
+      className="relative px-4 py-28 sm:px-6 sm:py-36 lg:px-8"
+      aria-label="The Agent Economy -- market funnel visualization"
+    >
+      {/* Ambient glow */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0"
+        aria-hidden="true"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 45% at 50% 20%, rgba(255,255,255,0.03), transparent 55%), radial-gradient(ellipse 40% 35% at 80% 75%, rgba(200,169,126,0.02), transparent 50%)",
+        }}
+      />
+
+      <div className="relative z-[1] mx-auto max-w-6xl space-y-4 sm:space-y-5">
+        {/* Top bar */}
+        <div className="flex flex-col gap-3 rounded-[1.75rem] border border-[var(--ov-border)] bg-[rgba(9,9,11,0.96)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:rounded-[2rem] sm:px-6 sm:py-4">
+          <div className="min-w-0 flex-1 overflow-x-auto">
             <PriorityRail />
-            <div className="rounded-full border border-[rgba(103,215,255,0.18)] bg-[rgba(103,215,255,0.12)] px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[var(--ov-signal-strong)] uppercase">
-              {stage === "market"
-                ? "50 -> market open"
-                : stage === "top10"
-                  ? "10 -> ranked survivors"
-                  : stage === "top3"
-                    ? "3 -> finalists"
-                    : stage === "negotiation"
-                      ? "3 -> negotiation live"
-                      : "1 -> winner selected"}
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Count badge — all 5 variants stacked, opacity-only crossfade */}
+            <div className="relative flex size-8 items-center justify-center rounded-lg border border-[var(--ov-border-strong)] bg-[var(--ov-surface-1)]">
+              {STAGE_ORDER.map((s) => (
+                <motion.span
+                  key={s}
+                  animate={{ opacity: stage === s ? 1 : 0 }}
+                  transition={{ duration: 0.25, ease: EASE }}
+                  className="absolute inset-0 flex items-center justify-center font-mono text-sm font-bold text-[var(--ov-text)]"
+                  aria-hidden={stage !== s}
+                >
+                  {STAGE_INDICATORS[s].count}
+                </motion.span>
+              ))}
+            </div>
+            {/* Stage label chip — all 5 variants stacked, opacity-only crossfade */}
+            <div className="relative">
+              {STAGE_ORDER.map((s, i) => (
+                <motion.div
+                  key={s}
+                  animate={{ opacity: stage === s ? 1 : 0 }}
+                  transition={{ duration: 0.25, ease: EASE }}
+                  className={`rounded-full px-4 py-1.5 text-[10px] font-semibold tracking-[0.18em] uppercase ${STAGE_INDICATORS[s].chipClass} ${i > 0 ? "absolute inset-0" : ""}`}
+                  aria-hidden={stage !== s}
+                  style={{ pointerEvents: stage === s ? "auto" : "none" }}
+                >
+                  {STAGE_INDICATORS[s].label}
+                </motion.div>
+              ))}
             </div>
           </div>
+        </div>
 
-          <AgentMarketGraph stage={stage} copy={STAGE_COPY[stage]} />
+        {/* Graph + copy */}
+        <AgentMarketGraph stage={stage} />
+
+        {/* Stage progress indicator — driven by discrete stage */}
+        <div className="mx-auto max-w-lg">
+          <div className="h-[2px] w-full overflow-hidden rounded-full bg-[var(--ov-surface-1)]">
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${((stageIndex + 1) / STAGE_ORDER.length) * 100}%`,
+                background:
+                  stage === "winner"
+                    ? "linear-gradient(90deg, var(--ov-text-muted), var(--ov-accent))"
+                    : "linear-gradient(90deg, var(--ov-text-muted), var(--ov-text))",
+                transition: "width 0.6s ease, background 0.6s ease",
+              }}
+            />
+          </div>
+          <div className="mt-3 flex items-center justify-between">
+            <span className="font-mono text-[9px] tracking-[0.14em] text-[var(--ov-text-dim)] uppercase">
+              Market open
+            </span>
+
+            {/* Stage dots */}
+            <div className="flex items-center gap-1.5">
+              {STAGE_ORDER.map((s, i) => {
+                const isActive = i <= stageIndex;
+                const isWinnerDot = s === "winner";
+
+                return (
+                  <div
+                    key={s}
+                    className={`size-1.5 rounded-full ${
+                      isActive
+                        ? isWinnerDot
+                          ? "bg-[var(--ov-accent)] shadow-[0_0_8px_rgba(200,169,126,0.3)]"
+                          : "bg-[var(--ov-text)]"
+                        : "bg-[var(--ov-text-dim)]"
+                    }`}
+                    style={{
+                      transition:
+                        "background-color 0.5s ease, box-shadow 0.5s ease",
+                    }}
+                  />
+                );
+              })}
+            </div>
+
+            <span className="font-mono text-[9px] tracking-[0.14em] text-[var(--ov-text-dim)] uppercase">
+              Winner selected
+            </span>
+          </div>
         </div>
       </div>
     </section>
