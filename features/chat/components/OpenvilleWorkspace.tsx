@@ -76,16 +76,6 @@ export function OpenvilleWorkspace() {
     setMode("transitioning");
   }, [submitRequest]);
 
-  const handleHeaderCta = useCallback(() => {
-    // Scroll to the hero composer area
-    const hero = document.querySelector('[aria-label*="Hero"]');
-    if (hero) {
-      hero.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, []);
-
   const isStoryMode = mode !== "active";
 
   return (
@@ -97,7 +87,7 @@ export function OpenvilleWorkspace() {
             key="header"
             exit={{ opacity: 0, y: -20, transition: { duration: 0.3, ease: EASE } }}
           >
-            <Header onCtaClick={handleHeaderCta} />
+            <Header />
           </motion.div>
         )}
       </AnimatePresence>

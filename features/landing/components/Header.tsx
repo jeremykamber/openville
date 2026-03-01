@@ -59,11 +59,7 @@ const mobileLinkItem = {
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-interface HeaderProps {
-  onCtaClick?: () => void;
-}
-
-export function Header({ onCtaClick }: HeaderProps) {
+export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -157,41 +153,20 @@ export function Header({ onCtaClick }: HeaderProps) {
               </span>
             </a>
 
-            {/* Desktop nav links */}
-            <div className="hidden items-center gap-1 md:flex">
-              {NAV_LINKS.map((link) => (
-                <button
-                  key={link.href}
-                  type="button"
-                  onClick={() => handleNavClick(link.href)}
-                  className="rounded-lg px-3.5 py-2 text-[13px] font-medium text-[var(--ov-text-muted)] transition-colors duration-200 hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--ov-text)]"
-                >
-                  {link.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Desktop CTA + Mobile toggle */}
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={onCtaClick}
-                className="hidden rounded-xl border border-[rgba(255,77,77,0.3)] px-4 py-2 text-[13px] font-semibold text-white shadow-[0_0_20px_rgba(255,77,77,0.12)] md:block"
-                style={{
-                  background: "linear-gradient(135deg, #ff4d4d, #991b1b)",
-                  transition: "box-shadow 0.3s ease, border-color 0.3s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = "0 0 32px rgba(255,77,77,0.25)";
-                  e.currentTarget.style.borderColor = "rgba(255,77,77,0.5)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = "0 0 20px rgba(255,77,77,0.12)";
-                  e.currentTarget.style.borderColor = "rgba(255,77,77,0.3)";
-                }}
-              >
-                Open the market
-              </button>
+            {/* Desktop nav links + Mobile toggle */}
+            <div className="flex items-center gap-1">
+              <div className="hidden items-center gap-1 md:flex">
+                {NAV_LINKS.map((link) => (
+                  <button
+                    key={link.href}
+                    type="button"
+                    onClick={() => handleNavClick(link.href)}
+                    className="rounded-lg px-3.5 py-2 text-[13px] font-medium text-[var(--ov-text-muted)] transition-colors duration-200 hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--ov-text)]"
+                  >
+                    {link.label}
+                  </button>
+                ))}
+              </div>
 
               {/* Mobile hamburger */}
               <button
@@ -262,22 +237,6 @@ export function Header({ onCtaClick }: HeaderProps) {
                 </motion.button>
               ))}
 
-              <motion.div variants={mobileLinkItem} className="mt-8">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileOpen(false);
-                    onCtaClick?.();
-                  }}
-                  className="rounded-2xl border border-[rgba(255,77,77,0.3)] px-6 py-3.5 text-base font-semibold text-white shadow-[0_0_24px_rgba(255,77,77,0.15)]"
-                  style={{
-                    background: "linear-gradient(135deg, #ff4d4d, #991b1b)",
-                    transition: "box-shadow 0.3s ease, border-color 0.3s ease",
-                  }}
-                >
-                  Open the market
-                </button>
-              </motion.div>
             </motion.nav>
 
             {/* Bottom border accent */}
