@@ -93,7 +93,7 @@ export function ClosureSection({
   return (
     <section
       ref={sectionRef}
-      className="relative px-4 pb-28 pt-24 sm:px-6 sm:pb-36 sm:pt-32 lg:px-8"
+      className="relative px-4 pb-20 pt-16 sm:px-6 sm:pb-24 sm:pt-20 lg:px-8"
       aria-label="The Future -- booking confirmed, your agent handled the market"
     >
       {/* Ambient glow */}

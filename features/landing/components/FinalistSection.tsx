@@ -427,7 +427,7 @@ export function FinalistSection() {
     <section
       ref={sectionRef}
       id="negotiation"
-      className="relative px-4 py-28 sm:px-6 sm:py-36 lg:px-8"
+      className="relative px-4 py-20 sm:px-6 sm:py-24 lg:px-8"
       aria-label="Negotiation -- three finalists compete on price, scope, and certainty"
     >
       {/* Ambient glow */}

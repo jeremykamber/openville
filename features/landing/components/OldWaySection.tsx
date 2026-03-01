@@ -81,7 +81,7 @@ export function OldWaySection() {
     <section
       ref={sectionRef}
       id="problem"
-      className="relative px-4 py-28 sm:px-6 sm:py-36 lg:px-8"
+      className="relative px-4 py-20 sm:px-6 sm:py-24 lg:px-8"
       aria-label="Before AI -- the old way of finding tradespeople"
     >
       {/* Ambient glow */}

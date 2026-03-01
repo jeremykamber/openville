@@ -109,7 +109,7 @@ export function HandoffSection() {
     <section
       ref={sectionRef}
       id="handoff"
-      className="relative px-4 py-28 sm:px-6 sm:py-36 lg:px-8"
+      className="relative px-4 py-20 sm:px-6 sm:py-24 lg:px-8"
       aria-label="The Handoff -- one request replaces the scramble"
     >
       {/* Ambient glow */}
