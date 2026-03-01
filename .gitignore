@@ -56,7 +56,9 @@ test-results/
 .DS_Store
 Thumbs.db
 
-# Optional: Locks (uncomment if you want to force a specific manager)
+# Personal notes and workflow docs
+DEV-2-WORKFLOW.md
+
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
