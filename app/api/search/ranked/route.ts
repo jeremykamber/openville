@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid query" }, { status: 400 });
     }
 
-    const limit = Math.min(body.limit || 10, 50);
+    const limit = Math.max(1, Math.min(typeof body.limit === 'number' && body.limit > 0 ? body.limit : 10, 50));
     const { results: ragResults } = await ragSearchService.search({
       query: body.query,
       userPreferences: body.userPreferences,
@@ -23,8 +23,8 @@ export async function POST(request: NextRequest) {
       limit: 50,
     });
 
-    const candidates: SearchResult[] = ragResults.map((person) => {
-      const { embedding, ...rest } = person;
+    const candidates: SearchResult[] = ragResults.map((tradesPerson) => {
+      const { embedding, ...rest } = tradesPerson;
       return rest;
     });
 

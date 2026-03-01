@@ -1,5 +1,9 @@
 export class VectorSimilarity {
     cosineSimilarity(a: number[], b: number[]): number {
+      if (!a || !b || a.length === 0 || b.length === 0) {
+        return 0;
+      }
+      
       if (a.length !== b.length) {
         throw new Error('Vectors must have same dimension');
       }
@@ -14,7 +18,14 @@ export class VectorSimilarity {
         normB += b[i] * b[i];
       }
       
-      return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+      const sqrtNormA = Math.sqrt(normA);
+      const sqrtNormB = Math.sqrt(normB);
+      
+      if (sqrtNormA === 0 || sqrtNormB === 0) {
+        return 0;
+      }
+      
+      return dotProduct / (sqrtNormA * sqrtNormB);
     }
   }
   

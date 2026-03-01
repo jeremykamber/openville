@@ -48,18 +48,18 @@ export class RAGSearchService {
           if (!hasService) return false;
         }
         
-        /* Filter by minimum rating */
-        if (filters.minRating && person.rating < filters.minRating) {
+        /* Filter by minimum rating (explicit null check so 0 is accepted) */
+        if (filters.minRating !== undefined && filters.minRating !== null && person.rating < filters.minRating) {
           return false;
         }
         
-        /* Filter by minimum success count */
-        if (filters.minSuccessCount && person.successCount < filters.minSuccessCount) {
+        /* Filter by minimum success count (explicit null check so 0 is accepted) */
+        if (filters.minSuccessCount !== undefined && filters.minSuccessCount !== null && person.successCount < filters.minSuccessCount) {
           return false;
         }
         
-        /* Filter by maximum hourly rate */
-        if (filters.maxHourlyRate && person.hourlyRate > filters.maxHourlyRate) {
+        /* Filter by maximum hourly rate (explicit null check so 0 is accepted) */
+        if (filters.maxHourlyRate !== undefined && filters.maxHourlyRate !== null && person.hourlyRate > filters.maxHourlyRate) {
           return false;
         }
         
