@@ -77,7 +77,7 @@ Options:
         exit(1);
       }
       console.log(JSON.stringify(body));
-      exit(0);
+      return;
     }
 
     const endpoints = {
@@ -105,7 +105,7 @@ Options:
         exit(1);
       }
       console.log(JSON.stringify(body));
-      exit(0);
+      return;
     }
 
     if (sub === "negotiate-action") {
@@ -141,7 +141,7 @@ Options:
         exit(1);
       }
       console.log(JSON.stringify(body));
-      exit(0);
+      return;
     }
 
     console.error(JSON.stringify({ error: `Unknown subcommand: ${sub}` }));

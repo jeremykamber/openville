@@ -29,7 +29,7 @@ export const CandidateSchema = z
 
 export const UserPreferencesSchema = z
   .object({
-    budget: z.number().optional(),
+    budget: z.coerce.number().optional(),
     priority: z.enum(["cost", "quality", "speed", "rating"]).optional(),
     dealBreakers: z.array(z.string()).optional(),
     preferredQualifications: z.array(z.string()).optional(),

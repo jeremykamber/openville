@@ -12,7 +12,7 @@ async function execCLI(command: string, options: any, baseUrl?: string): Promise
   const fullCommand = `${cliPath} ${command} --data '${dataJson.replace(/'/g, "'\\''")}' ${baseArg}`;
 
   try {
-    const { stdout } = await execAsync(fullCommand);
+    const { stdout } = await execAsync(fullCommand, { maxBuffer: 10 * 1024 * 1024 });
     return JSON.parse(stdout.trim());
   } catch (error: any) {
     if (error.stderr) {
@@ -37,8 +37,8 @@ export const openVilleSearchAndSelectTool = tool(
     description: 'Search and select top 10 candidates for a job using OpenVille RAG. Returns candidates for further processing.',
     schema: z.object({
       query: z.string().describe('Search query string'),
-      userPreferences: z.any().describe('User preferences object'),
-      scope: z.any().describe('Job scope object')
+      userPreferences: z.record(z.any()).optional().describe('User preferences object. budget MUST be a number.'),
+      scope: z.record(z.any()).optional().describe('Job scope object. MUST include "jobType" (e.g., plumbing) and "description".')
     })
   }
 );
@@ -53,9 +53,9 @@ export const openVilleSelectTop3Tool = tool(
     name: 'openville-select-top3',
     description: 'Select top 3 candidates from a list of top 10 candidates based on user preferences and scope.',
     schema: z.object({
-      top10: z.array(z.any()).describe('Array of full candidate objects from search results'),
-      userPreferences: z.any().describe('User preferences object'),
-      scope: z.any().describe('Job scope object')
+      top10: z.array(z.record(z.any())).describe('Array of full candidate objects from search results'),
+      userPreferences: z.record(z.any()).optional().describe('User preferences object. budget MUST be a number.'),
+      scope: z.record(z.any()).optional().describe('Job scope object. MUST include "jobType" (e.g., plumbing) and "description".')
     })
   }
 );
@@ -71,9 +71,9 @@ export const openVilleNegotiateRunTool = tool(
     description: 'Start a negotiation session with a specific candidate for a job. Returns a negotiation session and initial messages.',
     schema: z.object({
       buyerAgentId: z.string().describe('ID of the buyer agent (you)'),
-      candidate: z.any().describe('Full candidate object to negotiate with'),
-      preferences: z.any().describe('User preferences for the negotiation'),
-      scope: z.any().describe('Job scope description'),
+      candidate: z.record(z.any()).describe('Full candidate object to negotiate with. MUST include agentId and name.'),
+      preferences: z.record(z.any()).optional().describe('User preferences for the negotiation'),
+      scope: z.record(z.any()).optional().describe('Job scope description. MUST include jobType and description.'),
       jobId: z.string().optional()
     })
   }
@@ -81,7 +81,18 @@ export const openVilleNegotiateRunTool = tool(
 
 export const openVilleNegotiateActionTool = tool(
   async ({ negotiationId, action, buyerAgentId, message, candidate, preferences, finalPrice, scope }) => {
-    const options = { negotiationId, action, buyerAgentId, message, candidate, preferences, finalPrice, scope };
+    const options: any = { negotiationId, action, candidate, preferences, finalPrice, scope };
+
+    // Map buyerAgentId to the specific field the backend expects for each action
+    if (action === 'reply') options.buyerAgentId = buyerAgentId;
+    else if (action === 'propose') options.proposerId = buyerAgentId;
+    else if (action === 'cancel') options.cancellerId = buyerAgentId;
+    // Add message/reason if applicable
+    if (message) {
+      if (action === 'cancel') options.reason = message;
+      else options.message = message;
+    }
+
     const result = await execCLI('negotiate-action', options);
     return JSON.stringify(result);
   },
@@ -91,13 +102,13 @@ export const openVilleNegotiateActionTool = tool(
     schema: z.object({
       negotiationId: z.string().describe('ID of the active negotiation session'),
       action: z.enum(['reply', 'propose', 'cancel']).describe('The action to perform'),
-      buyerAgentId: z.string().describe('Your buyer agent ID'),
+      buyerAgentId: z.string().describe('Your buyer agent ID (used as proposerId or cancellerId if needed)'),
       message: z.string().optional().describe('Message text (required for reply/cancel)'),
-      candidate: z.any().optional().describe('Full candidate object (required for reply)'),
-      preferences: z.any().optional().describe('User preferences (required for reply)'),
+      candidate: z.record(z.any()).optional().describe('Full candidate object (required for reply)'),
+      preferences: z.record(z.any()).optional().describe('User preferences (required for reply)'),
       finalPrice: z.number().optional().describe('Final price (required for propose)'),
-      scope: z.any().optional().describe('Proposed scope (required for propose)')
-    })
+      scope: z.record(z.any()).optional().describe('Proposed scope (required for propose)')
+    }).passthrough()
   }
 );
 
@@ -111,8 +122,8 @@ export const openVilleSelectWinnerTool = tool(
     name: 'openville-select-winner',
     description: 'Select the final winner from completed negotiation results.',
     schema: z.object({
-      negotiations: z.array(z.any()).describe('Array of negotiation objects: { candidateId, result: {...} }'),
-      userPreferences: z.any().describe('User preferences used for selection')
-    })
+      negotiations: z.array(z.record(z.any())).describe('Array of the final negotiation result objects returned from the negotiation subagents'),
+      userPreferences: z.record(z.any()).optional().describe('User preferences used for selection')
+    }).passthrough()
   }
 );
