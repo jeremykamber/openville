@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendBuyerMessage } from '@/features/agents/negotiation/negotiate';
+import { sendBuyerMessage, NegotiateOptions } from '@/features/agents/negotiation/negotiate';
+import { SendMessageSchema } from '@/features/agents/negotiation/schemas/NegotiationSchemas';
 import { Candidate, UserPreferences } from '@/features/agents/selection/types';
-
-interface SendMessageRequest {
-  buyerAgentId: string;
-  message: string;
-  candidate: Candidate;
-  preferences: UserPreferences;
-}
 
 export async function POST(
   request: NextRequest,
@@ -15,15 +9,14 @@ export async function POST(
 ) {
   try {
     const { id: negotiationId } = await params;
-    const body: SendMessageRequest = await request.json();
-    const { buyerAgentId, message, candidate, preferences } = body;
+    const rawBody = await request.json();
+    const validated = SendMessageSchema.safeParse(rawBody);
 
-    if (!buyerAgentId) {
-      return NextResponse.json({ error: 'buyerAgentId is required' }, { status: 400 });
+    if (!validated.success) {
+      return NextResponse.json({ error: 'Invalid request body', details: validated.error.format() }, { status: 400 });
     }
-    if (!message) {
-      return NextResponse.json({ error: 'message is required' }, { status: 400 });
-    }
+
+    const { buyerAgentId, message, candidate, preferences } = validated.data;
 
     const providerType = process.env.USE_MOCK_LLM === 'true' 
       ? 'mock' 
@@ -33,9 +26,9 @@ export async function POST(
       negotiationId,
       buyerAgentId,
       message,
-      candidate,
-      preferences,
-      { providerType: providerType as any }
+      candidate as Candidate,
+      preferences as UserPreferences,
+      { providerType: providerType as NegotiateOptions['providerType'] }
     );
 
     return NextResponse.json(result);

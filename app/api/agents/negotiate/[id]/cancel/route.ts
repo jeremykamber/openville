@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cancelNegotiation } from '@/features/agents/negotiation/negotiate';
-
-interface CancelRequest {
-  cancellerId: string;
-  reason: string;
-}
+import { CancelNegotiationSchema } from '@/features/agents/negotiation/schemas/NegotiationSchemas';
 
 export async function POST(
   request: NextRequest,
@@ -12,15 +8,14 @@ export async function POST(
 ) {
   try {
     const { id: negotiationId } = await params;
-    const body: CancelRequest = await request.json();
-    const { cancellerId, reason } = body;
+    const rawBody = await request.json();
+    const validated = CancelNegotiationSchema.safeParse(rawBody);
 
-    if (!cancellerId) {
-      return NextResponse.json({ error: 'cancellerId is required' }, { status: 400 });
+    if (!validated.success) {
+      return NextResponse.json({ error: 'Invalid request body', details: validated.error.format() }, { status: 400 });
     }
-    if (!reason) {
-      return NextResponse.json({ error: 'reason is required' }, { status: 400 });
-    }
+
+    const { cancellerId, reason } = validated.data;
 
     const negotiation = await cancelNegotiation(negotiationId, cancellerId, reason);
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getNegotiation, getMessages } from '@/features/agents/negotiation/db/negotiations';
+import { defaultNegotiationRepository as repo } from '@/features/agents/negotiation/db/SupabaseNegotiationRepository';
 
 export async function GET(
   _request: NextRequest,
@@ -7,13 +7,13 @@ export async function GET(
 ) {
   try {
     const { id: negotiationId } = await params;
-    const negotiation = await getNegotiation(negotiationId);
+    const negotiation = await repo.getNegotiation(negotiationId);
 
     if (!negotiation) {
       return NextResponse.json({ error: 'Negotiation not found' }, { status: 404 });
     }
 
-    const messages = await getMessages(negotiationId);
+    const messages = await repo.getMessages(negotiationId);
 
     return NextResponse.json({ negotiation, messages });
   } catch (error) {
