@@ -4,7 +4,7 @@
 
 ---
 
-## Dev 1: Chat Interface & Human Interaction
+## Dev 1: Chat Interface & Human Interaction - Yonie
 **Owner:** Frontend
 
 **Scope:** All user-facing conversation and notification UI
@@ -24,7 +24,7 @@
 
 ---
 
-## Dev 2: Search & Ranking Engine
+## Dev 2: Search & Ranking Engine - Luis
 **Owner:** Backend
 
 **Scope:** RAG-powered search and candidate ranking (Steps 3-4)
@@ -48,12 +48,12 @@
 
 ---
 
-## Dev 3: Agent Reasoning & Negotiation
+## Dev 3: Agent Reasoning & Negotiation - Jeremy
 **Owner:** Backend (AI/LLM)
 
 **Scope:** Intelligent agent decision-making and inter-agent communication (Steps 5-7)
 
-- **Step 5: Agent Selection** — LLM reasoner takes top 10, applies human priorities, narrows to top 3 candidates
+- **Step 5: Agent Selection** — LLM reasoner takes top 10, applies human priorities, narrows to top g3 candidates
 - **Step 6: Agent-to-Agent Negotiation** — For each of the 3 candidates:
   - Send negotiation prompt to tradesperson agent (request discount, discuss scope, propose compromise)
   - Receive response from tradesperson agent
