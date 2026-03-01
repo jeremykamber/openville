@@ -75,12 +75,11 @@ export function OldWaySection() {
   });
   const contentOpacity = useTransform(scrollYProgress, [0.1, 0.5], [1, 0]);
 
-  const ref = useRef<HTMLElement>(null);
-  const isInView = useInView(ref, { once: true, amount: 0.15 });
+  const isInView = useInView(sectionRef, { once: true, amount: 0.15 });
 
   return (
     <section
-      ref={ref}
+      ref={sectionRef}
       id="problem"
       className="relative px-4 py-28 sm:px-6 sm:py-36 lg:px-8"
       aria-label="Before AI -- the old way of finding tradespeople"

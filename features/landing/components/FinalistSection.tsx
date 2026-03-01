@@ -421,12 +421,11 @@ export function FinalistSection() {
   });
   const contentOpacity = useTransform(scrollYProgress, [0.1, 0.5], [1, 0]);
 
-  const ref = useRef<HTMLElement>(null);
-  const isInView = useInView(ref, { once: true, amount: 0.08 });
+  const isInView = useInView(sectionRef, { once: true, amount: 0.08 });
 
   return (
     <section
-      ref={ref}
+      ref={sectionRef}
       id="negotiation"
       className="relative px-4 py-28 sm:px-6 sm:py-36 lg:px-8"
       aria-label="Negotiation -- three finalists compete on price, scope, and certainty"
