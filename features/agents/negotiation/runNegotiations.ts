@@ -8,13 +8,15 @@ export interface RunNegotiationsOptions {
   scope: JobScope;
   jobId?: string;
   providerType?: 'openai' | 'openrouter' | 'mock';
+  maxRounds?: number;
 }
 
 export interface NegotiationOutcome {
   negotiationId: string;
   candidateId: string;
-  status: 'initiated' | 'failed';
-  error?: string;
+  status: 'completed' | 'cancelled' | 'failed';
+  finalPrice?: number;
+  summary?: string;
 }
 
 export async function runNegotiations(
@@ -37,15 +39,16 @@ export async function runNegotiations(
       outcomes.push({
         negotiationId: negotiation.id,
         candidateId: selected.candidate.agentId,
-        status: 'initiated',
+        status: 'completed',
+        summary: negotiation.summary,
       });
     } catch (error) {
-      console.error(`Failed to start negotiation for candidate ${selected.candidate.agentId}:`, error);
+      console.error(`Negotiation failed for candidate ${selected.candidate.agentId}:`, error);
       outcomes.push({
         negotiationId: '',
         candidateId: selected.candidate.agentId,
         status: 'failed',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        summary: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }
