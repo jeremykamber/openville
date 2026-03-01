@@ -137,13 +137,13 @@ export function HandoffSection() {
         {/* Main content grid */}
         <div className="mt-16 grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8">
           {/* Left — conversation visualization */}
-          <div className="ov-panel-strong overflow-hidden rounded-[2rem] p-5 sm:p-7">
-            {/* Chat header */}
-            <div className="mb-6 flex items-center gap-3">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--ov-surface-1)]">
+          <div className="ov-panel-strong overflow-hidden rounded-[2rem]">
+            {/* Chat header bar */}
+            <div className="flex items-center gap-3 border-b border-[var(--ov-border)] bg-[var(--ov-surface-1)] px-5 py-3 sm:px-7 sm:py-4">
+              <div className="flex size-8 items-center justify-center rounded-lg border border-[rgba(255,77,77,0.18)] bg-[rgba(255,77,77,0.06)]">
                 <div className="size-2 rounded-full bg-[var(--ov-accent)]" />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-[11px] font-semibold tracking-[0.14em] text-[var(--ov-text)] uppercase">
                   Openville Agent
                 </p>
@@ -151,10 +151,16 @@ export function HandoffSection() {
                   Active session
                 </p>
               </div>
+              <div className="flex items-center gap-1.5">
+                <div className="size-1.5 rounded-full bg-green-500/80" />
+                <span className="font-mono text-[9px] tracking-[0.12em] text-[var(--ov-text-dim)] uppercase">
+                  Live
+                </span>
+              </div>
             </div>
 
             {/* Chat bubbles */}
-            <div className="space-y-4">
+            <div className="space-y-4 p-5 sm:p-7">
               {/* User message */}
               <motion.div
                 variants={bubbleUser}

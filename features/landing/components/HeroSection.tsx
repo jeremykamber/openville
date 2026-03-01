@@ -145,13 +145,13 @@ export function HeroSection({
   });
 
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const contentOpacity = useTransform(scrollYProgress, [0.15, 0.85], [1, 0]);
 
   return (
     <section
       ref={sectionRef}
       className="relative min-h-[100dvh] overflow-hidden"
-      aria-label="Hero -- AI-Powered Service Marketplace"
+      aria-label="Hero -- Openville service marketplace"
     >
       {/* === Background layers === */}
 
@@ -245,19 +245,6 @@ export function HeroSection({
         }}
       />
 
-      {/* Horizontal line accents */}
-      <motion.div
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: 1 }}
-        transition={{ duration: 0.8, ease: EASE, delay: 0.3 }}
-        className="pointer-events-none absolute left-0 right-0 top-[35%] z-[1] h-px origin-left"
-        aria-hidden="true"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 20%, rgba(255,77,77,0.08) 50%, rgba(255,255,255,0.04) 80%, transparent 100%)",
-        }}
-      />
-
       {/* === Content === */}
       <motion.div
         className="relative z-[2] flex min-h-[100dvh] items-center"
@@ -270,15 +257,6 @@ export function HeroSection({
             animate="visible"
             className="mx-auto max-w-4xl space-y-8 text-center sm:space-y-10"
           >
-            {/* Kicker badge */}
-            <motion.div variants={fadeUp} className="flex justify-center">
-              <div className="inline-flex items-center rounded-full border border-[var(--ov-border)] bg-[rgba(255,255,255,0.02)] px-4 py-2">
-                <span className="font-mono text-[10px] font-medium tracking-[0.12em] text-[var(--ov-text-muted)] uppercase sm:text-[11px] sm:tracking-[0.16em]">
-                  AI-Powered Service Marketplace
-                </span>
-              </div>
-            </motion.div>
-
             {/* Headline */}
             <motion.h1
               variants={fadeUp}

@@ -3,6 +3,7 @@
 import { motion, useInView } from "motion/react";
 import { useRef } from "react";
 import { EASE, fadeUp, stagger } from "@/lib/motion";
+import { LogoMark } from "@/components/ui/LogoMark";
 
 // ── Motion config ────────────────────────────────────────────────────────────
 
@@ -67,49 +68,47 @@ export function Footer() {
           variants={stagger}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
-          className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]"
+          className="space-y-12 text-center md:grid md:grid-cols-[1.4fr_1fr_1fr_1fr] md:gap-12 md:space-y-0 md:text-left"
         >
           {/* Brand column */}
           <motion.div variants={fadeUp} className="space-y-5">
-            <div className="flex items-center gap-2.5">
-              <div className="relative flex size-8 items-center justify-center rounded-lg border border-[var(--ov-border-strong)] bg-[var(--ov-surface-1)]">
-                <span className="font-display text-sm font-semibold text-[var(--ov-text)]">
-                  O
-                </span>
-              </div>
+            <div className="flex items-center justify-center gap-2.5 md:justify-start">
+              <LogoMark className="size-8 text-[var(--ov-text)]" />
               <span className="font-display text-base font-medium tracking-[-0.02em] text-[var(--ov-text)]">
                 Openville
               </span>
             </div>
-            <p className="max-w-xs text-sm leading-7 text-[var(--ov-text-muted)]">
+            <p className="mx-auto max-w-xs text-sm leading-7 text-[var(--ov-text-muted)] md:mx-0">
               Post one request. Let the AI market find, negotiate with, and book
               the best tradesperson for the job.
             </p>
-            <p className="font-mono text-[10px] tracking-[0.18em] text-[var(--ov-text-dim)] uppercase">
-              AI-Powered Service Marketplace
-            </p>
           </motion.div>
 
-          {/* Link columns */}
-          {FOOTER_LINKS.map((group) => (
-            <motion.div key={group.heading} variants={linkItem}>
-              <p className="font-mono text-[10px] font-semibold tracking-[0.18em] text-[var(--ov-text-muted)] uppercase">
-                {group.heading}
-              </p>
-              <ul className="mt-4 space-y-3">
-                {group.links.map((link) => (
-                  <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-sm text-[var(--ov-text-dim)] transition-colors duration-200 hover:text-[var(--ov-text)]"
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          ))}
+          {/* Link columns — 3-col row on small, individual cols on md+ */}
+          <motion.div
+            variants={linkItem}
+            className="grid grid-cols-3 gap-8 md:col-span-3 md:grid-cols-3"
+          >
+            {FOOTER_LINKS.map((group) => (
+              <div key={group.heading}>
+                <p className="font-mono text-[10px] font-semibold tracking-[0.18em] text-[var(--ov-text-muted)] uppercase">
+                  {group.heading}
+                </p>
+                <ul className="mt-4 space-y-3">
+                  {group.links.map((link) => (
+                    <li key={link.label}>
+                      <a
+                        href={link.href}
+                        className="text-sm text-[var(--ov-text-dim)] transition-colors duration-200 hover:text-[var(--ov-text)]"
+                      >
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </motion.div>
         </motion.div>
 
         {/* Bottom row */}

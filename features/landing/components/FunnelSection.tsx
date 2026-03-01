@@ -99,14 +99,15 @@ export function FunnelSection() {
                 </motion.span>
               ))}
             </div>
-            {/* Stage label chip — all 5 variants stacked, opacity-only crossfade */}
-            <div className="relative">
-              {STAGE_ORDER.map((s, i) => (
+            {/* Stage label chip — all 5 variants stacked, opacity-only crossfade.
+                 The wrapper has a fixed height and min-width so no label overflows. */}
+            <div className="relative h-7 min-w-[10rem] sm:min-w-[11rem]">
+              {STAGE_ORDER.map((s) => (
                 <motion.div
                   key={s}
                   animate={{ opacity: stage === s ? 1 : 0 }}
                   transition={{ duration: 0.25, ease: EASE }}
-                  className={`rounded-full px-4 py-1.5 text-[10px] font-semibold tracking-[0.18em] uppercase ${STAGE_INDICATORS[s].chipClass} ${i > 0 ? "absolute inset-0" : ""}`}
+                  className={`absolute inset-0 flex items-center rounded-full px-4 py-1.5 text-[10px] font-semibold tracking-[0.18em] uppercase ${STAGE_INDICATORS[s].chipClass}`}
                   aria-hidden={stage !== s}
                   style={{ pointerEvents: stage === s ? "auto" : "none" }}
                 >

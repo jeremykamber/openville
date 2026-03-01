@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { EASE } from "@/lib/motion";
+import { LogoMark } from "@/components/ui/LogoMark";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -150,13 +151,7 @@ export function Header({ onCtaClick }: HeaderProps) {
               }}
               className="group flex items-center gap-2.5"
             >
-              <div className="relative flex size-8 items-center justify-center">
-                {/* Logo mark — stylized "O" */}
-                <div className="absolute inset-0 rounded-lg border border-[var(--ov-border-strong)] bg-[var(--ov-surface-1)] transition-all duration-300 group-hover:border-[rgba(255,77,77,0.3)] group-hover:shadow-[0_0_20px_rgba(255,77,77,0.08)]" />
-                <span className="relative font-display text-sm font-semibold text-[var(--ov-text)]">
-                  O
-                </span>
-              </div>
+              <LogoMark className="size-8 text-[var(--ov-text)]" />
               <span className="font-display text-base font-medium tracking-[-0.02em] text-[var(--ov-text)]">
                 Openville
               </span>
@@ -288,9 +283,6 @@ export function Header({ onCtaClick }: HeaderProps) {
             {/* Bottom border accent */}
             <div className="px-8 pb-10">
               <div className="ov-divider" />
-              <p className="mt-4 font-mono text-[10px] tracking-[0.18em] text-[var(--ov-text-dim)] uppercase">
-                AI-Powered Service Marketplace
-              </p>
             </div>
           </motion.div>
         )}

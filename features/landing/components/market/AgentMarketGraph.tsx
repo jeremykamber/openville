@@ -206,10 +206,6 @@ function shouldShowLabel(agent: MarketAgent, stage: MarketGraphStage) {
   return agent.name === WINNER_NAME;
 }
 
-function shouldHideLabelOnMobile(stage: MarketGraphStage) {
-  return stage === "top10";
-}
-
 // ── Connection lines — plain SVG, no motion ─────────────────────────────────
 
 function renderConnections(stage: MarketGraphStage) {
@@ -337,7 +333,6 @@ export function AgentMarketGraph({ stage }: AgentMarketGraphProps) {
                   cluster={agent.cluster}
                   state={nodeState}
                   showLabel={shouldShowLabel(agent, stage)}
-                  hideLabelOnMobile={shouldHideLabelOnMobile(stage)}
                   subtitle={
                     stage === "winner"
                       ? agent.name === WINNER_NAME
@@ -362,27 +357,27 @@ export function AgentMarketGraph({ stage }: AgentMarketGraphProps) {
               const isActive = stage === s;
               const chipLabel =
                 s === "market"
-                  ? "50 visible agents"
+                  ? "50 agents"
                   : s === "top10"
-                    ? "Top 10 survivors"
+                    ? "Top 10"
                     : s === "winner"
-                      ? "Winner justified"
-                      : "Final negotiation";
+                      ? "Winner"
+                      : "Negotiation";
               const secondChipLabel =
                 s === "winner"
-                  ? "Explainable selection"
-                  : "Deterministic narrowing";
+                  ? "Explainable"
+                  : "Narrowing";
 
               return (
                 <motion.div
                   key={s}
                   animate={{ opacity: isActive ? 1 : 0 }}
                   transition={{ duration: 0.35, ease: EASE }}
-                  className="absolute inset-0 ov-panel flex items-center rounded-[1.25rem] px-3 sm:rounded-[1.5rem] sm:px-4"
+                  className="absolute inset-0 ov-panel flex items-center overflow-hidden rounded-[1.25rem] px-3 sm:rounded-[1.5rem] sm:px-4"
                   aria-hidden={!isActive}
                   style={{ pointerEvents: isActive ? "auto" : "none" }}
                 >
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-2">
                     <span className="ov-chip-signal rounded-full px-2.5 py-0.5 text-[8px] font-semibold tracking-[0.18em] uppercase sm:px-3 sm:py-1 sm:text-[10px]">
                       {chipLabel}
                     </span>
