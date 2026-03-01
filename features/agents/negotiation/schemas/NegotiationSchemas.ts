@@ -1,29 +1,11 @@
 import { z } from 'zod';
-
-export const CandidateSchema = z.object({
-  agentId: z.string(),
-  name: z.string(),
-  hourlyRate: z.number().optional(),
-  description: z.string().optional(),
-  specialties: z.array(z.string()).optional(),
-  rating: z.number().optional(),
-  basePrice: z.number().optional(),
-}).passthrough();
-
-export const UserPreferencesSchema = z.object({
-  budget: z.number().optional(),
-  priority: z.enum(['cost', 'quality', 'speed', 'rating']).optional(),
-  additionalRequirements: z.string().optional(),
-  dealBreakers: z.array(z.string()).optional(),
-}).passthrough();
-
-export const JobScopeSchema = z.object({
-  description: z.string(),
-  rooms: z.number().optional(),
-  jobType: z.string().optional(),
-  location: z.string().optional(),
-  urgency: z.enum(['flexible', 'urgent', 'immediate']).optional(),
-}).passthrough();
+import {
+  CandidateSchema,
+  JobScopeSchema,
+  TransportNegotiationResultSchema,
+  TransportNegotiationScopeSchema,
+  UserPreferencesSchema,
+} from '@/features/shared/schemas/WorkflowSchemas';
 
 export const StartNegotiationSchema = z.object({
   buyerAgentId: z.string(),
@@ -43,17 +25,7 @@ export const SendMessageSchema = z.object({
 export const ProposeNegotiationSchema = z.object({
   proposerId: z.string(),
   finalPrice: z.number().int().positive(),
-  scope: z
-    .object({
-      description: z.string().optional(),
-      rooms: z.number().int().positive().optional(),
-    })
-    .refine(
-      (scope) => scope.description !== undefined || scope.rooms !== undefined,
-      {
-        message: 'scope must include at least a description or rooms',
-      }
-    ),
+  scope: TransportNegotiationScopeSchema,
 });
 
 export const CancelNegotiationSchema = z.object({
@@ -69,15 +41,14 @@ export const NegotiationMessageSchema = z.object({
   messageType: z.enum(['message', 'proposal', 'cancellation']).default('message'),
 });
 
-export const NegotiationResultSchema = z.object({
+export const NegotiationResultSchema = TransportNegotiationResultSchema.omit({
+  id: true,
+  status: true,
+  createdAt: true,
+  respondedAt: true,
+  responseMessage: true,
+}).extend({
   negotiationId: z.string().uuid(),
-  proposedBy: z.string(),
-  finalPrice: z.number().int().positive().optional(),
-  scope: z.object({
-    description: z.string().optional(),
-    rooms: z.number().int().positive().optional(),
-    details: z.record(z.string(), z.unknown()).optional(),
-  }).optional(),
 });
 
 export const NegotiationResultResponseSchema = z.object({

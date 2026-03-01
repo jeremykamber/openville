@@ -79,18 +79,19 @@ export async function sendBuyerMessage(
 
   // Get updated messages and have buyer respond for multi-turn negotiation
   const messagesAfterProvider = await repo.getMessages(negotiationId);
-  const buyerTurnPrompt = buildBuyerTurnPrompt(negotiation, messagesAfterProvider, preferences);
-  const buyerAutoResponse = await model.invoke([
-    new SystemMessage(BUYER_AGENT_SYSTEM_PROMPT),
-    new HumanMessage(buyerTurnPrompt),
-  ]);
-  await repo.addMessage(negotiationId, buyerAgentId, 'buyer', buyerAutoResponse.content as string);
+  // Comment out hardcoded action LLM calls (buyer auto-response), delegate actions to agent tools
+  // const buyerTurnPrompt = buildBuyerTurnPrompt(negotiation, messagesAfterProvider, preferences);
+  // const buyerAutoResponse = await model.invoke([
+  //   new SystemMessage(BUYER_AGENT_SYSTEM_PROMPT),
+  //   new HumanMessage(buyerTurnPrompt),
+  // ]);
+  // await repo.addMessage(negotiationId, buyerAgentId, 'buyer', buyerAutoResponse.content as string);
 
   const updatedMessages = await repo.getMessages(negotiationId);
 
   return {
     messages: updatedMessages,
-    buyerResponse: buyerAutoResponse.content as string,
+    buyerResponse: '', // Delegated to deepagent tools
     providerResponse: providerResponse.content as string,
   };
 }

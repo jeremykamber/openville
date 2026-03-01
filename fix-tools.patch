@@ -1,0 +1,125 @@
+--- features/shared/tools/OpenVilleRAGTool.ts
++++ features/shared/tools/OpenVilleRAGTool.ts
+@@ -37,13 +37,14 @@
+ );
+ 
+ export const openVilleSelectTop3Tool = tool(
+-  async ({ top10Ids, criteria }) => {
+-    const options = { top10Ids, criteria };
++  async ({ top10, userPreferences, scope }) => {
++    const options = { top10, userPreferences, scope };
+     const result = await execCLI('select-top3', options);
+     return JSON.stringify(result);
+   },
+   {
+     name: 'openville-select-top3',
+-    description: 'Select top 3 candidates from a list of top 10 candidate IDs based on user preferences and criteria.',
++    description: 'Select top 3 candidates from a list of top 10 candidates based on user preferences and scope.',
+     schema: z.object({
+-      top10Ids: z.array(z.string()).describe('Array of top 10 candidate IDs from search results'),
+-      criteria: z.object({
+-        priority: z.enum(['cost', 'speed', 'rating', 'experience']).describe('Primary selection priority'),
+-        budget: z.number().optional().describe('Maximum budget constraint'),
+-        urgency: z.enum(['asap', 'flexible', 'scheduled']).optional().describe('Urgency requirement'),
+-        location: z.string().optional().describe('Preferred location match')
+-      }).describe('Selection criteria based on user preferences')
++      top10: z.array(z.any()).describe('Array of full candidate objects from search results'),
++      userPreferences: z.any().describe('User preferences object'),
++      scope: z.any().describe('Job scope object')
+     })
+   }
+ );
+ 
+ export const openVilleNegotiateRunTool = tool(
+-  async ({ candidateId, jobDescription, initialOffer }) => {
+-    const options = { candidateId, jobDescription, initialOffer };
++  async ({ buyerAgentId, candidate, preferences, scope, jobId }) => {
++    const options = { buyerAgentId, candidate, preferences, scope, jobId };
+     const result = await execCLI('negotiate-run', options);
+     return JSON.stringify(result);
+   },
+   {
+     name: 'openville-negotiate-run',
+-    description: 'Start a negotiation session with a specific candidate for a job.',
++    description: 'Start a negotiation session with a specific candidate for a job. Returns a negotiation session and initial messages.',
+     schema: z.object({
+-      candidateId: z.string().describe('ID of the candidate to negotiate with'),
+-      jobDescription: z.string().describe('Full job description for negotiation context'),
+-      initialOffer: z.object({
+-        price: z.number().describe('Initial offered price'),
+-        timeline: z.string().describe('Proposed timeline (e.g., "2 weeks")'),
+-        terms: z.string().optional().describe('Additional terms or conditions')
+-      }).optional().describe('Optional initial offer details')
++      buyerAgentId: z.string().describe('ID of the buyer agent (you)'),
++      candidate: z.any().describe('Full candidate object to negotiate with'),
++      preferences: z.any().describe('User preferences for the negotiation'),
++      scope: z.any().describe('Job scope description'),
++      jobId: z.string().optional()
+     })
+   }
+ );
+ 
+ export const openVilleNegotiateActionTool = tool(
+-  async ({ negotiationId, action, message, counterOffer }) => {
+-    if (action === 'reply' && !message) {
+-      throw new Error('Message is required for reply action');
+-    }
+-    const options = { negotiationId, action, message, counterOffer };
++  async ({ negotiationId, action, buyerAgentId, message, candidate, preferences }) => {
++    const options = { negotiationId, action, buyerAgentId, message, candidate, preferences };
+     const result = await execCLI('negotiate-action', options);
+     return JSON.stringify(result);
+   },
+   {
+     name: 'openville-negotiate-action',
+-    description: 'Perform a specific action during an ongoing negotiation: accept offer, reject offer, cancel negotiation, or send a reply message.',
++    description: 'Perform an action during an ongoing negotiation: reply (message), accept, reject, or cancel.',
+     schema: z.object({
+       negotiationId: z.string().describe('ID of the active negotiation session'),
+       action: z.enum(['reply', 'accept', 'reject', 'cancel']).describe('The action to perform'),
+-      message: z.string().optional().describe('Message text for reply action (required when action is "reply")'),
+-      counterOffer: z.object({
+-        price: z.number().optional().describe('Counter-offered price'),
+-        timeline: z.string().optional().describe('Counter-offered timeline'),
+-        terms: z.string().optional().describe('Modified terms')
+-      }).optional().describe('Optional counter-offer details for reply action')
++      buyerAgentId: z.string().describe('Your buyer agent ID'),
++      message: z.string().optional().describe('Message text (required for reply/cancel)'),
++      candidate: z.any().optional().describe('Full candidate object (required for reply)'),
++      preferences: z.any().optional().describe('User preferences (required for reply)')
+     })
+   }
+ );
+ 
+ export const openVilleSelectWinnerTool = tool(
+-  async ({ negotiationResults }) => {
+-    const options = { negotiationResults };
++  async ({ negotiations, userPreferences }) => {
++    const options = { negotiations, userPreferences };
+     const result = await execCLI('select-winner', options);
+     return JSON.stringify(result);
+   },
+   {
+     name: 'openville-select-winner',
+-    description: 'Select the final winner from multiple completed negotiation results based on best overall terms.',
++    description: 'Select the final winner from completed negotiation results.',
+     schema: z.object({
+-      negotiationResults: z.array(z.object({
+-        candidateId: z.string().describe('Candidate ID'),
+-        finalOffer: z.object({
+-          price: z.number().describe('Final agreed price'),
+-          timeline: z.string().describe('Agreed timeline'),
+-          terms: z.string().describe('Final terms')
+-        }).describe('Final offer details'),
+-        accepted: z.boolean().describe('Whether the offer was accepted'),
+-        negotiationHistory: z.array(z.object({
+-          action: z.string(),
+-          timestamp: z.string(),
+-          message: z.string().optional()
+-        })).optional().describe('History of negotiation actions')
+-      })).describe('Array of completed negotiation results from all candidates')
++      negotiations: z.array(z.any()).describe('Array of negotiation objects: { candidateId, result: {...} }'),
++      userPreferences: z.any().describe('User preferences used for selection')
+     })
+   }
+ );
