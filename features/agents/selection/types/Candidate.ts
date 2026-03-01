@@ -1,5 +1,5 @@
 export interface Candidate {
-  id: string;
+  id?: string;
   agentId: string;
   name: string;
   score: number;
@@ -19,7 +19,7 @@ export interface Candidate {
   availability?: string;
   certifications?: string[];
   responseTime?: string;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
   [key: string]: unknown;
 }

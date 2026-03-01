@@ -1,0 +1,155 @@
+#!/usr/bin/env node
+"use strict";
+const fs = require("fs");
+const { argv, env, stdin, exit } = require("process");
+
+function getOpt(name) {
+  const idx = argv.indexOf(name);
+  if (idx === -1) return null;
+  return argv[idx + 1] && !argv[idx + 1].startsWith("--") ? argv[idx + 1] : null;
+}
+
+function hasFlag(name) {
+  return argv.includes(name);
+}
+
+async function readStdin() {
+  if (process.stdin.isTTY) return null;
+  const chunks = [];
+  for await (const chunk of stdin) chunks.push(chunk);
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+function parseJsonInput(raw) {
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    console.error(JSON.stringify({ error: "Invalid JSON input", message: e.message }));
+    exit(2);
+  }
+}
+
+async function main() {
+  const sub = argv[2];
+  if (!sub || sub === "--help" || sub === "-h") {
+    console.log(`
+Usage: openville-cli <command> [options]
+
+Commands:
+  workflow-status     Get current workflow status
+  search-and-select   Search and select top candidates
+  select-top3         Select top 3 candidates from top 10
+  negotiate-run       Run negotiation workflow
+  negotiate-action    Perform a negotiation action (reply, accept, reject, cancel)
+  select-winner       Select final winner
+
+Options:
+  --data <json>       JSON input data
+  --base <url>        Base API URL (default: http://localhost:3000)
+  --api-key <key>     API Key for authorization
+    `);
+    exit(sub ? 0 : 2);
+  }
+
+  const base = getOpt("--base") || env.OPENVILLE_API_BASE || "http://localhost:3000";
+  const apiKey = getOpt("--api-key") || env.OPENVILLE_API_KEY || null;
+  const dataArg = getOpt("--data");
+  let inputData = null;
+
+  if (dataArg) {
+    inputData = parseJsonInput(dataArg);
+  } else {
+    const stdinRaw = await readStdin();
+    if (stdinRaw) {
+      inputData = parseJsonInput(stdinRaw);
+    }
+  }
+
+  const headers = { "Accept": "application/json" };
+  if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+
+  try {
+    if (sub === "workflow-status") {
+      const res = await fetch(`${base}/api/workflow/status`, { method: "GET", headers });
+      const body = await res.json();
+      if (!res.ok) {
+        console.error(JSON.stringify({ status: res.status, body }));
+        exit(1);
+      }
+      console.log(JSON.stringify(body));
+      exit(0);
+    }
+
+    const endpoints = {
+      "search-and-select": "/api/agents/search-and-select",
+      "select-top3": "/api/agents/select-top3",
+      "negotiate-run": "/api/agents/negotiate/start",
+      "select-winner": "/api/agents/select-winner",
+    };
+
+    if (endpoints[sub]) {
+      if (!inputData) {
+        console.error(JSON.stringify({ error: "No JSON input provided. Use --data '<json>' or pipe JSON via stdin." }));
+        exit(2);
+      }
+
+      const path = endpoints[sub];
+      const res = await fetch(`${base}${path}`, {
+        method: "POST",
+        headers: Object.assign({ "Content-Type": "application/json" }, headers),
+        body: JSON.stringify(inputData),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        console.error(JSON.stringify({ status: res.status, body }));
+        exit(1);
+      }
+      console.log(JSON.stringify(body));
+      exit(0);
+    }
+
+    if (sub === "negotiate-action") {
+      if (!inputData) {
+        console.error(JSON.stringify({ error: "No JSON input provided for negotiate-action." }));
+        exit(2);
+      }
+      const { negotiationId, action, ...actionData } = inputData;
+      if (!negotiationId || !action) {
+        console.error(JSON.stringify({ error: "negotiationId and action are required in JSON input" }));
+        exit(2);
+      }
+
+      // Action can be reply, accept, reject, cancel, which maps to the endpoint [id]/<action> 
+      // wait, the endpoints are message, propose, cancel
+      const endpointMap = {
+        reply: "message",
+        propose: "propose",
+        cancel: "cancel",
+        accept: "propose", // accept and reject are usually propose endpoint with different status or handled differently?
+        reject: "propose"
+      };
+
+      const actionPath = endpointMap[action] || action;
+      const res = await fetch(`${base}/api/agents/negotiate/${negotiationId}/${actionPath}`, {
+        method: "POST",
+        headers: Object.assign({ "Content-Type": "application/json" }, headers),
+        body: JSON.stringify(actionData),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        console.error(JSON.stringify({ status: res.status, body }));
+        exit(1);
+      }
+      console.log(JSON.stringify(body));
+      exit(0);
+    }
+
+    console.error(JSON.stringify({ error: `Unknown subcommand: ${sub}` }));
+    exit(2);
+  } catch (err) {
+    console.error(JSON.stringify({ error: "Request failed", message: err.message }));
+    exit(3);
+  }
+}
+
+main();

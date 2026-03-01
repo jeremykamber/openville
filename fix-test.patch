@@ -1,0 +1,18 @@
+--- features/agents/deepagents/OpenVilleRAGAgent.test.ts
++++ features/agents/deepagents/OpenVilleRAGAgent.test.ts
+@@ -6,9 +6,11 @@
+ vi.mock('@langchain/openai', () => {
+   return {
+-    ChatOpenAI: vi.fn().mockImplementation(() => ({
+-      invoke: vi.fn().mockResolvedValue({
+-        content: 'Mocked response'
+-      })
+-    }))
++    ChatOpenAI: class {
++      constructor() {}
++      invoke() {
++        return Promise.resolve({ content: 'Mocked response' });
++      }
++    }
+   };
+ });

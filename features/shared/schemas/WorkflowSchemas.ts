@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const CandidateSchema = z
   .object({
+    id: z.string().optional().default(() => Math.random().toString(36).substring(7)),
     agentId: z.string(),
     name: z.string(),
     score: z.number().optional().default(0),
@@ -21,6 +22,8 @@ export const CandidateSchema = z
     availability: z.string().optional(),
     certifications: z.array(z.string()).optional(),
     responseTime: z.string().optional(),
+    created_at: z.string().optional().default(() => new Date().toISOString()),
+    updated_at: z.string().optional().default(() => new Date().toISOString()),
   })
   .passthrough();
 
