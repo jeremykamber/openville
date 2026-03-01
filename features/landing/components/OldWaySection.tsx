@@ -127,7 +127,7 @@ export function OldWaySection() {
           variants={cardContainer}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
-          className="grid gap-3 sm:grid-cols-3 sm:gap-4"
+          className="grid gap-4 sm:grid-cols-3 sm:gap-5"
         >
           {painPoints.map((point, index) => {
             const iconPath = painIcons[point.type] ?? "";

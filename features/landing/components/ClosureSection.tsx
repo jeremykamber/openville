@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useInView, useScroll, useTransform } from "motion/react";
+import { motion, useInView } from "motion/react";
 import { RequestComposer } from "@/features/chat/components/RequestComposer";
 import { lifecycleSteps } from "@/features/landing/data/storyboard-fixtures";
 import { EASE } from "@/lib/motion";
@@ -80,19 +80,12 @@ export function ClosureSection({
   onSubmit,
   disabled,
 }: ClosureSectionProps) {
-  const sectionRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  });
-  const contentOpacity = useTransform(scrollYProgress, [0.25, 0.75], [1, 0]);
-
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.1 });
 
   return (
     <section
-      ref={sectionRef}
+      ref={ref}
       className="relative px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-16 lg:px-8"
       aria-label="The Future -- booking confirmed, your agent handled the market"
     >
@@ -106,8 +99,7 @@ export function ClosureSection({
         }}
       />
 
-      <motion.div
-        style={{ opacity: contentOpacity }}
+      <div
         className="relative z-[1] mx-auto max-w-6xl"
       >
         {/* Section header */}
@@ -375,7 +367,7 @@ export function ClosureSection({
             </div>
           </div>
         </motion.div>
-      </motion.div>
+      </div>
     </section>
   );
 }
