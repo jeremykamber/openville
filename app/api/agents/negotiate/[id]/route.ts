@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getNegotiation, getMessages } from '@/features/agents/negotiation/db/negotiations';
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

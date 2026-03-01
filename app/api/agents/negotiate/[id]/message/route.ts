@@ -25,9 +25,9 @@ export async function POST(
       return NextResponse.json({ error: 'message is required' }, { status: 400 });
     }
 
-    const providerType = (process.env.USE_MOCK_LLM === 'true' 
+    const providerType = process.env.USE_MOCK_LLM === 'true' 
       ? 'mock' 
-      : (process.env.LLM_PROVIDER === 'openrouter' ? 'openrouter' : 'openai')) as 'openai' | 'openrouter' | 'mock';
+      : (process.env.LLM_PROVIDER === 'openrouter' ? 'openrouter' : 'openai');
 
     const result = await sendBuyerMessage(
       negotiationId,
@@ -35,7 +35,7 @@ export async function POST(
       message,
       candidate,
       preferences,
-      { providerType }
+      { providerType: providerType as any }
     );
 
     return NextResponse.json(result);
