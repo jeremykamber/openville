@@ -49,8 +49,9 @@ export class RAGSearchService {
     fallbacksUsed: WorkflowFallback[];
   }> {
     const market = await marketCandidateRepository.listCandidates();
+    const warnings = [...market.warnings];
     const filteredCandidates = request.filters
-      ? this.applyFilters(market.candidates, request.filters)
+      ? this.applyFiltersGracefully(market.candidates, request.filters, warnings)
       : market.candidates;
 
     const queryEmbedding = await embeddingService.generateEmbedding(request.query);
@@ -58,7 +59,6 @@ export class RAGSearchService {
       (candidate) => Array.isArray(candidate.embedding) && candidate.embedding.length > 0,
     );
 
-    const warnings = [...market.warnings];
     const fallbacksUsed = [...market.fallbacksUsed];
     const retrievalMode =
       queryEmbedding && hasCandidateEmbeddings ? "vector" : "keyword";
@@ -92,6 +92,27 @@ export class RAGSearchService {
       warnings: [...new Set(warnings)],
       fallbacksUsed: [...new Set(fallbacksUsed)],
     };
+  }
+
+  private applyFiltersGracefully(
+    candidates: SearchResult[],
+    filters: SearchFilters,
+    warnings: string[],
+  ): SearchResult[] {
+    // Try with all filters
+    const full = this.applyFilters(candidates, filters);
+    if (full.length > 0) return full;
+
+    // Drop budget filter and retry
+    const noBudget = this.applyFilters(candidates, { ...filters, maxHourlyRate: undefined });
+    if (noBudget.length > 0) {
+      warnings.push("Budget filter relaxed — no agents matched within the stated budget cap.");
+      return noBudget;
+    }
+
+    // Drop all filters — return the full pool ranked by relevance
+    warnings.push("No exact filter matches found — showing best available agents by relevance.");
+    return candidates;
   }
 
   private applyFilters(results: SearchResult[], filters: SearchFilters): SearchResult[] {

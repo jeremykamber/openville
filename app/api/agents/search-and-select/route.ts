@@ -41,8 +41,10 @@ export async function POST(request: NextRequest) {
       query: body.query,
       userPreferences: body.userPreferences,
       filters: {
-        serviceCategories: body.scope.jobType ? [body.scope.jobType] : undefined,
-        location: body.scope.location || body.userPreferences.location,
+        // serviceCategories and location are intentionally omitted here —
+        // they act as hard gates that eliminate all candidates when the
+        // inferred job type or city doesn't exactly match any agent.
+        // Keyword/vector relevance ranking handles service + location matching.
         minRating: body.userPreferences.minRating,
         maxHourlyRate: body.userPreferences.budget,
       },
