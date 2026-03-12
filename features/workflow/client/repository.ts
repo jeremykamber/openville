@@ -1,4 +1,5 @@
 import type {
+  NegotiationDetailResponse,
   OpenvilleWorkflowRepository,
   RunNegotiationsRequest,
   RunNegotiationsResponse,
@@ -91,3 +92,17 @@ export const openvilleWorkflowRepository: OpenvilleWorkflowRepository = {
     });
   },
 };
+
+/**
+ * Fetch negotiation detail (thread messages) for a specific negotiation.
+ * Accepts an optional AbortSignal so callers can cancel stale requests.
+ */
+export async function getNegotiationDetail(
+  negotiationId: string,
+  signal?: AbortSignal,
+): Promise<NegotiationDetailResponse> {
+  return requestJson<NegotiationDetailResponse>(
+    `/api/agents/negotiate/${encodeURIComponent(negotiationId)}`,
+    { method: "GET", signal },
+  );
+}

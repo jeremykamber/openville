@@ -6,7 +6,13 @@ import type {
 
 import type {
   ContextSummaryItem,
+  EliminationCandidateViewModel,
+  FinalistShowdownViewModel,
+  InspectorArtifactSource,
+  InspectorArtifactViewModel,
+  NegotiationDetailResponse,
   NegotiationOutcomeViewModel,
+  NegotiationThreadViewModel,
   SearchAndSelectResponse,
   SearchResultsViewModel,
   SelectWinnerRequest,
@@ -14,8 +20,10 @@ import type {
   ShortlistItemViewModel,
   WinnerSummaryViewModel,
   WorkflowContextFormValues,
+  WorkflowHomepageControls,
   WorkflowJobScope,
   WorkflowPriority,
+  WorkflowSpeedPreset,
   WorkflowUserPreferences,
 } from "@/features/workflow/client/types";
 
@@ -191,6 +199,30 @@ function parseOptionalList(value: string): string[] | undefined {
   return items.length > 0 ? items : undefined;
 }
 
+function resolveSpeedPresetFields(
+  speed: WorkflowSpeedPreset,
+  inferredValues: WorkflowContextFormValues,
+): Pick<WorkflowContextFormValues, "priority" | "urgency"> {
+  if (speed === "fastest") {
+    return {
+      priority: "speed",
+      urgency: "asap",
+    };
+  }
+
+  if (speed === "best_quality") {
+    return {
+      priority: "rating",
+      urgency: inferredValues.urgency,
+    };
+  }
+
+  return {
+    priority: inferredValues.priority,
+    urgency: inferredValues.urgency,
+  };
+}
+
 function dedupeParts(parts: string[]): string[] {
   const seen = new Set<string>();
   const deduped: string[] = [];
@@ -246,6 +278,34 @@ export function createContextFormValues(
     preferredQualifications: "",
     additionalRequirements: "",
   };
+}
+
+export function applyWorkflowHomepageControls(
+  values: WorkflowContextFormValues,
+  inferredValues: WorkflowContextFormValues,
+  controls: WorkflowHomepageControls,
+): WorkflowContextFormValues {
+  const speedFields = resolveSpeedPresetFields(controls.speed, inferredValues);
+
+  return {
+    ...values,
+    ...speedFields,
+    budget: controls.budgetTouched ? controls.budget : values.budget,
+  };
+}
+
+export function deriveSpeedPresetFromContext(
+  values: Pick<WorkflowContextFormValues, "priority" | "urgency">,
+): WorkflowSpeedPreset {
+  if (values.priority === "speed" && values.urgency === "asap") {
+    return "fastest";
+  }
+
+  if (values.priority === "rating") {
+    return "best_quality";
+  }
+
+  return "balanced";
 }
 
 export function buildWorkflowContext(
@@ -467,4 +527,302 @@ export function toWinnerSummaryViewModel(
       priorityAlignmentLabel: `${Math.round(entry.priorityAlignment * 100)}% alignment`,
     })),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Arena adapters (Phase 1 — Agent Economy Redesign)
+// ---------------------------------------------------------------------------
+
+/**
+ * Derive a short elimination reason for a candidate ranked 4–10.
+ * Uses available ranking signals: score, relevance, rating, price.
+ * Always frontend-inferred — never backend-provided truth.
+ */
+function deriveEliminationReason(
+  candidate: Candidate,
+  topThreeLowestScore: number,
+): string {
+  const reasons: string[] = [];
+
+  if (typeof candidate.score === "number" && candidate.score < topThreeLowestScore) {
+    reasons.push("lower overall score");
+  }
+
+  if (typeof candidate.rating === "number" && candidate.rating < 4.0) {
+    reasons.push("below-average rating");
+  }
+
+  if (
+    typeof candidate.basePrice === "number" &&
+    candidate.basePrice > 0 &&
+    candidate.basePrice >= 1000
+  ) {
+    reasons.push("higher price point");
+  }
+
+  if (typeof candidate.relevance === "number" && candidate.relevance < 0.5) {
+    reasons.push("lower relevance match");
+  }
+
+  if (reasons.length === 0) {
+    return "Outperformed by higher-ranked candidates";
+  }
+
+  const joined = reasons.join(", ");
+  return joined.charAt(0).toUpperCase() + joined.slice(1);
+}
+
+/**
+ * Map candidates ranked 4–10 to elimination view-models with explicit field picks.
+ * Candidates must be pre-sorted by rank (index 0 = rank 1).
+ * Only candidates at index 3–9 are included.
+ */
+export function toEliminationViewModels(
+  rankedCandidates: Candidate[],
+): EliminationCandidateViewModel[] {
+  if (rankedCandidates.length <= 3) {
+    return [];
+  }
+
+  const topThree = rankedCandidates.slice(0, 3);
+  const topThreeLowestScore = Math.min(
+    ...topThree.map((c) => (typeof c.score === "number" ? c.score : 0)),
+  );
+
+  const eliminated = rankedCandidates.slice(3, 10);
+
+  return eliminated.map((candidate, index): EliminationCandidateViewModel => ({
+    agentId: candidate.agentId,
+    name: candidate.name,
+    rank: index + 4,
+    score: formatScore(candidate.score),
+    relevance: formatScore(candidate.relevance),
+    ratingLabel:
+      typeof candidate.rating === "number" && candidate.rating > 0
+        ? `${candidate.rating.toFixed(1)} rating`
+        : "No rating",
+    priceLabel: formatCurrency(candidate.basePrice ?? candidate.hourlyRate),
+    eliminationReason: deriveEliminationReason(candidate, topThreeLowestScore),
+  }));
+}
+
+/**
+ * Compose a short thought-bubble pitch from negotiation outcome fields.
+ * Returns a 1–2 sentence summary suitable for rendering inside a ThoughtBubble.
+ */
+function composePitchText(
+  outcome: NegotiationOutcomeTransport | undefined,
+  candidate: Candidate,
+): string {
+  if (!outcome?.result) {
+    return "Awaiting pitch...";
+  }
+
+  const pricePart = typeof outcome.result.finalPrice === "number"
+    ? `Proposed ${formatCurrency(outcome.result.finalPrice)}`
+    : "Custom quote offered";
+
+  const responsePart = outcome.result.responseMessage
+    ? ` — ${outcome.result.responseMessage}`
+    : "";
+
+  const specialtyPart = candidate.specialties?.length
+    ? `. Specializes in ${candidate.specialties.slice(0, 2).join(" and ")}`
+    : candidate.services?.length
+      ? `. Offers ${candidate.services.slice(0, 2).join(" and ")}`
+      : "";
+
+  return `${pricePart}${responsePart}${specialtyPart}.`;
+}
+
+/**
+ * Compose evaluation notes from the winner selection comparison data
+ * for a specific finalist, as seen from the central agent's perspective.
+ */
+function composeEvaluationNotes(
+  candidateId: string,
+  winnerResponse: SelectWinnerResponse | null,
+): string {
+  if (!winnerResponse) {
+    return "";
+  }
+
+  const entry = winnerResponse.comparison.find((c) => c.candidateId === candidateId);
+  if (!entry) {
+    return "";
+  }
+
+  const parts: string[] = [];
+
+  if (entry.strengths.length > 0) {
+    parts.push(`Strengths: ${entry.strengths.slice(0, 2).join(", ")}`);
+  }
+
+  if (entry.weaknesses.length > 0) {
+    parts.push(`Risks: ${entry.weaknesses.slice(0, 2).join(", ")}`);
+  }
+
+  parts.push(`${Math.round(entry.priorityAlignment * 100)}% priority alignment`);
+
+  return parts.join(". ") + ".";
+}
+
+/**
+ * Map top-3 shortlisted candidates to finalist showdown view-models.
+ * Uses explicit field picks from Candidate — no spread.
+ */
+export function toFinalistShowdownViewModels(
+  top3: SelectedCandidate[],
+  outcomes: NegotiationOutcomeTransport[],
+  winnerResponse: SelectWinnerResponse | null,
+): FinalistShowdownViewModel[] {
+  const outcomesById = new Map(
+    outcomes.map((o) => [o.candidateId, o]),
+  );
+
+  return top3.map((item, index): FinalistShowdownViewModel => {
+    const candidate = item.candidate;
+    const outcome = outcomesById.get(candidate.agentId);
+
+    return {
+      agentId: candidate.agentId,
+      name: candidate.name,
+      rank: index + 1,
+      survivalReason: item.reasoning,
+      negotiatedPriceLabel: outcome?.result?.finalPrice != null
+        ? formatCurrency(outcome.result.finalPrice)
+        : formatCurrency(candidate.basePrice ?? candidate.hourlyRate),
+      scopeStance: outcome?.result?.responseMessage ?? "No counter-proposal",
+      strength: candidate.specialties?.slice(0, 2).join(", ")
+        || candidate.services?.slice(0, 2).join(", ")
+        || "General operator",
+      weakness:
+        typeof candidate.rating === "number" && candidate.rating < 4.0
+          ? "Below-average rating"
+          : typeof candidate.successCount === "number" && candidate.successCount < 10
+            ? "Limited track record"
+            : "No notable weaknesses identified",
+      pitchText: composePitchText(outcome, candidate),
+      evaluationNotes: composeEvaluationNotes(candidate.agentId, winnerResponse),
+    };
+  });
+}
+
+/**
+ * Map a negotiation detail API response to the thread inspector view-model.
+ * Handles Date-as-string serialization: createdAt is kept as ISO string.
+ */
+export function toNegotiationThreadViewModel(
+  response: NegotiationDetailResponse,
+): NegotiationThreadViewModel {
+  return {
+    negotiationId: response.negotiation.id,
+    status: response.negotiation.status,
+    messages: response.messages.map((msg) => ({
+      id: msg.id,
+      negotiationId: msg.negotiationId,
+      sender: msg.sender,
+      senderType: msg.senderType as "buyer" | "provider",
+      content: msg.content,
+      messageType: msg.messageType as "message" | "proposal" | "cancellation",
+      createdAt: typeof msg.createdAt === "string"
+        ? msg.createdAt
+        : String(msg.createdAt),
+    })),
+  };
+}
+
+/**
+ * Build inspector artifact view-models from available workflow data.
+ * Each artifact is labeled as "real" or "inferred" depending on its data source.
+ */
+export function toInspectorArtifacts(
+  options: {
+    searchResults?: Candidate[];
+    selectionSummary?: string | null;
+    outcomes?: NegotiationOutcomeTransport[];
+    winnerResponse?: SelectWinnerResponse | null;
+    warnings?: string[];
+    eliminationViewModels?: EliminationCandidateViewModel[];
+  },
+): InspectorArtifactViewModel[] {
+  const artifacts: InspectorArtifactViewModel[] = [];
+
+  // Ranking signals — real data from search
+  if (options.searchResults && options.searchResults.length > 0) {
+    const topSignals = options.searchResults
+      .slice(0, 5)
+      .map((c) => `${c.name}: score ${formatScore(c.score)}, relevance ${formatScore(c.relevance)}`)
+      .join("\n");
+
+    artifacts.push({
+      kind: "ranking_signals",
+      label: "Ranking Signals",
+      source: "real" as InspectorArtifactSource,
+      content: topSignals,
+    });
+  }
+
+  // Shortlist reasoning — real data from selection
+  if (options.selectionSummary) {
+    artifacts.push({
+      kind: "shortlist_reasoning",
+      label: "Shortlist Reasoning",
+      source: "real" as InspectorArtifactSource,
+      content: options.selectionSummary,
+    });
+  }
+
+  // Negotiation excerpts — real data from negotiation outcomes
+  if (options.outcomes && options.outcomes.length > 0) {
+    for (const outcome of options.outcomes) {
+      if (outcome.result?.responseMessage) {
+        artifacts.push({
+          kind: "negotiation_excerpt",
+          label: `Negotiation — ${outcome.candidateId}`,
+          source: "real" as InspectorArtifactSource,
+          content: `Status: ${outcome.status}. ${outcome.result.responseMessage}`,
+        });
+      }
+    }
+  }
+
+  // Fallback warnings — real data from workflow meta
+  if (options.warnings && options.warnings.length > 0) {
+    artifacts.push({
+      kind: "fallback_warning",
+      label: "Workflow Warnings",
+      source: "real" as InspectorArtifactSource,
+      content: options.warnings.join("\n"),
+    });
+  }
+
+  // Decision comparison — real data from winner selection
+  if (options.winnerResponse) {
+    const comparisonLines = options.winnerResponse.comparison.map(
+      (entry) =>
+        `${entry.candidateId}: +[${entry.strengths.join(", ")}] -[${entry.weaknesses.join(", ")}] (${Math.round(entry.priorityAlignment * 100)}% alignment)`,
+    );
+    artifacts.push({
+      kind: "decision_comparison",
+      label: "Decision Comparison",
+      source: "real" as InspectorArtifactSource,
+      content: comparisonLines.join("\n"),
+    });
+  }
+
+  // Elimination rationale — inferred by frontend
+  if (options.eliminationViewModels && options.eliminationViewModels.length > 0) {
+    const eliminationLines = options.eliminationViewModels.map(
+      (vm) => `#${vm.rank} ${vm.name}: ${vm.eliminationReason}`,
+    );
+    artifacts.push({
+      kind: "elimination_rationale",
+      label: "Elimination Rationale (Inferred)",
+      source: "inferred" as InspectorArtifactSource,
+      content: eliminationLines.join("\n"),
+    });
+  }
+
+  return artifacts;
 }

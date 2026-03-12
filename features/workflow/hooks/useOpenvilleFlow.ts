@@ -1,30 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import type { ChatMessage, ChatMessageRole } from "@/features/shared/contracts/ChatMessage";
 import { createMessageId } from "@/features/chat/utils/createMessageId";
 import {
+  applyWorkflowHomepageControls,
   buildContextSummaryItems,
   buildSelectWinnerRequest,
   buildWorkflowContext,
   createContextFormValues,
+  deriveSpeedPresetFromContext,
+  toEliminationViewModels,
+  toFinalistShowdownViewModels,
   toNegotiationOutcomeViewModels,
+  toNegotiationThreadViewModel,
   toSearchResultsViewModel,
   toShortlistViewModels,
   toWinnerSummaryViewModel,
 } from "@/features/workflow/client/adapters";
-import { openvilleWorkflowRepository } from "@/features/workflow/client/repository";
+import {
+  getNegotiationDetail,
+  openvilleWorkflowRepository,
+} from "@/features/workflow/client/repository";
 import type {
+  AgentPitchSceneState,
+  EliminationCandidateViewModel,
+  FinalistShowdownViewModel,
   NegotiationOutcomeViewModel,
+  NegotiationThreadViewModel,
   SearchAndSelectResponse,
   SearchResultsViewModel,
   SelectWinnerResponse,
   ShortlistItemViewModel,
+  WorkflowHomepageControls,
   WinnerSummaryViewModel,
   WorkflowContextFormValues,
+  RunNegotiationsResponse,
 } from "@/features/workflow/client/types";
-import type { RunNegotiationsResponse } from "@/features/workflow/client/types";
 import type { WorkflowExecutionMeta, WorkflowStatusResponse } from "@/features/workflow/types";
 
 type ResourceStatus = "idle" | "loading" | "success" | "error";
@@ -61,6 +74,28 @@ const initialWinnerState: AsyncResource<SelectWinnerResponse> = {
   status: "idle",
   data: null,
   error: null,
+};
+
+const initialHomepageControls: WorkflowHomepageControls = {
+  speed: "balanced",
+  budget: "",
+  budgetTouched: false,
+};
+
+type ThreadLoadStatus = "idle" | "loading" | "success" | "not_found" | "error";
+
+interface NegotiationThreadState {
+  status: ThreadLoadStatus;
+  data: NegotiationThreadViewModel | null;
+  error: string | null;
+  activeNegotiationId: string | null;
+}
+
+const initialThreadState: NegotiationThreadState = {
+  status: "idle",
+  data: null,
+  error: null,
+  activeNegotiationId: null,
 };
 
 function createMessage(role: ChatMessageRole, content: string): ChatMessage {
@@ -113,10 +148,16 @@ export function useOpenvilleFlow() {
   const [input, setInput] = useState("");
   const [requestQuery, setRequestQuery] = useState<string | null>(null);
   const [contextForm, setContextForm] = useState<WorkflowContextFormValues | null>(null);
+  const [inferredContextForm, setInferredContextForm] =
+    useState<WorkflowContextFormValues | null>(null);
+  const [homepageControls, setHomepageControls] =
+    useState<WorkflowHomepageControls>(initialHomepageControls);
   const [workflowStatus, setWorkflowStatus] = useState(initialStatusState);
   const [search, setSearch] = useState(initialSearchState);
   const [negotiation, setNegotiation] = useState(initialNegotiationState);
   const [winner, setWinner] = useState(initialWinnerState);
+  const [threadState, setThreadState] = useState(initialThreadState);
+  const threadAbortRef = useRef<AbortController | null>(null);
 
   const isBusy =
     search.status === "loading" ||
@@ -159,10 +200,71 @@ export function useOpenvilleFlow() {
         return current;
       }
 
-      return {
+      const nextValues = {
         ...current,
         [field]: value,
       };
+
+      if (field === "budget") {
+        setHomepageControls((controls) => ({
+          ...controls,
+          budget: String(value),
+          budgetTouched: true,
+        }));
+      }
+
+      if (field === "priority" || field === "urgency") {
+        setHomepageControls((controls) => ({
+          ...controls,
+          speed: deriveSpeedPresetFromContext({
+            priority: nextValues.priority,
+            urgency: nextValues.urgency,
+          }),
+        }));
+      }
+
+      return nextValues;
+    });
+  }
+
+  function updateHomepageSpeed(speed: WorkflowHomepageControls["speed"]) {
+    let nextControls = homepageControls;
+    setHomepageControls((current) => {
+      nextControls = {
+        ...current,
+        speed,
+      };
+
+      return nextControls;
+    });
+
+    setContextForm((current) => {
+      if (!current || !inferredContextForm) {
+        return current;
+      }
+
+      return applyWorkflowHomepageControls(current, inferredContextForm, nextControls);
+    });
+  }
+
+  function updateHomepageBudget(budget: string) {
+    let nextControls = homepageControls;
+    setHomepageControls((current) => {
+      nextControls = {
+        ...current,
+        budget,
+        budgetTouched: true,
+      };
+
+      return nextControls;
+    });
+
+    setContextForm((current) => {
+      if (!current || !inferredContextForm) {
+        return current;
+      }
+
+      return applyWorkflowHomepageControls(current, inferredContextForm, nextControls);
     });
   }
 
@@ -173,8 +275,22 @@ export function useOpenvilleFlow() {
       return false;
     }
 
+    const inferredValues = createContextFormValues(trimmed);
+    const preparedContext = applyWorkflowHomepageControls(
+      inferredValues,
+      inferredValues,
+      homepageControls,
+    );
+
     setRequestQuery(trimmed);
-    setContextForm(createContextFormValues(trimmed));
+    setInferredContextForm(inferredValues);
+    setContextForm(preparedContext);
+    setHomepageControls((current) => ({
+      ...current,
+      speed: deriveSpeedPresetFromContext(preparedContext),
+      budget: preparedContext.budget,
+      budgetTouched: current.budgetTouched || preparedContext.budget.length > 0,
+    }));
     setMessages([
       ...createIntroTranscript(),
       createMessage("user", trimmed),
@@ -187,6 +303,11 @@ export function useOpenvilleFlow() {
     setSearch(initialSearchState);
     setNegotiation(initialNegotiationState);
     setWinner(initialWinnerState);
+    setThreadState(initialThreadState);
+    if (threadAbortRef.current) {
+      threadAbortRef.current.abort();
+      threadAbortRef.current = null;
+    }
     void refreshStatus();
 
     return true;
@@ -206,6 +327,11 @@ export function useOpenvilleFlow() {
     });
     setNegotiation(initialNegotiationState);
     setWinner(initialWinnerState);
+    setThreadState(initialThreadState);
+    if (threadAbortRef.current) {
+      threadAbortRef.current.abort();
+      threadAbortRef.current = null;
+    }
 
     try {
       const data = await openvilleWorkflowRepository.searchAndSelect({
@@ -257,6 +383,11 @@ export function useOpenvilleFlow() {
       error: null,
     });
     setWinner(initialWinnerState);
+    setThreadState(initialThreadState);
+    if (threadAbortRef.current) {
+      threadAbortRef.current.abort();
+      threadAbortRef.current = null;
+    }
 
     try {
       const data = await openvilleWorkflowRepository.runNegotiations({
@@ -280,6 +411,12 @@ export function useOpenvilleFlow() {
         ...(warningMessage ? [createMessage("system", warningMessage)] : []),
       ]);
       void refreshStatus();
+
+      // Auto-fetch the first negotiation thread for the inspector rail
+      const firstOutcomeId = data.outcomes[0]?.negotiationId;
+      if (firstOutcomeId) {
+        void fetchNegotiationThread(firstOutcomeId);
+      }
     } catch (error) {
       const message =
         error instanceof Error
@@ -372,6 +509,91 @@ export function useOpenvilleFlow() {
     }
   }
 
+  const fetchNegotiationThread = useCallback(
+    async (negotiationId: string) => {
+      // Abort any in-flight request for a previous thread
+      if (threadAbortRef.current) {
+        threadAbortRef.current.abort();
+      }
+
+      const controller = new AbortController();
+      threadAbortRef.current = controller;
+
+      setThreadState({
+        status: "loading",
+        data: null,
+        error: null,
+        activeNegotiationId: negotiationId,
+      });
+
+      try {
+        const response = await getNegotiationDetail(
+          negotiationId,
+          controller.signal,
+        );
+        const viewModel = toNegotiationThreadViewModel(response);
+
+        setThreadState({
+          status: "success",
+          data: viewModel,
+          error: null,
+          activeNegotiationId: negotiationId,
+        });
+      } catch (error) {
+        // Silently ignore aborted requests — a newer fetch superseded this one
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+
+        const message =
+          error instanceof Error ? error.message : "Failed to load negotiation thread.";
+
+        // Distinguish 404 (thread unavailable) from other errors
+        const is404 = message.includes("404") || message.includes("not found");
+
+        if (is404) {
+          // eslint-disable-next-line no-console
+          console.warn(
+            `Negotiation detail 404 for negotiationId=${negotiationId} — negotiation may still be processing.`,
+          );
+
+          setThreadState({
+            status: "not_found",
+            data: null,
+            error: null,
+            activeNegotiationId: negotiationId,
+          });
+        } else {
+          setThreadState({
+            status: "error",
+            data: null,
+            error: message,
+            activeNegotiationId: negotiationId,
+          });
+        }
+      }
+    },
+    [],
+  );
+
+  function retryNegotiationThread() {
+    if (threadState.activeNegotiationId) {
+      void fetchNegotiationThread(threadState.activeNegotiationId);
+    }
+  }
+
+  function resetWorkflow() {
+    setSearch(initialSearchState);
+    setNegotiation(initialNegotiationState);
+    setWinner(initialWinnerState);
+    setThreadState(initialThreadState);
+    setContextForm(null);
+    setInferredContextForm(null);
+    setRequestQuery(null);
+    setInput("");
+    setMessages(createIntroTranscript());
+  }
+
   const contextSummary = contextForm
     ? buildContextSummaryItems(contextForm)
     : [];
@@ -406,6 +628,31 @@ export function useOpenvilleFlow() {
     search.data?.meta ??
     null;
 
+  // ---------------------------------------------------------------------------
+  // Arena view-model derivation (Phase 3)
+  // ---------------------------------------------------------------------------
+
+  const eliminationViewModels: EliminationCandidateViewModel[] = search.data
+    ? toEliminationViewModels(search.data.searchResults)
+    : [];
+
+  const finalistShowdownViewModels: FinalistShowdownViewModel[] =
+    search.data?.selectionResult
+      ? toFinalistShowdownViewModels(
+          search.data.selectionResult.top3,
+          negotiation.data?.outcomes ?? [],
+          winner.data ?? null,
+        )
+      : [];
+
+  const agentPitchSceneState: AgentPitchSceneState = (() => {
+    if (winner.status === "success") return "verdict";
+    if (winner.status === "loading") return "evaluating";
+    if (negotiation.status === "success") return "evaluating";
+    if (negotiation.status === "loading") return "pitching";
+    return "idle";
+  })();
+
   const hasSelection = Boolean(search.data?.selectionResult?.top3.length);
   const canRunMarket = Boolean(
     requestQuery &&
@@ -424,12 +671,18 @@ export function useOpenvilleFlow() {
       : null;
   const canSelectWinner = Boolean(winnerRequest) && !isBusy;
 
+  // Available negotiation thread IDs for the inspector rail thread selector
+  const availableNegotiationIds: string[] = negotiation.data
+    ? negotiation.data.outcomes.map((outcome) => outcome.negotiationId)
+    : [];
+
   return {
     input,
     setInput,
     messages,
     requestQuery,
     contextForm,
+    homepageControls,
     contextSummary,
     workflowStatus,
     search,
@@ -440,6 +693,9 @@ export function useOpenvilleFlow() {
     negotiationViewModels,
     winnerViewModel,
     latestExecutionMeta,
+    eliminationViewModels,
+    finalistShowdownViewModels,
+    agentPitchSceneState,
     isBusy,
     canRunMarket,
     canRunNegotiations,
@@ -450,5 +706,16 @@ export function useOpenvilleFlow() {
     runNegotiations,
     selectWinner,
     updateContextField,
+    updateHomepageSpeed,
+    updateHomepageBudget,
+    // Negotiation thread inspector state
+    threadStatus: threadState.status,
+    thread: threadState.data,
+    threadError: threadState.error,
+    activeNegotiationId: threadState.activeNegotiationId,
+    availableNegotiationIds,
+    fetchNegotiationThread,
+    retryNegotiationThread,
+    resetWorkflow,
   };
 }

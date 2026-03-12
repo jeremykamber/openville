@@ -1,110 +1,77 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { WinnerSummaryViewModel } from "@/features/workflow/client/types";
 
-interface WinnerPanelProps {
+interface VerdictSummaryProps {
   status: "idle" | "loading" | "success" | "error";
   winner: WinnerSummaryViewModel | null;
   error: string | null;
 }
 
-export function WinnerPanel({ status, winner, error }: WinnerPanelProps) {
+/**
+ * Compact verdict summary strip.
+ *
+ * Replaces the previous full-width WinnerPanel card grid.
+ * The winner highlight now appears on the AgentPitchVisualization
+ * scene node; this component renders the verdict reasoning and
+ * summary as a slim strip below the scene.
+ */
+export function VerdictSummary({
+  status,
+  winner,
+  error,
+}: VerdictSummaryProps) {
+  if (status === "idle") return null;
+
+  if (status === "loading") {
+    return (
+      <div className="rounded-[2rem] border border-[var(--ov-border-medium)] bg-[var(--ov-surface-card)] px-5 py-5">
+        <p className="ov-kicker">Verdict</p>
+        <p className="mt-2 text-sm leading-7 text-[var(--ov-text-muted)]">
+          The reasoning layer is comparing the final offers and selecting the
+          strongest fit for the buyer.
+        </p>
+      </div>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <div className="rounded-[2rem] border border-destructive/30 bg-[var(--ov-surface-card)] px-5 py-5">
+        <p className="ov-kicker">Verdict</p>
+        <p className="mt-2 text-sm leading-7 text-destructive">{error}</p>
+      </div>
+    );
+  }
+
+  if (!winner) return null;
+
   return (
-    <Card className="border-[var(--ov-winner-border)] bg-[var(--ov-gradient-winner)] shadow-[0_24px_60px_var(--ov-shadow-strong)]">
-      <CardHeader className="gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="ov-kicker">Step 7</p>
-            <CardTitle className="mt-2 font-display text-xl text-[var(--ov-text)]">
-              Winner summary
-            </CardTitle>
-          </div>
-          {winner ? (
-            <Badge className="border-0 bg-[var(--ov-winner-soft)] text-[var(--ov-winner)]">
-              {winner.confidenceLabel}
-            </Badge>
-          ) : null}
+    <div className="rounded-[2rem] border border-[var(--ov-winner-border)] bg-[var(--ov-gradient-winner)] px-5 py-5 shadow-[0_24px_60px_var(--ov-shadow-strong)]">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="ov-kicker">Verdict</p>
+          <p className="mt-2 font-display text-2xl text-[var(--ov-text)]">
+            {winner.candidateName}
+          </p>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {status === "idle" ? (
-          <p className="text-sm leading-7 text-[var(--ov-text-muted)]">
-            Winner selection stays locked until negotiations return at least one
-            transport-safe outcome.
-          </p>
-        ) : null}
+        <div className="flex gap-2">
+          <Badge className="border-0 bg-[var(--ov-winner-soft)] text-[var(--ov-winner)]">
+            {winner.confidenceLabel}
+          </Badge>
+          <Badge className="ov-chip-human border-0">
+            {winner.priceLabel}
+          </Badge>
+        </div>
+      </div>
 
-        {status === "loading" ? (
-          <p className="text-sm leading-7 text-[var(--ov-text-muted)]">
-            The reasoning layer is comparing the final offers and selecting the
-            strongest fit for the buyer.
-          </p>
-        ) : null}
-
-        {status === "error" ? (
-          <p className="text-sm leading-7 text-destructive">{error}</p>
-        ) : null}
-
-        {winner ? (
-          <>
-            <div className="rounded-[1.5rem] border border-[var(--ov-winner-border)] bg-[rgba(14,18,16,0.55)] px-4 py-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm text-[var(--ov-text-muted)]">Chosen operator</p>
-                  <p className="mt-1 font-display text-2xl text-[var(--ov-text)]">
-                    {winner.candidateName}
-                  </p>
-                </div>
-                <Badge className="ov-chip-human border-0">{winner.priceLabel}</Badge>
-              </div>
-              <p className="mt-4 text-sm leading-7 text-[var(--ov-text-muted)]">
-                {winner.reasoning}
-              </p>
-              <p className="mt-3 text-sm font-medium text-[var(--ov-text)]">
-                {winner.summary}
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {winner.comparison.map((entry) => (
-                <article
-                  key={entry.candidateId}
-                  className="rounded-[1.5rem] border border-[var(--ov-border-medium)] bg-[rgba(14,18,16,0.55)] px-4 py-4"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-[var(--ov-text)]">
-                      {entry.candidateName}
-                    </p>
-                    <Badge className="ov-chip border-0">
-                      {entry.priorityAlignmentLabel}
-                    </Badge>
-                  </div>
-                  <div className="mt-3 grid gap-3 text-sm text-[var(--ov-text-muted)] md:grid-cols-2">
-                    <div>
-                      <p className="font-medium text-[var(--ov-text)]">Strengths</p>
-                      <p className="mt-1">
-                        {entry.strengths.length > 0
-                          ? entry.strengths.join(", ")
-                          : "None recorded"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-[var(--ov-text)]">Weaknesses</p>
-                      <p className="mt-1">
-                        {entry.weaknesses.length > 0
-                          ? entry.weaknesses.join(", ")
-                          : "None recorded"}
-                      </p>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </>
-        ) : null}
-      </CardContent>
-    </Card>
+      <p className="mt-4 text-sm leading-7 text-[var(--ov-text-muted)]">
+        {winner.reasoning}
+      </p>
+      <p className="mt-3 text-sm font-medium text-[var(--ov-text)]">
+        {winner.summary}
+      </p>
+    </div>
   );
 }
