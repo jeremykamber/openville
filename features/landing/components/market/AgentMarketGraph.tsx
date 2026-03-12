@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+
 import {
   finalists,
   marketAgents,
@@ -8,6 +10,7 @@ import {
   type MarketCluster,
   type MarketAgent,
 } from "@/features/landing/data/storyboard-fixtures";
+import type { EliminationCandidateViewModel } from "@/features/workflow/client/types";
 import { cn } from "@/lib/utils";
 import { MarketNode } from "./MarketNode";
 
@@ -19,6 +22,7 @@ export type MarketGraphStage =
   | "market"
   | "top10"
   | "top3"
+  | "top3-pitch"
   | "negotiation"
   | "winner";
 
@@ -30,6 +34,10 @@ interface StageCopy {
 interface AgentMarketGraphProps {
   stage: MarketGraphStage;
   copy: StageCopy;
+  layout?: "fullscreen" | "embedded" | "fullCanvas";
+  className?: string;
+  /** Real elimination data from workflow — overlays inferred reasons on dimmed top-10 nodes. */
+  eliminationData?: EliminationCandidateViewModel[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -66,7 +74,7 @@ const finalistPositions = [
 const winnerPosition = { x: 50, y: 46 };
 
 /* ------------------------------------------------------------------ */
-/*  Position + state helpers (unchanged logic, same data flow)         */
+/*  Position + state helpers                                           */
 /* ------------------------------------------------------------------ */
 
 function groupedAgents(cluster: MarketCluster) {
@@ -106,7 +114,7 @@ function getPosition(agent: MarketAgent, stage: MarketGraphStage) {
       : getMarketPosition(agent);
   }
 
-  if (stage === "top3" || stage === "negotiation") {
+  if (stage === "top3" || stage === "top3-pitch" || stage === "negotiation") {
     if (finalists.some((entry) => entry.agentId === agent.id)) {
       return getFinalistPosition(agent);
     }
@@ -137,7 +145,7 @@ function getNodeState(agent: MarketAgent, stage: MarketGraphStage) {
     return isTop10 ? ("survivor" as const) : ("dimmed" as const);
   }
 
-  if (stage === "top3" || stage === "negotiation") {
+  if (stage === "top3" || stage === "top3-pitch" || stage === "negotiation") {
     return isFinalist ? ("finalist" as const) : ("dimmed" as const);
   }
 
@@ -148,7 +156,7 @@ function getNodeState(agent: MarketAgent, stage: MarketGraphStage) {
 function shouldShowNode(agent: MarketAgent, stage: MarketGraphStage) {
   if (stage === "market" || stage === "top10") return true;
 
-  if (stage === "top3" || stage === "negotiation") {
+  if (stage === "top3" || stage === "top3-pitch" || stage === "negotiation") {
     return top10Agents.some((entry) => entry.id === agent.id);
   }
 
@@ -162,11 +170,40 @@ function shouldShowLabel(agent: MarketAgent, stage: MarketGraphStage) {
     return top10Agents.some((entry) => entry.id === agent.id);
   }
 
-  if (stage === "top3" || stage === "negotiation") {
+  if (stage === "top3" || stage === "top3-pitch" || stage === "negotiation") {
     return finalists.some((entry) => entry.agentId === agent.id);
   }
 
   return agent.name === "RelayCrew Systems";
+}
+
+/* ------------------------------------------------------------------ */
+/*  Elimination label lookup                                           */
+/* ------------------------------------------------------------------ */
+
+function getEliminationSubtitle(
+  agent: MarketAgent,
+  stage: MarketGraphStage,
+  eliminationData?: EliminationCandidateViewModel[],
+): string | undefined {
+  // Only show elimination labels on dimmed top-10 nodes during top3+ stages
+  if (stage !== "top3" && stage !== "top3-pitch" && stage !== "negotiation") {
+    return undefined;
+  }
+
+  const isFinalist = finalists.some((entry) => entry.agentId === agent.id);
+  if (isFinalist) return undefined;
+
+  const isTop10 = top10Agents.some((entry) => entry.id === agent.id);
+  if (!isTop10) return undefined;
+
+  // Try real data first, fall back to fixture
+  if (eliminationData) {
+    const match = eliminationData.find((vm) => vm.name === agent.name);
+    if (match) return match.eliminationReason;
+  }
+
+  return agent.eliminationReason ?? undefined;
 }
 
 /* ------------------------------------------------------------------ */
@@ -197,9 +234,19 @@ function renderConnections(stage: MarketGraphStage) {
 
   return (
     <svg className="absolute inset-0 h-full w-full" aria-hidden="true">
+      <defs>
+        <style>{`
+          @keyframes ov-draw-line {
+            from { stroke-dashoffset: var(--line-length); opacity: 0; }
+            to   { stroke-dashoffset: 0; opacity: 1; }
+          }
+          .ov-line-draw {
+            animation: ov-draw-line 0.9s ease-out forwards;
+          }
+        `}</style>
+      </defs>
       {connections.map((connection, index) => {
         const isWinnerLine = stage === "winner" && index === 0;
-        // Calculate approximate line length for dash animation
         const dx = connection.to.x - connection.from.x;
         const dy = connection.to.y - connection.from.y;
         const length = Math.sqrt(dx * dx + dy * dy) * 8;
@@ -213,11 +260,13 @@ function renderConnections(stage: MarketGraphStage) {
             y2={`${connection.to.y}%`}
             strokeWidth={isWinnerLine ? 2.5 : 1}
             strokeDasharray={stage === "market" ? "6 10" : `${length}`}
-            strokeDashoffset={stage === "market" ? undefined : "0"}
+            strokeDashoffset={stage === "market" ? undefined : length}
+            className={stage !== "market" ? "ov-line-draw" : undefined}
             style={{
               stroke: isWinnerLine ? "var(--ov-stroke-winner)" : "var(--ov-stroke-default)",
-              transition: "stroke-dashoffset 0.8s ease-out, opacity 0.6s ease-out",
-            }}
+              animationDelay: `${index * 80}ms`,
+              "--line-length": `${length}`,
+            } as React.CSSProperties}
           />
         );
       })}
@@ -233,6 +282,7 @@ const stageBadge: Record<MarketGraphStage, string> = {
   market: "50 \u2192 MARKET OPEN",
   top10: "10 \u2192 SURVIVORS",
   top3: "3 \u2192 FINALISTS",
+  "top3-pitch": "3 \u2192 PITCH LIVE",
   negotiation: "3 \u2192 NEGOTIATION LIVE",
   winner: "1 \u2192 WINNER SELECTED",
 };
@@ -241,17 +291,37 @@ const stageBadge: Record<MarketGraphStage, string> = {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function AgentMarketGraph({ stage, copy }: AgentMarketGraphProps) {
+export function AgentMarketGraph({
+  stage,
+  copy,
+  layout = "fullscreen",
+  className,
+  eliminationData,
+}: AgentMarketGraphProps) {
+  const isFullscreen = layout === "fullscreen";
+  const isFullCanvas = layout === "fullCanvas";
+
   return (
     <div
-      className="relative w-screen h-screen"
-      style={{
-        /* Break out of any parent padding to touch viewport edges */
-        marginLeft: "calc(-50vw + 50%)",
-        marginRight: "calc(-50vw + 50%)",
-      }}
+      className={cn(
+        "relative overflow-hidden",
+        isFullscreen
+          ? "h-screen w-screen"
+          : isFullCanvas
+            ? "h-full w-full rounded-[2rem] bg-[#070b09]"
+            : "h-[340px] w-full rounded-[2rem] border border-[var(--ov-border-medium)] bg-[rgba(10,13,11,0.72)] shadow-[0_30px_80px_var(--ov-shadow-strong)] sm:h-[420px]",
+        className,
+      )}
+      style={
+        isFullscreen
+          ? {
+              marginLeft: "calc(-50vw + 50%)",
+              marginRight: "calc(-50vw + 50%)",
+            }
+          : undefined
+      }
     >
-      {/* Ambient background — no borders, no panel, just atmosphere */}
+      {/* Ambient background */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_40%_40%,var(--ov-signal-soft),transparent_55%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_60%,var(--ov-negotiation-soft),transparent_45%)]" />
       <div className="absolute inset-0 ov-grid opacity-[0.12]" />
@@ -262,7 +332,7 @@ export function AgentMarketGraph({ stage, copy }: AgentMarketGraphProps) {
           "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-all duration-1000 ease-out",
           stage === "winner"
             ? "h-64 w-64 bg-[var(--ov-winner-soft)]"
-            : stage === "negotiation"
+            : stage === "negotiation" || stage === "top3-pitch"
               ? "h-48 w-48 bg-[var(--ov-negotiation-soft)]"
               : "h-40 w-40 bg-[var(--ov-signal-soft)]",
         )}
@@ -276,6 +346,7 @@ export function AgentMarketGraph({ stage, copy }: AgentMarketGraphProps) {
 
           const position = getPosition(agent, stage);
           const nodeState = getNodeState(agent, stage);
+          const elimSubtitle = getEliminationSubtitle(agent, stage, eliminationData);
 
           return (
             <MarketNode
@@ -294,7 +365,9 @@ export function AgentMarketGraph({ stage, copy }: AgentMarketGraphProps) {
                     : undefined
                   : nodeState === "finalist"
                     ? agent.specialty
-                    : undefined
+                    : nodeState === "dimmed" && elimSubtitle
+                      ? elimSubtitle
+                      : undefined
               }
             />
           );
@@ -302,15 +375,34 @@ export function AgentMarketGraph({ stage, copy }: AgentMarketGraphProps) {
       </div>
 
       {/* Bottom-left: stage copy overlay */}
-      <div className="absolute bottom-8 left-6 z-10 max-w-sm sm:bottom-12 sm:left-10">
+      <div
+        className={cn(
+          "absolute z-10 max-w-sm",
+          isFullscreen
+            ? "bottom-8 left-6 sm:bottom-12 sm:left-10"
+            : "bottom-6 left-5 sm:bottom-8 sm:left-8",
+        )}
+      >
         <p className="ov-kicker">{copy.eyebrow}</p>
-        <h3 className="mt-2 font-display text-2xl leading-tight text-[var(--ov-text)] sm:text-3xl lg:text-4xl">
+        <h3
+          className={cn(
+            "mt-2 font-display leading-tight text-[var(--ov-text)]",
+            isFullscreen ? "text-2xl sm:text-3xl lg:text-4xl" : "text-xl sm:text-3xl",
+          )}
+        >
           {copy.title}
         </h3>
       </div>
 
       {/* Bottom-right: stage badge */}
-      <div className="absolute bottom-8 right-6 z-10 sm:bottom-12 sm:right-10">
+      <div
+        className={cn(
+          "absolute z-10",
+          isFullscreen
+            ? "bottom-8 right-6 sm:bottom-12 sm:right-10"
+            : "bottom-6 right-5 sm:bottom-8 sm:right-8",
+        )}
+      >
         <span
           className={cn(
             "rounded-full border px-4 py-1.5 text-[11px] font-semibold tracking-[0.2em] uppercase transition-colors duration-500",

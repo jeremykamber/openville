@@ -28,6 +28,10 @@ const STAGE_COPY: Record<MarketGraphStage, { eyebrow: string; title: string }> =
     eyebrow: "Top Three",
     title: "Three finalists survive once reliability, scope, and certainty matter most.",
   },
+  "top3-pitch": {
+    eyebrow: "Pitch Live",
+    title: "Finalists pitch their case through live thought bubbles.",
+  },
   negotiation: {
     eyebrow: "Negotiation",
     title: "Three finalists negotiate on price, scope, and certainty.",
