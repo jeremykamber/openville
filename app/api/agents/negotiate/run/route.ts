@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { negotiationPersistenceMode } from "@/features/agents/negotiation/db/SupabaseNegotiationRepository";
 import { runNegotiations } from "@/features/agents/negotiation/runNegotiations";
 import { RunNegotiationsRequestSchema } from "@/features/shared/schemas/WorkflowSchemas";
 import { mergeExecutionMeta, resolveLlmProvider } from "@/features/workflow/server/runtime";
@@ -35,18 +34,7 @@ export async function POST(request: NextRequest) {
             }
           : undefined,
       })),
-      meta: mergeExecutionMeta(
-        llm.meta,
-        negotiationPersistenceMode === "memory"
-          ? {
-              mode: "degraded",
-              fallbacksUsed: [],
-              warnings: [
-                "Supabase admin is not configured. Using in-memory negotiation persistence fallback.",
-              ],
-            }
-          : {},
-      ),
+      meta: mergeExecutionMeta(llm.meta),
     });
   } catch (error) {
     console.error("Run negotiations error:", error);

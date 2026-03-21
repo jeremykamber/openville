@@ -5,6 +5,7 @@ import { defaultNegotiationRepository as db } from '../db/SupabaseNegotiationRep
 // We'll mock supabaseAdmin to emulate DB insert/select
 // mock the supabase server import path that the repository uses
 vi.mock('@/lib/supabase/server', () => ({
+  hasSupabaseAdminConfig: true,
   supabaseAdmin: {
     from: () => ({
       insert: () => ({ select: () => ({ single: async () => ({ data: {

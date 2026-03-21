@@ -49,6 +49,9 @@ export async function POST(request: NextRequest) {
 
     rankedCandidates.sort((a, b) => b.score - a.score);
     const configuredLlmProvider = getConfiguredLlmProvider();
+    if (configuredLlmProvider === "unconfigured") {
+      throw new Error("No live LLM provider is configured for ranked search.");
+    }
 
     const response: SearchResponse = {
       candidates: rankedCandidates.slice(0, limit),
@@ -64,17 +67,15 @@ export async function POST(request: NextRequest) {
         mode: fallbacksUsed.length > 0 ? "degraded" : "live",
         dataSource: source,
         retrievalMode,
-        llmProvider:
-          configuredLlmProvider === "unconfigured"
-            ? "mock"
-            : configuredLlmProvider,
+        llmProvider: configuredLlmProvider,
         fallbacksUsed,
         warnings,
       },
     };
 
     return NextResponse.json(response);
-  } catch {
+  } catch (error) {
+    console.error("Ranked search error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

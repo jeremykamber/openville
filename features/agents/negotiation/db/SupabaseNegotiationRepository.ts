@@ -7,7 +7,6 @@ import type {
   NegotiationStatus,
   NegotiationTurn,
 } from "../types";
-import { createInMemoryNegotiationRepository } from "./InMemoryNegotiationRepository";
 import type { NegotiationRepository } from "./NegotiationRepository";
 
 export class SupabaseNegotiationRepository implements NegotiationRepository {
@@ -215,9 +214,7 @@ export class SupabaseNegotiationRepository implements NegotiationRepository {
   }
 }
 
-export const negotiationPersistenceMode = hasSupabaseAdminConfig ? "supabase" : "memory";
+export const negotiationPersistenceMode = hasSupabaseAdminConfig ? "supabase" : "unconfigured";
 
 export const defaultNegotiationRepository: NegotiationRepository =
-  negotiationPersistenceMode === "supabase"
-    ? new SupabaseNegotiationRepository()
-    : createInMemoryNegotiationRepository();
+  new SupabaseNegotiationRepository();
