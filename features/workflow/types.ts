@@ -7,6 +7,7 @@ export type WorkflowFallback = "seed_market" | "keyword_search" | "mock_llm";
 export interface WorkflowExecutionMeta {
   mode: Exclude<WorkflowReadiness, "unavailable">;
   llmProvider: Exclude<WorkflowLlmProvider, "unconfigured">;
+  model?: string;
   fallbacksUsed: WorkflowFallback[];
   warnings: string[];
   dataSource?: WorkflowDataSource;

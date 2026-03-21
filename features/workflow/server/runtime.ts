@@ -9,8 +9,26 @@ import {
 
 export interface ResolvedLlmProvider {
   providerType: Exclude<ProviderType, "anthropic">;
-  meta: Pick<WorkflowExecutionMeta, "mode" | "llmProvider" | "fallbacksUsed" | "warnings">;
+  meta: Pick<
+    WorkflowExecutionMeta,
+    "mode" | "llmProvider" | "model" | "fallbacksUsed" | "warnings"
+  >;
 }
+
+type ExecutionMetaPart =
+  | Partial<WorkflowExecutionMeta>
+  | {
+      mode?: WorkflowExecutionMeta["mode"];
+      llmProvider?: WorkflowExecutionMeta["llmProvider"];
+      model?: WorkflowExecutionMeta["model"];
+      dataSource?: WorkflowExecutionMeta["dataSource"];
+      retrievalMode?: WorkflowExecutionMeta["retrievalMode"];
+      fallbacksUsed?: readonly WorkflowFallback[];
+      warnings?: readonly string[];
+    };
+
+const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
+const DEFAULT_OPENROUTER_MODEL = "openai/gpt-4o-mini";
 
 export function isEmbeddingConfigured(): boolean {
   return Boolean(process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY);
@@ -29,7 +47,11 @@ export function getEmbeddingProviderLabel(): "openai" | "openrouter" | "unconfig
 }
 
 export function isMockLlmFallbackAllowed(): boolean {
-  return process.env.ALLOW_MOCK_LLM_FALLBACK !== "false";
+  return process.env.ALLOW_MOCK_LLM_FALLBACK === "true";
+}
+
+export function isKeywordSearchFallbackAllowed(): boolean {
+  return process.env.ALLOW_KEYWORD_SEARCH_FALLBACK === "true";
 }
 
 export function getConfiguredLlmProvider(): WorkflowLlmProvider {
@@ -44,6 +66,16 @@ export function getConfiguredLlmProvider(): WorkflowLlmProvider {
   }
 
   return "unconfigured";
+}
+
+export function resolveConfiguredLlmModel(
+  provider: Exclude<ProviderType, "anthropic" | "mock">,
+): string {
+  if (provider === "openrouter") {
+    return process.env.OPENROUTER_MODEL ?? DEFAULT_OPENROUTER_MODEL;
+  }
+
+  return process.env.OPENAI_MODEL ?? DEFAULT_OPENAI_MODEL;
 }
 
 export function resolveLlmProvider(
@@ -73,6 +105,7 @@ export function resolveLlmProvider(
       meta: {
         mode: "live",
         llmProvider: preferred,
+        model: resolveConfiguredLlmModel(preferred),
         fallbacksUsed: [],
         warnings: [],
       },
@@ -97,23 +130,32 @@ export function resolveLlmProvider(
 }
 
 export function mergeExecutionMeta(
-  ...parts: Array<Partial<WorkflowExecutionMeta>>
+  ...parts: Array<ExecutionMetaPart | undefined>
 ): WorkflowExecutionMeta {
   const fallbacks = new Set<WorkflowFallback>();
   const warnings = new Set<string>();
 
   let mode: WorkflowExecutionMeta["mode"] = "live";
   let llmProvider: WorkflowExecutionMeta["llmProvider"] = "mock";
+  let model: WorkflowExecutionMeta["model"];
   let dataSource: WorkflowExecutionMeta["dataSource"];
   let retrievalMode: WorkflowExecutionMeta["retrievalMode"];
 
   for (const part of parts) {
+    if (!part) {
+      continue;
+    }
+
     if (part.mode === "degraded") {
       mode = "degraded";
     }
 
     if (part.llmProvider) {
       llmProvider = part.llmProvider;
+    }
+
+    if ("model" in part) {
+      model = part.model;
     }
 
     if (part.dataSource) {
@@ -136,6 +178,7 @@ export function mergeExecutionMeta(
   return {
     mode,
     llmProvider,
+    model,
     fallbacksUsed: [...fallbacks],
     warnings: [...warnings],
     dataSource,
@@ -169,13 +212,13 @@ export function buildWorkflowStatusResponse(input: {
 
   if (!llmReady && !mockAllowed) {
     readiness = "unavailable";
-    warnings.push("No live LLM provider is configured and mock fallback is disabled.");
+    warnings.push("No live LLM provider is configured.");
   } else if (!llmReady && mockAllowed) {
-    warnings.push("No live LLM provider is configured. Mock fallback is available.");
+    warnings.push("No live LLM provider is configured.");
   }
 
   if (!retrievalReady) {
-    warnings.push("Embeddings are unavailable. Keyword retrieval fallback will be used.");
+    warnings.push("Embeddings are unavailable. Retrieval is disabled.");
   }
 
   return {
@@ -190,12 +233,12 @@ export function buildWorkflowStatusResponse(input: {
       mode: retrievalReady ? "vector" : "keyword",
       embeddingProvider,
       ready: retrievalReady,
-      fallbackAllowed: true,
+      fallbackAllowed: false,
     },
     llm: {
-      provider: llmProvider === "unconfigured" && mockAllowed ? "mock" : llmProvider,
+      provider: llmProvider,
       ready: llmReady,
-      fallbackAllowed: mockAllowed,
+      fallbackAllowed: false,
     },
     warnings,
   };
