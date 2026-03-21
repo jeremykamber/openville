@@ -1,0 +1,22 @@
+--- features/agents/deepagents/OpenVilleRAGAgent.ts
++++ features/agents/deepagents/OpenVilleRAGAgent.ts
+@@ -31,8 +31,8 @@
+ Then use openville-negotiate-action to reply, accept, or reject based on the user's requirements.
+ Continue until the negotiation is completed (either accepted or rejected).
+ Return the final negotiation result.`,
+-      tools: [openVilleNegotiateRunTool, openVilleNegotiateActionTool],
+-      model: model,
++      tools: [openVilleNegotiateRunTool as any, openVilleNegotiateActionTool as any],
++      model: model as any,
+     };
+ 
+     const orchestratorTools = [
+@@ -43,7 +43,7 @@
+ 
+     this.agent = createDeepAgent({
+       model: model as any,
+-      tools: orchestratorTools,
++      tools: orchestratorTools as any,
+       subagents: [negotiationSubagent],
+       systemPrompt: `You are the OpenVille RAG Agent Orchestrator.
+ Your job is to follow a specific workflow:

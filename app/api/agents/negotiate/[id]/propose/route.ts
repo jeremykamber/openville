@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { proposeNegotiationResult, NegotiateOptions } from '@/features/agents/negotiation/negotiate';
 import { ProposeNegotiationSchema } from '@/features/agents/negotiation/schemas/NegotiationSchemas';
+import { resolveLlmProvider } from '@/features/workflow/server/runtime';
 
 export async function POST(
   request: NextRequest,
@@ -17,16 +18,14 @@ export async function POST(
 
     const { proposerId, finalPrice, scope } = validated.data;
 
-    const providerType = process.env.USE_MOCK_LLM === 'true' 
-      ? 'mock' 
-      : (process.env.LLM_PROVIDER === 'openrouter' ? 'openrouter' : 'openai');
+    const llm = resolveLlmProvider();
 
     const result = await proposeNegotiationResult(
       negotiationId,
       proposerId,
       finalPrice,
       scope,
-      { providerType: providerType as NegotiateOptions['providerType'] }
+      { providerType: llm.providerType as NegotiateOptions['providerType'] }
     );
 
     return NextResponse.json(result);

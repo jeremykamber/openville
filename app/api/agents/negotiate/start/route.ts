@@ -3,6 +3,7 @@ import { startNegotiation, NegotiateOptions } from '@/features/agents/negotiatio
 import { defaultNegotiationRepository as repo } from '@/features/agents/negotiation/db/SupabaseNegotiationRepository';
 import { StartNegotiationSchema } from '@/features/agents/negotiation/schemas/NegotiationSchemas';
 import { Candidate, UserPreferences, JobScope } from '@/features/agents/selection/types';
+import { resolveLlmProvider } from '@/features/workflow/server/runtime';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,9 +16,7 @@ export async function POST(request: NextRequest) {
 
     const { buyerAgentId, candidate, preferences, scope, jobId } = validated.data;
 
-    const providerType = process.env.USE_MOCK_LLM === 'true' 
-      ? 'mock' 
-      : (process.env.LLM_PROVIDER === 'openrouter' ? 'openrouter' : 'openai');
+    const llm = resolveLlmProvider();
 
     const negotiation = await startNegotiation(
       buyerAgentId, 
@@ -25,7 +24,7 @@ export async function POST(request: NextRequest) {
       preferences as UserPreferences, 
       scope as JobScope, 
       jobId,
-      { providerType: providerType as NegotiateOptions['providerType'] }
+      { providerType: llm.providerType as NegotiateOptions['providerType'] }
     );
 
     const messages = await repo.getMessages(negotiation.id);

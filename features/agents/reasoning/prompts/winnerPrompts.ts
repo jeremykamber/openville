@@ -1,6 +1,15 @@
 import { NegotiationResult } from '../../negotiation/types/NegotiationResult';
 import { UserPreferences } from '../../selection/types';
 
+function formatCreatedAt(value: Date | string): string {
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toISOString();
+}
+
 export const SELECT_WINNER_SYSTEM_PROMPT = `You are an expert negotiator analyzing completed negotiation outcomes to select the best candidate for a client.
 
 Compare negotiation results based on:
@@ -26,7 +35,7 @@ ${negotiations.map((n, i) => `Candidate ${i + 1} (ID: ${n.candidateId}):
 - Status: ${n.result.status}
 - Proposed Scope: ${n.result.scope?.description ?? 'Original scope'}
 - Response: ${n.result.responseMessage ?? 'No response'}
-- Created: ${n.result.createdAt.toISOString()}
+- Created: ${formatCreatedAt(n.result.createdAt)}
 `).join('\n')}
 
 Compare these negotiation outcomes and select the winner that best serves the client's priorities. Provide detailed reasoning for why this candidate wins over the others, including specific strengths and weaknesses of each option.`;

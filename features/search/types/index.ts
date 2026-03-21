@@ -1,14 +1,10 @@
+import type {
+  Candidate as WorkflowCandidate,
+  UserPreferences as WorkflowUserPreferences,
+} from "@/features/agents/selection/types";
+
 /* INPUT TYPES */
-export interface UserPreferences {
-    budget?: number;
-    priority?: 'cost' | 'quality' | 'speed' | 'rating';
-    dealBreakers?: string[];
-    preferredQualifications?: string[];
-    availabilityRequired?: string;
-    minRating?: number;
-    location?: string;
-    availability?: 'any' | 'weekdays' | 'weekends';
-}
+export type UserPreferences = WorkflowUserPreferences;
 
 export interface SearchRequest {
     query: string;
@@ -25,35 +21,22 @@ export interface SearchFilters {
     location?: string;
 }
 
-/* OUTPUT TYPES - Extended to match Candidate type from selection */
-export interface SearchResult {
-    agentId: string;
-    name: string;
-    score: number;
-    relevance: number;
-    successCount: number;
-    rating: number;
-    yearsOnPlatform?: number;
-    yearsExperience?: number;
-    location?: string;
-    services?: string[];
-    specialties?: string[];
-    hourlyRate?: number;
-    basePrice?: number;
-    description?: string;
-    tags?: string[];
-    embedding?: number[];
-    availability?: string;
-    certifications?: string[];
-    responseTime?: string;
-    [key: string]: unknown;
-}
+/* OUTPUT TYPES - canonical candidate shape shared with selection */
+export type SearchResult = WorkflowCandidate;
 
 export interface SearchResponse {
     candidates: SearchResult[];
     totalFound: number;
     query: string;
     rankingWeights: RankingWeights;
+    meta?: {
+      mode: 'live' | 'degraded';
+      llmProvider: 'openai' | 'openrouter' | 'mock';
+      fallbacksUsed: string[];
+      warnings: string[];
+      dataSource?: 'supabase' | 'seed';
+      retrievalMode?: 'vector' | 'keyword';
+    };
 }
 
 export interface RankingWeights {

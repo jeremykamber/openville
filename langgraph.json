@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "."
+  ],
+  "graphs": {
+    "openville-rag-agent": "./features/agents/deepagents/OpenVilleRAGAgent.ts:agent"
+  },
+  "env": ".env.local"
+}

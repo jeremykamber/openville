@@ -8,7 +8,7 @@ describe('RAGSearchService', () => {
       expect(result.results).toBeDefined();
       expect(result.results.length).toBeGreaterThan(0);
       expect(result.queryEmbedding).toBeDefined();
-      expect(result.queryEmbedding.length).toBe(1536);
+      expect(result.queryEmbedding?.length).toBe(1536);
     });
 
     it('returns top 50 results max', async () => {
