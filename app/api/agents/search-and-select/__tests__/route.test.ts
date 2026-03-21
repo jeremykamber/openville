@@ -1,9 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 
 import { POST } from "../route";
 
 describe("POST /api/agents/search-and-select", () => {
+  beforeAll(() => {
+    process.env.ALLOW_MOCK_LLM_FALLBACK = "true";
+  });
+
   it("returns a shortlist from the seeded fallback market for plumbing", async () => {
     const request = new NextRequest(
       "http://localhost:3000/api/agents/search-and-select",
