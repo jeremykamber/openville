@@ -12,6 +12,7 @@ describe('openville-cli', () => {
     } catch (err) {
       expect(err.status).toBe(2);
       expect(err.stderr).toContain('No subcommand provided');
+      expect(err.stdout).toContain('Usage: openville-cli');
     }
   });
 
