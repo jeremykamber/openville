@@ -80,6 +80,7 @@ export const SelectTop3RequestSchema = z.object({
   top10: z.array(CandidateSchema).min(3),
   userPreferences: UserPreferencesSchema,
   scope: JobScopeSchema,
+  providerType: z.enum(["openai", "openrouter", "mock"]).optional(),
 });
 
 export const SearchAndSelectRequestSchema = z.object({
@@ -137,6 +138,17 @@ export const RunNegotiationsRequestSchema = z.object({
   preferences: UserPreferencesSchema,
   scope: JobScopeSchema,
   jobId: z.string().optional(),
+  providerType: z.enum(["openai", "openrouter", "mock"]).optional(),
+  maxRounds: z.number().int().positive().max(5).optional(),
+});
+
+export const RunAllWorkflowRequestSchema = z.object({
+  query: z.string().min(1),
+  userPreferences: UserPreferencesSchema,
+  scope: JobScopeSchema,
+  buyerAgentId: z.string().min(1),
+  jobId: z.string().optional(),
+  limit: z.number().int().positive().max(10).optional(),
   providerType: z.enum(["openai", "openrouter", "mock"]).optional(),
   maxRounds: z.number().int().positive().max(5).optional(),
 });
