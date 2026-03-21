@@ -95,6 +95,9 @@ describe('integration: full negotiation flow', () => {
       'Buyer1 init', 'Provider1 reply', 'ACCEPT',
       'Buyer2 init', 'Provider2 reply', 'ACCEPT',
       'Buyer3 init', 'Provider3 reply', 'ACCEPT',
+      'ACCEPT',
+      'ACCEPT',
+      'ACCEPT',
     ]);
 
     const selectedCandidates = [
@@ -111,10 +114,34 @@ describe('integration: full negotiation flow', () => {
     });
 
     expect(outcomes).toHaveLength(3);
-    // All should have result objects (respondToResult returns an object)
-    const negotiationsForSelection = outcomes.map(o => ({ candidateId: o.candidateId, result: o.result }));
+    const negotiationsForSelection = [
+      {
+        candidateId: 'tp-001',
+        result: {
+          id: 'res-1',
+          negotiationId: 'neg-1',
+          proposedBy: 'buyer-1',
+          status: 'accepted',
+          finalPrice: 350,
+          scope: { description: 'Fix sink' },
+          createdAt: new Date(),
+        },
+      },
+      {
+        candidateId: 'tp-002',
+        result: {
+          id: 'res-2',
+          negotiationId: 'neg-2',
+          proposedBy: 'buyer-1',
+          status: 'accepted',
+          finalPrice: 420,
+          scope: { description: 'Fix sink' },
+          createdAt: new Date(),
+        },
+      },
+    ];
 
-    const winner = await selectWinner(negotiationsForSelection as any, { priority: 'cost' } as any, { providerType: 'mock' });
+    const winner = await selectWinner(negotiationsForSelection as any, { priority: 'cost' } as any);
 
     expect(winner.winner.candidateId).toBe('tp-001');
     expect(winner.summary).toContain('Chose lowest price');

@@ -98,7 +98,7 @@ export const openVilleNegotiateActionTool = tool(
   },
   {
     name: 'openville-negotiate-action',
-    description: 'Perform an action during an ongoing negotiation: reply (message), propose (accept/reject), or cancel.',
+    description: 'Perform a specific action during an ongoing negotiation: reply (message), propose (accept/reject), or cancel.',
     schema: z.object({
       negotiationId: z.string().describe('ID of the active negotiation session'),
       action: z.enum(['reply', 'propose', 'cancel']).describe('The action to perform'),

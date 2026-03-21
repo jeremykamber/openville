@@ -50,9 +50,7 @@ describe('selectTop3', () => {
   });
 
   it('should return top 3 with enriched candidate data', async () => {
-    const result = await selectTop3(mockCandidates, mockPreferences, mockScope, {
-      providerType: 'mock',
-    });
+    const result = await selectTop3(mockCandidates, mockPreferences, mockScope);
     
     expect(result.top3).toHaveLength(3);
     expect(result.top3[0].candidate.agentId).toBe('tp-001');
@@ -60,17 +58,13 @@ describe('selectTop3', () => {
   });
 
   it('should preserve reasoning from LLM', async () => {
-    const result = await selectTop3(mockCandidates, mockPreferences, mockScope, {
-      providerType: 'mock',
-    });
+    const result = await selectTop3(mockCandidates, mockPreferences, mockScope);
     
     expect(result.top3[0].reasoning).toBe('Best cost match');
   });
 
   it('should include summary', async () => {
-    const result = await selectTop3(mockCandidates, mockPreferences, mockScope, {
-      providerType: 'mock',
-    });
+    const result = await selectTop3(mockCandidates, mockPreferences, mockScope);
     
     expect(result.summary).toBe('Selected based on budget priority');
   });
@@ -88,7 +82,20 @@ describe('selectTop3', () => {
     } as unknown as ReturnType<typeof createChatModel>);
 
     await expect(
-      selectTop3(mockCandidates, mockPreferences, mockScope, { providerType: 'mock' })
+      selectTop3(mockCandidates, mockPreferences, mockScope)
     ).rejects.toThrow(/Invalid agentId/);
+  });
+
+  it('should use deterministic mock fallback ordering when requested', async () => {
+    const result = await selectTop3(mockCandidates, mockPreferences, mockScope, {
+      providerType: 'mock',
+    });
+
+    expect(result.top3.map((item) => item.candidate.agentId)).toEqual([
+      'tp-002',
+      'tp-001',
+      'tp-004',
+    ]);
+    expect(result.summary).toContain('Mock fallback selected the top 3 candidates');
   });
 });

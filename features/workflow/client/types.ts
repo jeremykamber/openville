@@ -47,10 +47,12 @@ export interface SearchAndSelectRequest {
 
 export interface SearchAndSelectResponse {
   searchResults: Candidate[];
+  rankedResults?: Candidate[];
   selectionResult: {
     top3: SelectedCandidate[];
     summary: string;
     negotiationIds?: string[];
+    eliminationReasons?: Record<string, string>;
   } | null;
   meta: WorkflowExecutionMeta;
 }
@@ -98,9 +100,47 @@ export interface SelectWinnerResponse {
   >;
 }
 
+export interface RunAllWorkflowRequest {
+  query: string;
+  userPreferences: WorkflowUserPreferences;
+  scope: WorkflowJobScope;
+  buyerAgentId: string;
+  jobId?: string;
+  limit?: number;
+  providerType?: WorkflowProviderType;
+  maxRounds?: number;
+}
+
+export interface RunAllWorkflowResponse {
+  searchResults: SearchAndSelectResponse["searchResults"];
+  selectionResult: SearchAndSelectResponse["selectionResult"];
+  negotiationOutcomes: RunNegotiationsResponse["outcomes"];
+  winnerResult: SelectWinnerResponse | null;
+  meta: WorkflowExecutionMeta;
+  stageMeta: {
+    search: SearchAndSelectResponse["meta"];
+    negotiation?: RunNegotiationsResponse["meta"];
+    winner?: SelectWinnerResponse["meta"];
+  };
+  completionState:
+    | "completed"
+    | "search_only"
+    | "negotiation_only_no_winner"
+    | "partial_failure";
+  debug?: {
+    timingsMs: {
+      total: number;
+      search: number;
+      negotiation?: number;
+      winner?: number;
+    };
+  };
+}
+
 export interface OpenvilleWorkflowRepository {
   getStatus: () => Promise<WorkflowStatusResponse>;
   searchAndSelect: (request: SearchAndSelectRequest) => Promise<SearchAndSelectResponse>;
+  runAll: (request: RunAllWorkflowRequest) => Promise<RunAllWorkflowResponse>;
   runNegotiations: (
     request: RunNegotiationsRequest,
   ) => Promise<RunNegotiationsResponse>;

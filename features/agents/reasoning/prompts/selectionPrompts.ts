@@ -38,8 +38,13 @@ You MUST return a JSON object with this exact structure:
       "matchScore": number - 0-100 score for how well they match your user's needs (100 = perfect match)
     }
   ],
-  "summary": "string - 2-3 sentences explaining your overall thinking and why these are the best choices for your user"
+  "summary": "string - 2-3 sentences explaining your overall thinking and why these are the best choices for your user",
+  "eliminationReasons": {
+    "<agentId for each candidate NOT in top3>": "specific 1-sentence reason (skill gap, budget, low relevance, etc.)"
+  }
 }
+
+You MUST include an entry in eliminationReasons for every candidate that did not make the top 3.
 
 Return ONLY valid JSON - no markdown, no explanations outside the JSON structure.`;
 

@@ -22,6 +22,7 @@ describe('POST /api/agents/select-top3', () => {
     ],
     userPreferences: { budget: 200, priority: 'cost' },
     scope: { jobType: 'Plumbing', description: 'Fix faucet' },
+    providerType: 'mock' as const,
   };
 
   it('should return 400 if top10 is missing', async () => {

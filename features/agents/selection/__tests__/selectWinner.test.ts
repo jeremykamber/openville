@@ -51,10 +51,16 @@ describe('selectWinner', () => {
   });
 
   it('selects a winner and returns comparison data', async () => {
-    const res = await selectWinner(baseNegotiations, prefs, { providerType: 'mock' });
+    const res = await selectWinner(baseNegotiations, prefs);
     expect(res.winner.candidateId).toBe('tp-001');
     expect(res.comparison).toHaveLength(2);
     expect(res.summary).toContain('Selected based on cost priority');
+  });
+
+  it('uses deterministic mock fallback ranking when requested', async () => {
+    const res = await selectWinner(baseNegotiations, prefs, { providerType: 'mock' });
+    expect(res.winner.candidateId).toBe('tp-001');
+    expect(res.summary).toContain('Mock fallback winner selection');
   });
 
   it('throws if no negotiations provided', async () => {

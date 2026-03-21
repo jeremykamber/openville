@@ -44,6 +44,7 @@ export async function selectTop3(
     return {
       top3,
       summary: `Mock fallback selected the top ${top3.length} candidates using deterministic score ordering for ${scope.jobType}.`,
+      eliminationReasons: {},
     };
   }
 
@@ -76,5 +77,6 @@ export async function selectTop3(
   return {
     top3,
     summary: llmResponse.summary,
+    eliminationReasons: llmResponse.eliminationReasons,
   };
 }

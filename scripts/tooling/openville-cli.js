@@ -31,6 +31,10 @@ function parseJsonInput(raw) {
 
 async function main() {
   const sub = argv[2];
+  if (!sub) {
+    console.error("No subcommand provided");
+  }
+
   if (!sub || sub === "--help" || sub === "-h") {
     console.log(`
 Usage: openville-cli <command> [options]

@@ -1,5 +1,7 @@
 import type {
   OpenvilleWorkflowRepository,
+  RunAllWorkflowRequest,
+  RunAllWorkflowResponse,
   RunNegotiationsRequest,
   RunNegotiationsResponse,
   SearchAndSelectRequest,
@@ -67,6 +69,13 @@ export const openvilleWorkflowRepository: OpenvilleWorkflowRepository = {
   getStatus() {
     return requestJson<WorkflowStatusResponse>("/api/workflow/status", {
       method: "GET",
+    });
+  },
+
+  runAll(request: RunAllWorkflowRequest) {
+    return requestJson<RunAllWorkflowResponse>("/api/workflow/run-all", {
+      method: "POST",
+      body: JSON.stringify(request),
     });
   },
 

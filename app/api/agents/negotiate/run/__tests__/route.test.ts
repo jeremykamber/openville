@@ -49,7 +49,7 @@ const candidateC = {
 };
 
 describe("POST /api/agents/negotiate/run", () => {
-  it("runs negotiations with in-memory persistence when Supabase admin is unavailable", async () => {
+  it("fails loudly when Supabase admin negotiation persistence is unavailable", async () => {
     const request = new NextRequest(
       "http://localhost:3000/api/agents/negotiate/run",
       {
@@ -78,10 +78,12 @@ describe("POST /api/agents/negotiate/run", () => {
 
     expect(response.status).toBe(200);
     expect(payload.outcomes).toHaveLength(3);
-    expect(payload.outcomes.every((outcome: { result?: { status: string } }) => outcome.result?.status === "accepted")).toBe(true);
-    expect(payload.meta.mode).toBe("degraded");
-    expect(payload.meta.llmProvider).toBe("mock");
-    expect(payload.meta.warnings).toContain(
+    expect(
+      payload.outcomes.every(
+        (outcome: { status: string }) => outcome.status === "failed",
+      ),
+    ).toBe(true);
+    expect(payload.meta.warnings).not.toContain(
       "Supabase admin is not configured. Using in-memory negotiation persistence fallback.",
     );
   });

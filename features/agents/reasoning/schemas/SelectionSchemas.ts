@@ -12,6 +12,7 @@ export const SelectTop3LLMResponseSchema = z
       message: 'top3 must contain exactly 3 candidates',
     }),
     summary: z.string(),
+    eliminationReasons: z.record(z.string(), z.string()).optional(),
   })
   .superRefine((value, ctx) => {
     const seen = new Set<string>();

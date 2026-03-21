@@ -15,8 +15,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { top10, userPreferences, scope } = validated.data;
-    const llm = resolveLlmProvider();
+    const { top10, userPreferences, scope, providerType } = validated.data;
+    const llm = resolveLlmProvider(providerType);
 
     const result = await selectTop3(top10, userPreferences, scope, {
       providerType: llm.providerType,

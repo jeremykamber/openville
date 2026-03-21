@@ -1,9 +1,24 @@
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 
 import { POST } from "../route";
 
 describe("POST /api/agents/search-and-select", () => {
+  let previousAllowMockFallback: string | undefined;
+
+  beforeAll(() => {
+    previousAllowMockFallback = process.env.ALLOW_MOCK_LLM_FALLBACK;
+    process.env.ALLOW_MOCK_LLM_FALLBACK = "true";
+  });
+
+  afterAll(() => {
+    if (previousAllowMockFallback === undefined) {
+      delete process.env.ALLOW_MOCK_LLM_FALLBACK;
+    } else {
+      process.env.ALLOW_MOCK_LLM_FALLBACK = previousAllowMockFallback;
+    }
+  });
+
   it("returns a shortlist from the seeded fallback market for plumbing", async () => {
     const request = new NextRequest(
       "http://localhost:3000/api/agents/search-and-select",
