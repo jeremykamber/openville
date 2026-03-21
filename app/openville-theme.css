@@ -1,92 +1,149 @@
 :root {
-  --radius: 0.625rem;
-  --ov-bg-0: #0e1210;
-  --ov-bg-1: #141a16;
-  --ov-bg-2: #1c2620;
-  --ov-surface-0: rgba(14, 18, 16, 0.88);
-  --ov-surface-1: rgba(28, 38, 32, 0.92);
-  --ov-border: rgba(180, 170, 145, 0.20);
-  --ov-text: #ece5d5;
-  --ov-text-muted: #9a9282;
-  --ov-human: #d4916e;
-  --ov-human-soft: rgba(212, 145, 110, 0.14);
-  --ov-signal: #7bb58f;
-  --ov-signal-strong: #a3d4b4;
-  --ov-negotiation: #c47a4a;
-  --ov-winner: #d4a24c;
-  --ov-eliminated: #6b6358;
-  --ov-success: #6dab72;
-  --ov-border-soft: rgba(180, 170, 145, 0.10);
-  --ov-border-medium: rgba(180, 170, 145, 0.16);
-  --ov-border-strong: rgba(180, 170, 145, 0.24);
-  --ov-surface-card: rgba(14, 18, 16, 0.84);
-  --ov-surface-deep: rgba(10, 13, 11, 0.78);
-  --ov-signal-soft: rgba(123, 181, 143, 0.10);
-  --ov-signal-border: rgba(123, 181, 143, 0.18);
-  --ov-winner-soft: rgba(212, 162, 76, 0.12);
-  --ov-winner-border: rgba(212, 162, 76, 0.24);
-  --ov-human-border: rgba(212, 145, 110, 0.24);
-  --ov-human-bg: rgba(212, 145, 110, 0.10);
-  --ov-negotiation-soft: rgba(196, 122, 74, 0.12);
-  --ov-success-soft: rgba(109, 171, 114, 0.12);
-  --ov-success-border: rgba(109, 171, 114, 0.22);
-  --ov-eliminated-soft: rgba(107, 99, 88, 0.10);
-  --ov-cluster-av-border: rgba(123, 181, 143, 0.28);
-  --ov-cluster-av-bg: rgba(123, 181, 143, 0.08);
-  --ov-cluster-staffing-border: rgba(212, 145, 110, 0.28);
-  --ov-cluster-staffing-bg: rgba(212, 145, 110, 0.08);
-  --ov-cluster-logistics-border: rgba(109, 171, 114, 0.28);
-  --ov-cluster-logistics-bg: rgba(109, 171, 114, 0.08);
-  --ov-cluster-venue-border: rgba(236, 229, 213, 0.22);
-  --ov-cluster-venue-bg: rgba(236, 229, 213, 0.06);
-  --ov-cluster-backup-border: rgba(212, 162, 76, 0.28);
-  --ov-cluster-backup-bg: rgba(212, 162, 76, 0.08);
-  --ov-shadow: rgba(8, 6, 4, 0.32);
-  --ov-shadow-strong: rgba(8, 6, 4, 0.50);
-  --ov-glow-signal: rgba(123, 181, 143, 0.35);
-  --ov-glow-winner: rgba(212, 162, 76, 0.38);
-  --ov-glow-negotiation: rgba(196, 122, 74, 0.34);
-  --ov-text-on-accent: #1a1612;
-  --ov-gradient-card: linear-gradient(180deg, rgba(28, 38, 32, 0.92) 0%, rgba(14, 18, 16, 0.90) 100%);
-  --ov-gradient-card-strong: linear-gradient(180deg, rgba(28, 38, 32, 0.96) 0%, rgba(14, 18, 16, 0.96) 100%);
-  --ov-gradient-winner: linear-gradient(180deg, rgba(212, 162, 76, 0.14) 0%, rgba(196, 122, 74, 0.08) 100%);
-  --ov-stroke-default: rgba(180, 170, 145, 0.18);
-  --ov-stroke-winner: rgba(212, 162, 76, 0.82);
-  --ov-human-hover: rgba(212, 145, 110, 0.38);
-  --ov-signal-hover: rgba(123, 181, 143, 0.32);
+  --radius: 0.5rem;
+
+  /* ── Backgrounds ── */
+  --ov-bg-0: #080c14;
+  --ov-bg-1: #0e1420;
+  --ov-bg-2: #161f2e;
+
+  /* ── Surfaces ── */
+  --ov-surface-0: rgba(8, 12, 20, 0.90);
+  --ov-surface-1: rgba(22, 31, 46, 0.92);
+  --ov-surface-card: rgba(8, 12, 20, 0.86);
+  --ov-surface-deep: rgba(5, 8, 14, 0.80);
+  --ov-surface-elevated: rgba(14, 20, 32, 0.94);
+  --ov-surface-hero: rgba(4, 6, 12, 0.78);
+
+  /* ── Borders ── */
+  --ov-border: rgba(99, 102, 241, 0.14);
+  --ov-border-soft: rgba(99, 102, 241, 0.08);
+  --ov-border-medium: rgba(99, 102, 241, 0.12);
+  --ov-border-strong: rgba(99, 102, 241, 0.22);
+
+  /* ── Text ── */
+  --ov-text: #f1f5f9;
+  --ov-text-muted: #64748b;
+  --ov-text-on-accent: #f8fafc;
+
+  /* ── Primary: Electric Indigo ── */
+  --ov-signal: #6366f1;
+  --ov-signal-strong: #818cf8;
+  --ov-signal-soft: rgba(99, 102, 241, 0.10);
+  --ov-signal-border: rgba(99, 102, 241, 0.20);
+  --ov-signal-hover: rgba(99, 102, 241, 0.28);
+  --ov-glow-signal: rgba(99, 102, 241, 0.35);
+
+  /* ── Accent: Cyan ── */
+  --ov-human: #22d3ee;
+  --ov-human-soft: rgba(34, 211, 238, 0.10);
+  --ov-human-border: rgba(34, 211, 238, 0.20);
+  --ov-human-bg: rgba(34, 211, 238, 0.08);
+  --ov-human-hover: rgba(34, 211, 238, 0.28);
+
+  /* ── Status: Winner (emerald) ── */
+  --ov-winner: #10b981;
+  --ov-winner-soft: rgba(16, 185, 129, 0.10);
+  --ov-winner-border: rgba(16, 185, 129, 0.22);
+  --ov-glow-winner: rgba(16, 185, 129, 0.32);
+
+  /* ── Status: Negotiation (amber) ── */
+  --ov-negotiation: #f59e0b;
+  --ov-negotiation-soft: rgba(245, 158, 11, 0.10);
+  --ov-glow-negotiation: rgba(245, 158, 11, 0.30);
+
+  /* ── Status: Success / Eliminated ── */
+  --ov-success: #34d399;
+  --ov-success-soft: rgba(52, 211, 153, 0.10);
+  --ov-success-border: rgba(52, 211, 153, 0.20);
+  --ov-eliminated: #475569;
+  --ov-eliminated-soft: rgba(71, 85, 105, 0.12);
+
+  /* ── Cluster tags ── */
+  --ov-cluster-av-border: rgba(99, 102, 241, 0.24);
+  --ov-cluster-av-bg: rgba(99, 102, 241, 0.08);
+  --ov-cluster-staffing-border: rgba(34, 211, 238, 0.24);
+  --ov-cluster-staffing-bg: rgba(34, 211, 238, 0.08);
+  --ov-cluster-logistics-border: rgba(52, 211, 153, 0.24);
+  --ov-cluster-logistics-bg: rgba(52, 211, 153, 0.08);
+  --ov-cluster-venue-border: rgba(241, 245, 249, 0.16);
+  --ov-cluster-venue-bg: rgba(241, 245, 249, 0.05);
+  --ov-cluster-backup-border: rgba(245, 158, 11, 0.24);
+  --ov-cluster-backup-bg: rgba(245, 158, 11, 0.08);
+
+  /* ── Agent state (LCH perceptual parity) ── */
+  --ov-agent-dormant: lch(55% 30 220);
+  --ov-agent-active: lch(55% 65 70);
+  --ov-agent-finalist: lch(55% 60 300);
+  --ov-agent-winner: lch(55% 60 140);
+  --ov-agent-out: lch(28% 35 20);
+  --ov-danger: #ff6d62;
+  --ov-scan-energy: #00e5ff;
+
+  /* ── Accent: Ember Orange ── */
+  --ov-ember: #f97316;
+  --ov-ember-soft: rgba(249, 115, 22, 0.10);
+  --ov-ember-border: rgba(249, 115, 22, 0.22);
+  --ov-ember-hover: rgba(249, 115, 22, 0.85);
+  --ov-glow-ember: rgba(249, 115, 22, 0.35);
+
+  /* ── Panel depth layers ── */
+  --ov-depth-far: rgba(17, 25, 40, 0.45);
+  --ov-depth-mid: rgba(17, 25, 40, 0.65);
+  --ov-depth-near: rgba(17, 25, 40, 0.82);
+
+  /* ── Data font ── */
+  --font-mono-data: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
+
+  /* ── Tick flash ── */
+  --ov-tick-flash: rgba(34, 211, 238, 0.22);
+
+  /* ── Shadows ── */
+  --ov-shadow: rgba(2, 4, 10, 0.40);
+  --ov-shadow-strong: rgba(2, 4, 10, 0.60);
+
+  /* ── Gradients ── */
+  --ov-gradient-card: linear-gradient(180deg, rgba(22, 31, 46, 0.92) 0%, rgba(8, 12, 20, 0.92) 100%);
+  --ov-gradient-card-strong: linear-gradient(180deg, rgba(22, 31, 46, 0.97) 0%, rgba(8, 12, 20, 0.97) 100%);
+  --ov-gradient-winner: linear-gradient(180deg, rgba(99, 102, 241, 0.12) 0%, rgba(34, 211, 238, 0.06) 100%);
+
+  /* ── Stroke ── */
+  --ov-stroke-default: rgba(99, 102, 241, 0.14);
+  --ov-stroke-winner: rgba(16, 185, 129, 0.80);
+
+  /* ── shadcn/ui tokens ── */
   --background: var(--ov-bg-0);
   --foreground: var(--ov-text);
-  --card: rgba(14, 18, 16, 0.92);
+  --card: rgba(8, 12, 20, 0.94);
   --card-foreground: var(--ov-text);
-  --popover: rgba(14, 18, 16, 0.96);
+  --popover: rgba(8, 12, 20, 0.97);
   --popover-foreground: var(--ov-text);
   --primary: var(--ov-signal);
   --primary-foreground: var(--ov-text-on-accent);
-  --secondary: rgba(20, 26, 22, 0.92);
+  --secondary: rgba(14, 20, 32, 0.92);
   --secondary-foreground: var(--ov-text);
-  --muted: rgba(28, 38, 32, 0.90);
+  --muted: rgba(22, 31, 46, 0.90);
   --muted-foreground: var(--ov-text-muted);
-  --accent: rgba(123, 181, 143, 0.14);
+  --accent: rgba(99, 102, 241, 0.12);
   --accent-foreground: var(--ov-text);
-  --destructive: #c45a52;
+  --destructive: #ef4444;
   --border: var(--ov-border);
-  --input: rgba(180, 170, 145, 0.14);
-  --ring: rgba(163, 212, 180, 0.55);
+  --input: rgba(99, 102, 241, 0.12);
+  --ring: rgba(129, 140, 248, 0.50);
   --chart-1: var(--ov-signal);
-  --chart-2: var(--ov-success);
+  --chart-2: var(--ov-human);
   --chart-3: var(--ov-negotiation);
   --chart-4: var(--ov-winner);
-  --chart-5: #8a8072;
+  --chart-5: #475569;
   --accent-blue: var(--ov-signal);
   --accent-amber: var(--ov-negotiation);
-  --sidebar: rgba(14, 18, 16, 0.95);
+  --sidebar: rgba(8, 12, 20, 0.97);
   --sidebar-foreground: var(--ov-text);
   --sidebar-primary: var(--ov-signal);
   --sidebar-primary-foreground: var(--ov-text-on-accent);
-  --sidebar-accent: rgba(28, 38, 32, 0.92);
+  --sidebar-accent: rgba(22, 31, 46, 0.92);
   --sidebar-accent-foreground: var(--ov-text);
   --sidebar-border: var(--ov-border);
-  --sidebar-ring: rgba(163, 212, 180, 0.55);
+  --sidebar-ring: rgba(129, 140, 248, 0.50);
 }
 
 html {
@@ -99,30 +156,33 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   background-image:
-    radial-gradient(circle at top left, rgba(123, 181, 143, 0.14), transparent 28%),
-    radial-gradient(circle at top right, rgba(196, 122, 74, 0.10), transparent 24%),
-    linear-gradient(180deg, rgba(20, 26, 22, 0.96) 0%, var(--ov-bg-0) 100%);
+    radial-gradient(ellipse at top left, rgba(99, 102, 241, 0.14), transparent 40%),
+    radial-gradient(ellipse at 80% 0%, rgba(34, 211, 238, 0.07), transparent 30%),
+    radial-gradient(ellipse at 50% 100%, rgba(99, 102, 241, 0.05), transparent 40%),
+    linear-gradient(180deg, rgba(14, 20, 32, 0.98) 0%, var(--ov-bg-0) 100%);
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: rgba(123, 181, 143, 0.26);
+  background: rgba(99, 102, 241, 0.28);
   color: var(--ov-text);
 }
 
 .ov-shell {
   background:
-    radial-gradient(circle at 20% 0%, rgba(123, 181, 143, 0.10), transparent 28%),
-    radial-gradient(circle at 85% 10%, rgba(196, 122, 74, 0.06), transparent 22%),
-    linear-gradient(180deg, rgba(20, 26, 22, 0.92) 0%, rgba(14, 18, 16, 0.98) 100%);
+    radial-gradient(ellipse at 15% 0%, rgba(99, 102, 241, 0.10), transparent 32%),
+    radial-gradient(ellipse at 85% 8%, rgba(34, 211, 238, 0.06), transparent 28%),
+    radial-gradient(ellipse 80% 40% at 50% 110%, rgba(249, 115, 22, 0.07), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.012) 0%, transparent 10%),
+    linear-gradient(180deg, rgba(14, 20, 32, 0.94) 0%, rgba(8, 12, 20, 0.99) 100%);
 }
 
 .ov-grid {
   background-image:
-    linear-gradient(rgba(180, 170, 145, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(180, 170, 145, 0.05) 1px, transparent 1px);
+    linear-gradient(rgba(99, 102, 241, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
   background-position: center;
-  background-size: 42px 42px;
+  background-size: 40px 40px;
 }
 
 .ov-panel {
@@ -130,25 +190,25 @@ body {
   background: var(--ov-gradient-card);
   box-shadow:
     0 20px 60px var(--ov-shadow-strong),
-    inset 0 1px 0 rgba(163, 212, 180, 0.05);
+    inset 0 1px 0 rgba(129, 140, 248, 0.04);
   backdrop-filter: blur(18px);
 }
 
 .ov-panel-strong {
-  border: 1px solid rgba(163, 212, 180, 0.22);
+  border: 1px solid rgba(129, 140, 248, 0.18);
   background: var(--ov-gradient-card-strong);
   box-shadow:
     0 28px 80px var(--ov-shadow-strong),
-    inset 0 1px 0 rgba(163, 212, 180, 0.07);
+    inset 0 1px 0 rgba(129, 140, 248, 0.06),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.015);
   backdrop-filter: blur(22px);
 }
 
 .ov-kicker {
   color: var(--ov-text-muted);
-  font-family: var(--font-space-grotesk);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.20em;
   text-transform: uppercase;
 }
 
@@ -159,10 +219,10 @@ body {
 }
 
 .ov-chip {
-  border: 1px solid rgba(163, 212, 180, 0.18);
+  border: 1px solid rgba(129, 140, 248, 0.16);
   background: var(--ov-surface-deep);
   color: var(--ov-text);
-  box-shadow: inset 0 1px 0 rgba(163, 212, 180, 0.06);
+  box-shadow: inset 0 1px 0 rgba(129, 140, 248, 0.05);
 }
 
 .ov-chip-human {
@@ -182,11 +242,94 @@ body {
 }
 
 .ov-text-gradient {
-  background: linear-gradient(135deg, #ece5d5 0%, #a3d4b4 48%, #d4a24c 100%);
+  background: linear-gradient(135deg, #f1f5f9 0%, #818cf8 45%, #22d3ee 100%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
+}
+
+/* ── Grain overlay — the #1 "designed vs dev" signal ── */
+.ov-grain::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/* ── Clip-path scan-line button hover ── */
+.ov-btn-scan {
+  position: relative;
+  overflow: hidden;
+}
+.ov-btn-scan::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(99, 102, 241, 0.14);
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 0.3s ease;
+  pointer-events: none;
+}
+.ov-btn-scan:hover::after {
+  clip-path: inset(0 0 0 0);
+}
+
+/* ── Stage scan sweep — replays when React key changes on stage transition ── */
+.ov-stage-scan {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 5;
+}
+.ov-stage-scan::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 229, 255, 0.06) 30%,
+    rgba(0, 229, 255, 0.14) 50%,
+    rgba(0, 229, 255, 0.06) 70%,
+    transparent 100%
+  );
+  animation: ov-scan-h 1.1s ease-in-out forwards;
+}
+
+/* ── Data readout — JetBrains Mono for numeric UI ── */
+.ov-readout {
+  font-family: var(--font-mono-data);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Conic spinning border for active/finalist nodes ── */
+.ov-node-active {
+  position: relative;
+}
+.ov-node-active::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg, #e92a67, #a853ba, #2a8af6, #e92a67);
+  animation: ov-node-spin 4s linear infinite;
+  z-index: -1;
+}
+
+/* ── Tick flash for numeric updates ── */
+.ov-tick {
+  animation: ov-tick-flash 0.3s ease-out forwards;
 }
 
 @keyframes ov-float {
@@ -223,6 +366,143 @@ body {
   100% {
     transform: translate3d(0, 0, 0);
   }
+}
+
+@keyframes ov-agent-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes ov-step-activate {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes ov-score-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes ov-eliminate-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes ov-node-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes ov-tick-flash {
+  0%   { background-color: var(--ov-tick-flash); }
+  100% { background-color: transparent; }
+}
+
+@keyframes ov-scramble-out {
+  0%   { opacity: 1; filter: blur(0px); }
+  60%  { opacity: 0.6; filter: blur(2px); }
+  100% { opacity: 0; filter: blur(8px); transform: scale(0.92); }
+}
+
+@keyframes ov-winner-bloom {
+  0%   { box-shadow: 0 0 0px rgba(16, 185, 129, 0); }
+  50%  { box-shadow: 0 0 60px rgba(16, 185, 129, 0.6), 0 0 120px rgba(16, 185, 129, 0.3); }
+  100% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.4); }
+}
+
+@keyframes ov-stage-advance {
+  0%   { opacity: 0.5; transform: translateX(-4px); }
+  100% { opacity: 1;   transform: translateX(0); }
+}
+
+@keyframes ov-pitch-enter {
+  from { opacity: 0; transform: translateY(24px) scale(0.94); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+}
+
+@keyframes ov-terminal-blink {
+  0%   { opacity: 1; }
+  50%  { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes ov-elim-collapse {
+  0%   { transform: scale(1); opacity: 1; box-shadow: 0 0 0 rgba(255, 109, 98, 0); }
+  15%  { transform: scale(1.6); opacity: 1; box-shadow: 0 0 18px rgba(255, 109, 98, 0.7); background-color: rgba(255, 109, 98, 0.5); }
+  40%  { transform: scale(1.1); opacity: 0.6; box-shadow: 0 0 8px rgba(255, 109, 98, 0.3); }
+  100% { transform: scale(0.45); opacity: 0.18; box-shadow: none; filter: saturate(0); }
+}
+
+@keyframes ov-survivor-confirm {
+  0%   { box-shadow: 0 0 0 var(--ov-glow-signal); }
+  40%  { box-shadow: 0 0 32px var(--ov-glow-signal); }
+  100% { box-shadow: 0 0 22px var(--ov-glow-signal); }
+}
+
+@keyframes ov-finalist-lock {
+  0%   { box-shadow: 0 0 0 var(--ov-glow-negotiation); transform: scale(1); }
+  35%  { box-shadow: 0 0 40px var(--ov-glow-negotiation); transform: scale(1.12); }
+  100% { box-shadow: 0 0 28px var(--ov-glow-negotiation); transform: scale(1); }
+}
+
+@keyframes ov-scan-h {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes ov-title-reveal {
+  0%   { clip-path: inset(0 100% 0 0); opacity: 0; }
+  40%  { opacity: 1; }
+  100% { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+
+@keyframes ov-hero-fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ov-title-reveal {
+  animation: ov-title-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.ov-hero-fade-in {
+  opacity: 0;
+  animation: ov-hero-fade-in 0.6s ease-out forwards;
+}
+
+@keyframes ov-wordmark-enter {
+  0%   { opacity: 0; transform: translateY(20px); filter: blur(8px); }
+  60%  { opacity: 1; filter: blur(0px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0px); }
+}
+
+.ov-wordmark-enter {
+  animation: ov-wordmark-enter 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
