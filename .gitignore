@@ -54,6 +54,16 @@ test-results/
 
 # Local agent instructions
 AGENTS.md
+.agents 
+
+# Database files
+*.db
+*.sqlite
+
+# Root-level screenshots (prevent accumulation)
+/*.png
+/*.jpg
+/*.jpeg
 
 # Operating System files
 .DS_Store
