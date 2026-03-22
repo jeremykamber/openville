@@ -78,3 +78,5 @@ DEV-2-WORKFLOW.md
 
 # LangGraph API
 .langgraph_api
+
+.env
