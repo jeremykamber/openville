@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { marketCandidateSeeds } from "@/features/search/data/marketCandidateSeeds";
 import { buildCandidateEmbeddingInput, serializeEmbedding } from "@/features/search/services/candidateEmbedding";
@@ -6,12 +6,17 @@ import { embeddingService } from "@/features/search/services/embedding";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 /**
- * GET /api/seed/market-candidates
+ * POST /api/seed/market-candidates
  *
- * Navigate to this URL in any browser to upsert all seed agents into
- * the Supabase `market_candidates` table. Safe to call multiple times.
+ * Upserts all seed agents into the Supabase `market_candidates` table.
+ * Requires `x-admin-token` header. Safe to call multiple times.
  */
-export async function GET() {
+export async function POST(request: NextRequest) {
+  const token = request.headers.get("x-admin-token");
+  if (!process.env.MARKET_ADMIN_TOKEN || token !== process.env.MARKET_ADMIN_TOKEN) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     if (!supabaseAdmin) {
       return NextResponse.json({ error: "Supabase is not configured." }, { status: 500 });

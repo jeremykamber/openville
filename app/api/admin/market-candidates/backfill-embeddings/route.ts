@@ -1,8 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { marketCandidateRepository } from "@/features/search/repositories/SupabaseMarketCandidateRepository";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  const token = request.headers.get("x-admin-token");
+  if (!process.env.MARKET_ADMIN_TOKEN || token !== process.env.MARKET_ADMIN_TOKEN) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const result = await marketCandidateRepository.syncMissingEmbeddings();
 
