@@ -90,8 +90,15 @@ describe("runtime", () => {
 
   describe("resolveConfiguredLlmModel", () => {
     it("returns default OpenAI model", () => {
-      delete process.env.OPENAI_MODEL;
-      expect(resolveConfiguredLlmModel("openai")).toBe("gpt-4o-mini");
+      const original = process.env.OPENAI_MODEL;
+      try {
+        delete process.env.OPENAI_MODEL;
+        expect(resolveConfiguredLlmModel("openai")).toBe("gpt-4o-mini");
+      } finally {
+        if (original !== undefined) {
+          process.env.OPENAI_MODEL = original;
+        }
+      }
     });
 
     it("returns custom OpenRouter model from env", () => {

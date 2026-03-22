@@ -38,11 +38,15 @@ const makeCandidates = (count: number) =>
 describe("executeSearchAndSelect", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.unstubAllEnvs();
     vi.stubEnv("OPENAI_API_KEY", "sk-test");
     vi.stubEnv("LLM_PROVIDER", "");
   });
 
   it("throws when provider is unconfigured", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "");
+    vi.stubEnv("OPENROUTER_API_KEY", "");
+
     const candidates = makeCandidates(5);
     mockedSearch.mockResolvedValueOnce({
       results: candidates,
@@ -59,14 +63,11 @@ describe("executeSearchAndSelect", () => {
     );
 
     await expect(
-      executeSearchAndSelect(
-        {
-          query: "test",
-          userPreferences: {},
-          scope: { jobType: "plumbing", description: "Fix pipes" },
-        },
-        { providerType: "unconfigured" as never },
-      ),
+      executeSearchAndSelect({
+        query: "test",
+        userPreferences: {},
+        scope: { jobType: "plumbing", description: "Fix pipes" },
+      }),
     ).rejects.toThrow("No live LLM provider is configured");
   });
 
