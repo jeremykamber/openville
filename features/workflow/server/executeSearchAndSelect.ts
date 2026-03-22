@@ -51,7 +51,7 @@ export async function executeSearchAndSelect(
   }
 
   if (configuredProvider === "mock") {
-    const error = new Error("Mock shortlist fallback is disabled for landing search.");
+    const error = new Error("Mock shortlist fallback is disabled for search-and-select.");
     console.error("Search-and-select error:", error);
     throw error;
   }

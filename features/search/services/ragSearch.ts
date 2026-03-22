@@ -1,3 +1,4 @@
+import { WorkflowFallback } from "@/features/workflow/types";
 import { SearchFilters, SearchRequest, SearchResult } from "../types";
 import { marketCandidateRepository } from "../repositories/SupabaseMarketCandidateRepository";
 import { embeddingService } from "./embedding";
@@ -10,9 +11,9 @@ export class RAGSearchService {
     totalFound: number;
     source: "supabase" | "seed";
     seeded: boolean;
-    retrievalMode: "vector" | "keyword";
+    retrievalMode: "vector";
     warnings: string[];
-    fallbacksUsed: [];
+    fallbacksUsed: WorkflowFallback[];
   }> {
     const market = await marketCandidateRepository.listCandidates();
     const warnings = [...market.warnings];

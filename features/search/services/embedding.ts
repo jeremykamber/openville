@@ -6,6 +6,8 @@ export type EmbeddingResult =
 
 export class EmbeddingService {
   private client: OpenAI | null = null;
+  private cachedApiKey: string | null = null;
+  private cachedBaseURL: string | undefined = undefined;
 
   isConfigured(): boolean {
     return Boolean(process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY);
@@ -38,11 +40,17 @@ export class EmbeddingService {
     }
 
     try {
-      if (!this.client) {
+      if (
+        !this.client ||
+        this.cachedApiKey !== clientConfig.apiKey ||
+        this.cachedBaseURL !== clientConfig.baseURL
+      ) {
         this.client = new OpenAI({
           apiKey: clientConfig.apiKey,
           baseURL: clientConfig.baseURL,
         });
+        this.cachedApiKey = clientConfig.apiKey;
+        this.cachedBaseURL = clientConfig.baseURL;
       }
 
       const response = await this.client.embeddings.create({
