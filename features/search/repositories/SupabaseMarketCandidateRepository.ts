@@ -82,22 +82,23 @@ export class SupabaseMarketCandidateRepository implements MarketCandidateReposit
       throw new Error("Supabase market table is empty.");
     }
 
-    const repairedCount = await this.backfillMissingEmbeddings(
+    const repaired = await this.backfillMissingEmbeddings(
       data as Record<string, unknown>[],
     );
 
     return {
-      repairedCount,
+      repairedCount: repaired.size,
       candidateCount: data.length,
     };
   }
 
   private async backfillMissingEmbeddings(
     rows: Record<string, unknown>[],
-  ): Promise<number> {
+  ): Promise<Map<string, number[]>> {
+    const repaired = new Map<string, number[]>();
     const missingRows = rows.filter((row) => !parseEmbedding(row.embedding)?.length);
     if (missingRows.length === 0) {
-      return 0;
+      return repaired;
     }
 
     const BATCH_SIZE = 5;
@@ -133,11 +134,13 @@ export class SupabaseMarketCandidateRepository implements MarketCandidateReposit
               `Failed to backfill embedding for market candidate ${candidate.agentId}: ${error.message}`,
             );
           }
+
+          repaired.set(candidate.agentId, embeddingResult.embedding);
         }),
       );
     }
 
-    return missingRows.length;
+    return repaired;
   }
 
   async listCandidates(): Promise<MarketCandidateRepositoryResult> {
@@ -160,12 +163,21 @@ export class SupabaseMarketCandidateRepository implements MarketCandidateReposit
         throw new Error("Supabase market table is empty.");
       }
 
-      await this.backfillMissingEmbeddings(
+      const repaired = await this.backfillMissingEmbeddings(
         data as Record<string, unknown>[],
       );
 
+      const candidates = data.map((row: Record<string, unknown>) => {
+        const candidate = mapRowToCandidate(row);
+        const repairedEmbedding = repaired.get(candidate.agentId);
+        if (repairedEmbedding) {
+          candidate.embedding = repairedEmbedding;
+        }
+        return candidate;
+      });
+
       return {
-        candidates: data.map((row: Record<string, unknown>) => mapRowToCandidate(row)),
+        candidates,
         source: "supabase",
         seeded: false,
         warnings: [],
