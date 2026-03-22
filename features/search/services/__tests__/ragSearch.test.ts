@@ -94,7 +94,7 @@ describe("RAGSearchService", () => {
     expect(mockedSearchByVector).toHaveBeenCalledWith([1, 0, 0], 2, undefined);
   });
 
-  it("passes filters to searchByVector and applies service category filter in JS", async () => {
+  it("over-fetches 2x when service category filter is active", async () => {
     mockedSearchByVector.mockResolvedValueOnce({
       candidates,
       source: "supabase",
@@ -104,15 +104,18 @@ describe("RAGSearchService", () => {
 
     const result = await ragSearchService.search({
       query: "fix gutters",
+      limit: 5,
       filters: { location: "Austin", serviceCategories: ["plumbing"] },
     });
 
+    // 2x over-fetch: limit=5, so fetchCount=10
     expect(mockedSearchByVector).toHaveBeenCalledWith(
       [1, 0, 0],
-      50,
+      10,
       { location: "Austin", serviceCategories: ["plumbing"] },
     );
     expect(result.results).toHaveLength(3);
+    expect(result.totalFound).toBe(3);
   });
 
   it("filters out candidates that don't match service categories", async () => {
@@ -140,6 +143,7 @@ describe("RAGSearchService", () => {
     });
 
     expect(result.results).toHaveLength(3);
+    expect(result.totalFound).toBe(3);
     expect(result.results.every((r) => r.services?.includes("plumbing"))).toBe(true);
   });
 

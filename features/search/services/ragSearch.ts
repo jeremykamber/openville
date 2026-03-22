@@ -27,24 +27,29 @@ export class RAGSearchService {
     }
 
     const limit = Math.max(1, Math.min(request.limit ?? 50, 50));
+    const hasServiceFilter = Boolean(request.filters?.serviceCategories?.length);
+
+    // Over-fetch when service category filter is active (applied in JS after RPC)
+    const fetchCount = hasServiceFilter ? limit * 2 : limit;
 
     // Database-level vector search with pgvector — filters applied in SQL
     const vectorResult = await marketCandidateRepository.searchByVector(
       queryEmbedding,
-      limit,
+      fetchCount,
       request.filters,
     );
 
     // Service category filtering uses substring matching, handled in JS
     let results = vectorResult.candidates;
-    if (request.filters?.serviceCategories?.length) {
-      results = this.filterByServiceCategories(results, request.filters.serviceCategories);
+    if (hasServiceFilter) {
+      results = this.filterByServiceCategories(results, request.filters!.serviceCategories!);
+      results = results.slice(0, limit);
     }
 
     return {
       results,
       queryEmbedding,
-      totalFound: vectorResult.totalFound,
+      totalFound: results.length,
       source: vectorResult.source,
       seeded: false,
       retrievalMode: "vector",
