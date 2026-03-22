@@ -1,5 +1,5 @@
-import { OpenvilleWorkspace } from "@/features/chat/components/OpenvilleWorkspace";
+import { OpenvilleLandingPage } from "@/features/landing/components/OpenvilleLandingPage";
 
 export default function Home() {
-  return <OpenvilleWorkspace />;
+  return <OpenvilleLandingPage />;
 }
