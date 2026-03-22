@@ -5,7 +5,7 @@ import { embeddingService } from "../embedding";
 
 vi.mock("../../repositories/SupabaseMarketCandidateRepository", () => ({
   marketCandidateRepository: {
-    listCandidates: vi.fn(),
+    searchByVector: vi.fn(),
   },
 }));
 
@@ -15,7 +15,7 @@ vi.mock("../embedding", () => ({
   },
 }));
 
-const mockedListCandidates = vi.mocked(marketCandidateRepository.listCandidates);
+const mockedSearchByVector = vi.mocked(marketCandidateRepository.searchByVector);
 const mockedGenerateEmbedding = vi.mocked(embeddingService.generateEmbedding);
 
 const candidates = [
@@ -23,7 +23,7 @@ const candidates = [
     agentId: "agent-1",
     name: "Fast Pipes",
     score: 0,
-    relevance: 0,
+    relevance: 0.92,
     successCount: 120,
     rating: 4.8,
     yearsOnPlatform: 4,
@@ -33,13 +33,12 @@ const candidates = [
     hourlyRate: 180,
     description: "Emergency kitchen sink repairs",
     tags: ["fast", "reliable"],
-    embedding: [0.92, 0.08, 0.05],
   },
   {
     agentId: "agent-2",
     name: "Capital Plumbing",
     score: 0,
-    relevance: 0,
+    relevance: 0.65,
     successCount: 102,
     rating: 4.7,
     yearsOnPlatform: 5,
@@ -49,13 +48,12 @@ const candidates = [
     hourlyRate: 220,
     description: "Kitchen and bathroom plumbing",
     tags: ["local"],
-    embedding: [0.65, 0.22, 0.11],
   },
   {
     agentId: "agent-3",
     name: "Austin Leak Patrol",
     score: 0,
-    relevance: 0,
+    relevance: 0.30,
     successCount: 95,
     rating: 4.6,
     yearsOnPlatform: 3,
@@ -65,7 +63,6 @@ const candidates = [
     hourlyRate: 210,
     description: "Detect and repair leaks quickly",
     tags: ["same-day"],
-    embedding: [0.3, 0.7, 0.25],
   },
 ];
 
@@ -74,13 +71,11 @@ describe("RAGSearchService", () => {
     vi.clearAllMocks();
   });
 
-  it("returns vector-ranked results from Supabase candidates", async () => {
-    mockedListCandidates.mockResolvedValueOnce({
-      candidates,
+  it("returns vector-ranked results from pgvector search", async () => {
+    mockedSearchByVector.mockResolvedValueOnce({
+      candidates: candidates.slice(0, 2),
       source: "supabase",
-      seeded: false,
-      warnings: [],
-      fallbacksUsed: [],
+      totalFound: 2,
     });
     mockedGenerateEmbedding.mockResolvedValueOnce({ embedding: [1, 0, 0] });
 
@@ -96,15 +91,67 @@ describe("RAGSearchService", () => {
     expect(result.results[0].agentId).toBe("agent-1");
     expect(result.results[0].relevance).toBeGreaterThanOrEqual(result.results[1].relevance);
     expect(result.fallbacksUsed).toEqual([]);
+    expect(mockedSearchByVector).toHaveBeenCalledWith([1, 0, 0], 2, undefined);
   });
 
-  it("applies filters without relaxing them when no candidates match", async () => {
-    mockedListCandidates.mockResolvedValueOnce({
+  it("over-fetches 2x when service category filter is active", async () => {
+    mockedSearchByVector.mockResolvedValueOnce({
       candidates,
       source: "supabase",
-      seeded: false,
-      warnings: [],
-      fallbacksUsed: [],
+      totalFound: 3,
+    });
+    mockedGenerateEmbedding.mockResolvedValueOnce({ embedding: [1, 0, 0] });
+
+    const result = await ragSearchService.search({
+      query: "fix gutters",
+      limit: 5,
+      filters: { location: "Austin", serviceCategories: ["plumbing"] },
+    });
+
+    // 2x over-fetch: limit=5, so fetchCount=10
+    expect(mockedSearchByVector).toHaveBeenCalledWith(
+      [1, 0, 0],
+      10,
+      { location: "Austin", serviceCategories: ["plumbing"] },
+    );
+    expect(result.results).toHaveLength(3);
+    expect(result.totalFound).toBe(3);
+  });
+
+  it("filters out candidates that don't match service categories", async () => {
+    const mixed = [
+      ...candidates,
+      {
+        agentId: "agent-4",
+        name: "Sparky Electric",
+        score: 0,
+        relevance: 0.80,
+        services: ["electrical"],
+        specialties: ["wiring"],
+      },
+    ];
+    mockedSearchByVector.mockResolvedValueOnce({
+      candidates: mixed,
+      source: "supabase",
+      totalFound: 4,
+    });
+    mockedGenerateEmbedding.mockResolvedValueOnce({ embedding: [1, 0, 0] });
+
+    const result = await ragSearchService.search({
+      query: "fix gutters",
+      filters: { serviceCategories: ["plumbing"] },
+    });
+
+    expect(result.results).toHaveLength(3);
+    expect(result.totalFound).toBe(3);
+    expect(result.results.every((r) => r.services?.includes("plumbing"))).toBe(true);
+  });
+
+  it("returns empty when searchByVector returns no results", async () => {
+    mockedSearchByVector.mockResolvedValueOnce({
+      candidates: [],
+      source: "supabase",
+      totalFound: 0,
     });
     mockedGenerateEmbedding.mockResolvedValueOnce({ embedding: [1, 0, 0] });
 
@@ -115,17 +162,9 @@ describe("RAGSearchService", () => {
 
     expect(result.results).toEqual([]);
     expect(result.totalFound).toBe(0);
-    expect(result.warnings).toEqual([]);
   });
 
-  it("throws when embeddings are unavailable instead of falling back to keywords", async () => {
-    mockedListCandidates.mockResolvedValueOnce({
-      candidates,
-      source: "supabase",
-      seeded: false,
-      warnings: [],
-      fallbacksUsed: [],
-    });
+  it("throws when embeddings are unavailable", async () => {
     mockedGenerateEmbedding.mockResolvedValueOnce({
       embedding: null,
       reason: "unconfigured",
@@ -134,5 +173,6 @@ describe("RAGSearchService", () => {
     await expect(ragSearchService.search({ query: "fix gutters" })).rejects.toThrow(
       "Embedding provider is not configured.",
     );
+    expect(mockedSearchByVector).not.toHaveBeenCalled();
   });
 });

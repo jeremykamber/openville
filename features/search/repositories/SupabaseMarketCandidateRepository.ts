@@ -1,7 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { buildCandidateEmbeddingInput, serializeEmbedding } from "../services/candidateEmbedding";
 import { embeddingService } from "../services/embedding";
-import { SearchResult } from "../types";
+import { SearchFilters, SearchResult } from "../types";
 import {
   MarketCandidateRepository,
   MarketCandidateRepositoryResult,
@@ -59,7 +59,48 @@ function mapRowToCandidate(row: Record<string, unknown>): SearchResult {
   };
 }
 
+export interface VectorSearchResult {
+  candidates: SearchResult[];
+  source: "supabase";
+  totalFound: number;
+}
+
 export class SupabaseMarketCandidateRepository implements MarketCandidateRepository {
+  async searchByVector(
+    queryEmbedding: number[],
+    limit: number,
+    filters?: SearchFilters,
+  ): Promise<VectorSearchResult> {
+    if (!supabaseAdmin) {
+      throw new Error("Supabase is not configured for market candidate retrieval.");
+    }
+
+    const { data, error } = await supabaseAdmin.rpc("match_candidates", {
+      query_embedding: serializeEmbedding(queryEmbedding),
+      match_count: limit,
+      filter_location: filters?.location ?? null,
+      filter_min_rating: filters?.minRating ?? null,
+      filter_min_success_count: filters?.minSuccessCount ?? null,
+      filter_max_hourly_rate: filters?.maxHourlyRate ?? null,
+    });
+
+    if (error) {
+      throw new Error(`Vector search failed: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      return { candidates: [], source: "supabase", totalFound: 0 };
+    }
+
+    const candidates = (data as Record<string, unknown>[]).map((row) => {
+      const candidate = mapRowToCandidate(row);
+      candidate.relevance = typeof row.similarity === "number" ? row.similarity : 0;
+      return candidate;
+    });
+
+    return { candidates, source: "supabase", totalFound: candidates.length };
+  }
+
   async syncMissingEmbeddings(): Promise<{
     repairedCount: number;
     candidateCount: number;
@@ -163,17 +204,8 @@ export class SupabaseMarketCandidateRepository implements MarketCandidateReposit
         throw new Error("Supabase market table is empty.");
       }
 
-      const repaired = await this.backfillMissingEmbeddings(
-        data as Record<string, unknown>[],
-      );
-
       const candidates = data.map((row: Record<string, unknown>) => {
-        const candidate = mapRowToCandidate(row);
-        const repairedEmbedding = repaired.get(candidate.agentId);
-        if (repairedEmbedding) {
-          candidate.embedding = repairedEmbedding;
-        }
-        return candidate;
+        return mapRowToCandidate(row);
       });
 
       return {

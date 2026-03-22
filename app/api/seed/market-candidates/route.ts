@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { marketCandidateSeeds } from "@/features/search/data/marketCandidateSeeds";
-import { buildCandidateEmbeddingInput, serializeEmbedding } from "@/features/search/services/candidateEmbedding";
+import { buildCandidateEmbeddingInput } from "@/features/search/services/candidateEmbedding";
 import { embeddingService } from "@/features/search/services/embedding";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       certifications: seed.certifications ?? [],
       response_time: seed.responseTime ?? null,
       tags: seed.tags ?? [],
-      embedding: serializeEmbedding(seed.embedding ?? []),
+      embedding: JSON.stringify(seed.embedding ?? []),
     }));
 
     const { error } = await supabaseAdmin

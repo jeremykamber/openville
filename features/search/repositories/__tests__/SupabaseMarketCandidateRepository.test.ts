@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { fromMock, updateChain } = vi.hoisted(() => ({
+const { fromMock, rpcMock, updateChain } = vi.hoisted(() => ({
   fromMock: vi.fn(),
+  rpcMock: vi.fn(),
   updateChain: {
     eq: vi.fn(),
   },
@@ -10,6 +11,7 @@ const { fromMock, updateChain } = vi.hoisted(() => ({
 vi.mock("@/lib/supabase/server", () => ({
   supabaseAdmin: {
     from: fromMock,
+    rpc: rpcMock,
   },
 }));
 
@@ -40,76 +42,178 @@ describe("SupabaseMarketCandidateRepository", () => {
     });
   });
 
-  it("backfills missing embeddings before returning candidates", async () => {
-    const selectMock = vi.fn().mockResolvedValue({
-      data: [
-        {
-          agent_id: "agent-1",
-          name: "Fast Pipes",
-          description: "Emergency kitchen sink repairs",
-          services: ["plumbing"],
-          specialties: ["emergency plumbing"],
-          location: "Austin",
-          hourly_rate: 180,
-          base_price: 225,
-          success_count: 120,
-          rating: 4.8,
-          years_on_platform: 4,
-          years_experience: 8,
-          availability: "any",
-          certifications: ["licensed"],
-          response_time: "30 min",
-          tags: ["fast"],
-          embedding: null,
-        },
-      ],
-      error: null,
+  describe("listCandidates", () => {
+    it("returns candidates without triggering backfill", async () => {
+      const selectMock = vi.fn().mockResolvedValue({
+        data: [
+          {
+            agent_id: "agent-1",
+            name: "Fast Pipes",
+            description: "Emergency kitchen sink repairs",
+            services: ["plumbing"],
+            specialties: ["emergency plumbing"],
+            location: "Austin",
+            hourly_rate: 180,
+            base_price: 225,
+            success_count: 120,
+            rating: 4.8,
+            years_on_platform: 4,
+            years_experience: 8,
+            availability: "any",
+            certifications: ["licensed"],
+            response_time: "30 min",
+            tags: ["fast"],
+            embedding: null,
+          },
+        ],
+        error: null,
+      });
+
+      fromMock.mockReturnValue({ select: selectMock });
+
+      const repository = new SupabaseMarketCandidateRepository();
+      const result = await repository.listCandidates();
+
+      expect(mockedGenerateEmbedding).not.toHaveBeenCalled();
+      expect(result.candidates).toHaveLength(1);
+      expect(result.candidates[0].agentId).toBe("agent-1");
+      expect(result.source).toBe("supabase");
     });
-    const updateMock = vi.fn(() => updateChain);
-    updateChain.eq.mockResolvedValue({ error: null });
-
-    fromMock.mockReturnValue({
-      select: selectMock,
-      update: updateMock,
-    });
-    mockedGenerateEmbedding.mockResolvedValueOnce({ embedding: [0.1, 0.2, 0.3] });
-
-    const repository = new SupabaseMarketCandidateRepository();
-    const result = await repository.listCandidates();
-
-    expect(mockedGenerateEmbedding).toHaveBeenCalledTimes(1);
-    expect(updateMock).toHaveBeenCalledWith({ embedding: "[0.1,0.2,0.3]" });
-    expect(updateChain.eq).toHaveBeenCalledWith("agent_id", "agent-1");
-    expect(result.candidates[0].embedding).toEqual([0.1, 0.2, 0.3]);
   });
 
-  it("throws a clear error when an existing row is missing embeddings and repair cannot run", async () => {
-    const selectMock = vi.fn().mockResolvedValue({
-      data: [
-        {
-          agent_id: "agent-1",
-          name: "Fast Pipes",
-          description: "Emergency kitchen sink repairs",
-          services: ["plumbing"],
-          embedding: null,
-        },
-      ],
-      error: null,
+  describe("syncMissingEmbeddings", () => {
+    it("backfills missing embeddings via admin path", async () => {
+      const selectMock = vi.fn().mockResolvedValue({
+        data: [
+          {
+            agent_id: "agent-1",
+            name: "Fast Pipes",
+            description: "Emergency kitchen sink repairs",
+            services: ["plumbing"],
+            embedding: null,
+          },
+        ],
+        error: null,
+      });
+      const updateMock = vi.fn(() => updateChain);
+      updateChain.eq.mockResolvedValue({ error: null });
+
+      fromMock.mockReturnValue({
+        select: selectMock,
+        update: updateMock,
+      });
+      mockedGenerateEmbedding.mockResolvedValueOnce({ embedding: [0.1, 0.2, 0.3] });
+
+      const repository = new SupabaseMarketCandidateRepository();
+      const result = await repository.syncMissingEmbeddings();
+
+      expect(mockedGenerateEmbedding).toHaveBeenCalledTimes(1);
+      expect(updateMock).toHaveBeenCalledWith({ embedding: "[0.1,0.2,0.3]" });
+      expect(updateChain.eq).toHaveBeenCalledWith("agent_id", "agent-1");
+      expect(result.repairedCount).toBe(1);
+      expect(result.candidateCount).toBe(1);
     });
 
-    fromMock.mockReturnValue({
-      select: selectMock,
-      update: vi.fn(() => updateChain),
+    it("throws when embedding provider is unconfigured", async () => {
+      const selectMock = vi.fn().mockResolvedValue({
+        data: [
+          {
+            agent_id: "agent-1",
+            name: "Fast Pipes",
+            description: "Emergency kitchen sink repairs",
+            services: ["plumbing"],
+            embedding: null,
+          },
+        ],
+        error: null,
+      });
+
+      fromMock.mockReturnValue({
+        select: selectMock,
+        update: vi.fn(() => updateChain),
+      });
+      mockedGenerateEmbedding.mockResolvedValueOnce({
+        embedding: null,
+        reason: "unconfigured",
+      });
+
+      const repository = new SupabaseMarketCandidateRepository();
+
+      await expect(repository.syncMissingEmbeddings()).rejects.toThrow(
+        "Market candidate agent-1 is missing a stored embedding and automatic repair failed. Embedding provider is not configured.",
+      );
     });
-    mockedGenerateEmbedding.mockResolvedValueOnce({
-      embedding: null,
-      reason: "unconfigured",
+  });
+
+  describe("searchByVector", () => {
+    it("calls match_candidates RPC with embedding and filters", async () => {
+      rpcMock.mockResolvedValueOnce({
+        data: [
+          {
+            agent_id: "agent-1",
+            name: "Fast Pipes",
+            description: "Emergency kitchen sink repairs",
+            services: ["plumbing"],
+            specialties: ["emergency plumbing"],
+            location: "Austin",
+            hourly_rate: 180,
+            base_price: 225,
+            success_count: 120,
+            rating: 4.8,
+            years_on_platform: 4,
+            years_experience: 8,
+            availability: "any",
+            certifications: ["licensed"],
+            response_time: "30 min",
+            tags: ["fast"],
+            similarity: 0.92,
+          },
+        ],
+        error: null,
+      });
+
+      const repository = new SupabaseMarketCandidateRepository();
+      const result = await repository.searchByVector(
+        [0.1, 0.2, 0.3],
+        10,
+        { location: "Austin", minRating: 4.5 },
+      );
+
+      expect(rpcMock).toHaveBeenCalledWith("match_candidates", {
+        query_embedding: "[0.1,0.2,0.3]",
+        match_count: 10,
+        filter_location: "Austin",
+        filter_min_rating: 4.5,
+        filter_min_success_count: null,
+        filter_max_hourly_rate: null,
+      });
+      expect(result.candidates).toHaveLength(1);
+      expect(result.candidates[0].agentId).toBe("agent-1");
+      expect(result.candidates[0].relevance).toBe(0.92);
+      expect(result.source).toBe("supabase");
     });
 
-    const repository = new SupabaseMarketCandidateRepository();
+    it("returns empty when no matches found", async () => {
+      rpcMock.mockResolvedValueOnce({ data: [], error: null });
 
-    await expect(repository.listCandidates()).rejects.toThrow(
-      "Market candidate agent-1 is missing a stored embedding and automatic repair failed. Embedding provider is not configured.",
-    );
+      const repository = new SupabaseMarketCandidateRepository();
+      const result = await repository.searchByVector([0.1, 0.2], 10);
+
+      expect(result.candidates).toEqual([]);
+      expect(result.totalFound).toBe(0);
+    });
+
+    it("throws on RPC error", async () => {
+      rpcMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "function match_candidates does not exist" },
+      });
+
+      const repository = new SupabaseMarketCandidateRepository();
+
+      await expect(repository.searchByVector([0.1], 10)).rejects.toThrow(
+        "Vector search failed: function match_candidates does not exist",
+      );
+    });
   });
 });
