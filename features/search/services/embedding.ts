@@ -1,5 +1,9 @@
 import OpenAI from "openai";
 
+export type EmbeddingResult =
+  | { embedding: number[] }
+  | { embedding: null; reason: "unconfigured" | "error"; message?: string };
+
 export class EmbeddingService {
   private client: OpenAI | null = null;
 
@@ -26,11 +30,11 @@ export class EmbeddingService {
     return null;
   }
 
-  async generateEmbedding(text: string): Promise<number[] | null> {
+  async generateEmbedding(text: string): Promise<EmbeddingResult> {
     const clientConfig = this.getClientConfig();
 
     if (!clientConfig) {
-      return null;
+      return { embedding: null, reason: "unconfigured" };
     }
 
     try {
@@ -46,9 +50,15 @@ export class EmbeddingService {
         input: text,
       });
 
-      return response.data[0]?.embedding ?? null;
-    } catch {
-      return null;
+      const embedding = response.data[0]?.embedding;
+      if (!embedding) {
+        return { embedding: null, reason: "error", message: "No embedding returned from API" };
+      }
+
+      return { embedding };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return { embedding: null, reason: "error", message };
     }
   }
 }

@@ -1,15 +1,11 @@
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { WorkflowFallback } from "@/features/workflow/types";
-import { marketCandidateSeeds } from "../data/marketCandidateSeeds";
+import { buildCandidateEmbeddingInput, serializeEmbedding } from "../services/candidateEmbedding";
+import { embeddingService } from "../services/embedding";
 import { SearchResult } from "../types";
 import {
   MarketCandidateRepository,
   MarketCandidateRepositoryResult,
 } from "./MarketCandidateRepository";
-
-function isSeedFallbackAllowed(): boolean {
-  return process.env.ALLOW_SEEDED_MARKET_FALLBACK !== "false";
-}
 
 function parseEmbedding(raw: unknown): number[] | undefined {
   if (Array.isArray(raw)) {
@@ -63,34 +59,87 @@ function mapRowToCandidate(row: Record<string, unknown>): SearchResult {
   };
 }
 
-function buildSeedFallback(warnings: string[]): MarketCandidateRepositoryResult {
-  const fallbacksUsed: WorkflowFallback[] = ["seed_market"];
-
-  return {
-    candidates: marketCandidateSeeds,
-    source: "seed",
-    seeded: true,
-    warnings,
-    fallbacksUsed,
-  };
-}
-
 export class SupabaseMarketCandidateRepository implements MarketCandidateRepository {
+  async syncMissingEmbeddings(): Promise<{
+    repairedCount: number;
+    candidateCount: number;
+  }> {
+    if (!supabaseAdmin) {
+      throw new Error("Supabase is not configured for market candidate retrieval.");
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("market_candidates")
+      .select("*");
+
+    if (error) {
+      throw new Error(
+        `Failed to load market candidates from Supabase: ${error.message}`,
+      );
+    }
+
+    if (!data || data.length === 0) {
+      throw new Error("Supabase market table is empty.");
+    }
+
+    const repairedCount = await this.backfillMissingEmbeddings(
+      data as Record<string, unknown>[],
+    );
+
+    return {
+      repairedCount,
+      candidateCount: data.length,
+    };
+  }
+
+  private async backfillMissingEmbeddings(
+    rows: Record<string, unknown>[],
+  ): Promise<number> {
+    const missingRows = rows.filter((row) => !parseEmbedding(row.embedding)?.length);
+    if (missingRows.length === 0) {
+      return 0;
+    }
+
+    await Promise.all(
+      missingRows.map(async (row) => {
+        const candidate = mapRowToCandidate(row);
+        const embeddingResult = await embeddingService.generateEmbedding(
+          buildCandidateEmbeddingInput(candidate),
+        );
+
+        if (!embeddingResult.embedding) {
+          const reason =
+            embeddingResult.reason === "unconfigured"
+              ? "Embedding provider is not configured."
+              : `Embedding API call failed.${embeddingResult.message ? ` Error: ${embeddingResult.message}` : ""}`;
+
+          throw new Error(
+            `Market candidate ${candidate.agentId} is missing a stored embedding and automatic repair failed. ${reason}`,
+          );
+        }
+
+        const serializedEmbedding = serializeEmbedding(embeddingResult.embedding);
+        const { error } = await supabaseAdmin!
+          .from("market_candidates")
+          .update({ embedding: serializedEmbedding })
+          .eq("agent_id", candidate.agentId);
+
+        if (error) {
+          throw new Error(
+            `Failed to backfill embedding for market candidate ${candidate.agentId}: ${error.message}`,
+          );
+        }
+
+        row.embedding = serializedEmbedding;
+      }),
+    );
+
+    return missingRows.length;
+  }
+
   async listCandidates(): Promise<MarketCandidateRepositoryResult> {
     if (!supabaseAdmin) {
-      if (!isSeedFallbackAllowed()) {
-        return {
-          candidates: [],
-          source: "supabase",
-          seeded: false,
-          warnings: ["Supabase is not configured and seeded fallback is disabled."],
-          fallbacksUsed: [],
-        };
-      }
-
-      return buildSeedFallback([
-        "Supabase is not configured. Using seeded market fallback.",
-      ]);
+      throw new Error("Supabase is not configured for market candidate retrieval.");
     }
 
     try {
@@ -99,37 +148,18 @@ export class SupabaseMarketCandidateRepository implements MarketCandidateReposit
         .select("*");
 
       if (error) {
-        if (!isSeedFallbackAllowed()) {
-          return {
-            candidates: [],
-            source: "supabase",
-            seeded: false,
-            warnings: [`Failed to load market candidates from Supabase: ${error.message}`],
-            fallbacksUsed: [],
-          };
-        }
-
-        return buildSeedFallback([
+        throw new Error(
           `Failed to load market candidates from Supabase: ${error.message}`,
-          "Using seeded market fallback.",
-        ]);
+        );
       }
 
       if (!data || data.length === 0) {
-        if (!isSeedFallbackAllowed()) {
-          return {
-            candidates: [],
-            source: "supabase",
-            seeded: false,
-            warnings: ["Supabase market table is empty and seeded fallback is disabled."],
-            fallbacksUsed: [],
-          };
-        }
-
-        return buildSeedFallback([
-          "Supabase market table is empty. Using seeded market fallback.",
-        ]);
+        throw new Error("Supabase market table is empty.");
       }
+
+      await this.backfillMissingEmbeddings(
+        data as Record<string, unknown>[],
+      );
 
       return {
         candidates: data.map((row: Record<string, unknown>) => mapRowToCandidate(row)),
@@ -141,18 +171,8 @@ export class SupabaseMarketCandidateRepository implements MarketCandidateReposit
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unknown Supabase market error";
-
-      if (!isSeedFallbackAllowed()) {
-        return {
-          candidates: [],
-          source: "supabase",
-          seeded: false,
-          warnings: [message],
-          fallbacksUsed: [],
-        };
-      }
-
-      return buildSeedFallback([`${message}. Using seeded market fallback.`]);
+      console.error("Market candidate repository error:", error);
+      throw new Error(message);
     }
   }
 }

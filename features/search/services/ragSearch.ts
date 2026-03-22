@@ -1,41 +1,7 @@
-import { WorkflowFallback } from "@/features/workflow/types";
 import { SearchFilters, SearchRequest, SearchResult } from "../types";
 import { marketCandidateRepository } from "../repositories/SupabaseMarketCandidateRepository";
 import { embeddingService } from "./embedding";
 import { vectorSimilarity } from "./vectorSimilarity";
-
-function computeKeywordRelevance(query: string, candidate: SearchResult): number {
-  const tokens = query
-    .toLowerCase()
-    .split(/\s+/)
-    .map((token) => token.trim())
-    .filter(Boolean);
-
-  if (tokens.length === 0) {
-    return 0;
-  }
-
-  const fields = [
-    candidate.name,
-    candidate.description ?? "",
-    ...(candidate.services ?? []),
-    ...(candidate.specialties ?? []),
-    ...(candidate.tags ?? []),
-    candidate.location ?? "",
-  ]
-    .join(" ")
-    .toLowerCase();
-
-  const matches = tokens.reduce((score, token) => {
-    if (fields.includes(token)) {
-      return score + 1;
-    }
-
-    return score;
-  }, 0);
-
-  return Math.max(0, Math.min(1, matches / tokens.length));
-}
 
 export class RAGSearchService {
   async search(request: SearchRequest): Promise<{
@@ -46,33 +12,48 @@ export class RAGSearchService {
     seeded: boolean;
     retrievalMode: "vector" | "keyword";
     warnings: string[];
-    fallbacksUsed: WorkflowFallback[];
+    fallbacksUsed: [];
   }> {
     const market = await marketCandidateRepository.listCandidates();
+    const warnings = [...market.warnings];
     const filteredCandidates = request.filters
       ? this.applyFilters(market.candidates, request.filters)
       : market.candidates;
 
-    const queryEmbedding = await embeddingService.generateEmbedding(request.query);
+    const embeddingResult = await embeddingService.generateEmbedding(request.query);
+    const queryEmbedding = embeddingResult.embedding;
     const hasCandidateEmbeddings = filteredCandidates.some(
       (candidate) => Array.isArray(candidate.embedding) && candidate.embedding.length > 0,
     );
 
-    const warnings = [...market.warnings];
-    const fallbacksUsed = [...market.fallbacksUsed];
-    const retrievalMode =
-      queryEmbedding && hasCandidateEmbeddings ? "vector" : "keyword";
-
-    if (retrievalMode === "keyword") {
-      warnings.push("Using keyword retrieval fallback.");
-      fallbacksUsed.push("keyword_search");
+    if (!queryEmbedding) {
+      const message =
+        embeddingResult.reason === "unconfigured"
+          ? "Embedding provider is not configured."
+          : `Embedding API call failed.${embeddingResult.message ? ` Error: ${embeddingResult.message}` : ""}`;
+      console.error("RAG search error:", message);
+      throw new Error(message);
     }
 
+    if (filteredCandidates.length > 0 && !hasCandidateEmbeddings) {
+      const message = "Retrieved market candidates do not include embeddings.";
+      console.error("RAG search error:", message);
+      throw new Error(message);
+    }
+
+    const retrievalMode = "vector" as const;
+
     const scoredResults = filteredCandidates.map((candidate) => {
-      const relevance =
-        retrievalMode === "vector" && queryEmbedding && candidate.embedding
-          ? vectorSimilarity.cosineSimilarity(queryEmbedding, candidate.embedding)
-          : computeKeywordRelevance(request.query, candidate);
+      if (!candidate.embedding) {
+        const message = `Candidate ${candidate.agentId} is missing an embedding.`;
+        console.error("RAG search error:", message);
+        throw new Error(message);
+      }
+
+      const relevance = vectorSimilarity.cosineSimilarity(
+        queryEmbedding,
+        candidate.embedding,
+      );
 
       return {
         ...candidate,
@@ -90,7 +71,7 @@ export class RAGSearchService {
       seeded: market.seeded,
       retrievalMode,
       warnings: [...new Set(warnings)],
-      fallbacksUsed: [...new Set(fallbacksUsed)],
+      fallbacksUsed: [],
     };
   }
 
