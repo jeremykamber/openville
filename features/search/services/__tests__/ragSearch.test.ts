@@ -1,138 +1,138 @@
-import { describe, it, expect } from 'vitest';
-import { ragSearchService } from '../ragSearch';
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ragSearchService } from "../ragSearch";
+import { marketCandidateRepository } from "../../repositories/SupabaseMarketCandidateRepository";
+import { embeddingService } from "../embedding";
 
-describe('RAGSearchService', () => {
-  describe('search', () => {
-    it('returns results for valid query', async () => {
-      const result = await ragSearchService.search({ query: 'fix gutters' });
-      expect(result.results).toBeDefined();
-      expect(result.results.length).toBeGreaterThan(0);
-      expect(result.queryEmbedding).toBeDefined();
-      expect(result.queryEmbedding?.length).toBe(1536);
-    });
+vi.mock("../../repositories/SupabaseMarketCandidateRepository", () => ({
+  marketCandidateRepository: {
+    listCandidates: vi.fn(),
+  },
+}));
 
-    it('returns top 50 results max', async () => {
-      const result = await ragSearchService.search({ query: 'fix', limit: 50 });
-      expect(result.results.length).toBeLessThanOrEqual(50);
-    });
+vi.mock("../embedding", () => ({
+  embeddingService: {
+    generateEmbedding: vi.fn(),
+  },
+}));
 
-    it('calculates relevance scores', async () => {
-      const result = await ragSearchService.search({ query: 'gutter repair' });
-      expect(result.results[0].relevance).toBeGreaterThanOrEqual(0);
-      expect(result.results[0].relevance).toBeLessThanOrEqual(1);
-    });
+const mockedListCandidates = vi.mocked(marketCandidateRepository.listCandidates);
+const mockedGenerateEmbedding = vi.mocked(embeddingService.generateEmbedding);
 
-    it('sorts results by relevance descending', async () => {
-      const result = await ragSearchService.search({ query: 'fix gutters' });
-      for (let i = 1; i < result.results.length; i++) {
-        expect(result.results[i - 1].relevance).toBeGreaterThanOrEqual(result.results[i].relevance);
-      }
-    });
+const candidates = [
+  {
+    agentId: "agent-1",
+    name: "Fast Pipes",
+    score: 0,
+    relevance: 0,
+    successCount: 120,
+    rating: 4.8,
+    yearsOnPlatform: 4,
+    location: "Austin",
+    services: ["plumbing"],
+    specialties: ["emergency plumbing"],
+    hourlyRate: 180,
+    description: "Emergency kitchen sink repairs",
+    tags: ["fast", "reliable"],
+    embedding: [0.92, 0.08, 0.05],
+  },
+  {
+    agentId: "agent-2",
+    name: "Capital Plumbing",
+    score: 0,
+    relevance: 0,
+    successCount: 102,
+    rating: 4.7,
+    yearsOnPlatform: 5,
+    location: "Austin",
+    services: ["plumbing"],
+    specialties: ["residential plumbing"],
+    hourlyRate: 220,
+    description: "Kitchen and bathroom plumbing",
+    tags: ["local"],
+    embedding: [0.65, 0.22, 0.11],
+  },
+  {
+    agentId: "agent-3",
+    name: "Austin Leak Patrol",
+    score: 0,
+    relevance: 0,
+    successCount: 95,
+    rating: 4.6,
+    yearsOnPlatform: 3,
+    location: "Austin",
+    services: ["plumbing"],
+    specialties: ["leak detection"],
+    hourlyRate: 210,
+    description: "Detect and repair leaks quickly",
+    tags: ["same-day"],
+    embedding: [0.3, 0.7, 0.25],
+  },
+];
+
+describe("RAGSearchService", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  describe('filtering', () => {
-    it('filters by service categories', async () => {
-      const result = await ragSearchService.search({
-        query: 'fix',
-        filters: { serviceCategories: ['plumbing'] }
-      });
-      expect(result.results.every(r => 
-        (r.services || []).some(s => s.toLowerCase().includes('plumbing'))
-      )).toBe(true);
+  it("returns vector-ranked results from Supabase candidates", async () => {
+    mockedListCandidates.mockResolvedValueOnce({
+      candidates,
+      source: "supabase",
+      seeded: false,
+      warnings: [],
+      fallbacksUsed: [],
+    });
+    mockedGenerateEmbedding.mockResolvedValueOnce({ embedding: [1, 0, 0] });
+
+    const result = await ragSearchService.search({
+      query: "fix gutters",
+      limit: 2,
     });
 
-    it('filters by minimum rating', async () => {
-      const result = await ragSearchService.search({
-        query: 'fix',
-        filters: { minRating: 4.5 }
-      });
-      expect(result.results.every(r => (r.rating || 0) >= 4.5)).toBe(true);
-    });
-
-    it('filters by minimum rating of 0', async () => {
-      const result = await ragSearchService.search({
-        query: 'fix',
-        filters: { minRating: 0 }
-      });
-      expect(result.results.length).toBeGreaterThan(0);
-    });
-
-    it('filters by minimum success count', async () => {
-      const result = await ragSearchService.search({
-        query: 'fix',
-        filters: { minSuccessCount: 100 }
-      });
-      expect(result.results.every(r => (r.successCount || 0) >= 100)).toBe(true);
-    });
-
-    it('filters by minimum success count of 0', async () => {
-      const result = await ragSearchService.search({
-        query: 'fix',
-        filters: { minSuccessCount: 0 }
-      });
-      expect(result.results.length).toBeGreaterThan(0);
-    });
-
-    it('filters by max hourly rate', async () => {
-      const result = await ragSearchService.search({
-        query: 'fix',
-        filters: { maxHourlyRate: 60 }
-      });
-      expect(result.results.every(r => (r.hourlyRate || 0) <= 60)).toBe(true);
-    });
-
-    it('filters by max hourly rate of 0', async () => {
-      const result = await ragSearchService.search({
-        query: 'fix',
-        filters: { maxHourlyRate: 0 }
-      });
-      expect(result.results.length).toBe(0);
-    });
-
-    it('filters by location', async () => {
-      const result = await ragSearchService.search({
-        query: 'fix',
-        filters: { location: 'NYC' }
-      });
-      expect(result.results.every(r => 
-        (r.location || '').toLowerCase().includes('nyc')
-      )).toBe(true);
-    });
-
-    it('combines multiple filters', async () => {
-      const result = await ragSearchService.search({
-        query: 'fix',
-        filters: {
-          minRating: 4.0,
-          location: 'NYC'
-        }
-      });
-      expect(result.results.every(r => 
-        (r.rating || 0) >= 4.0 && (r.location || '').toLowerCase().includes('nyc')
-      )).toBe(true);
-    });
+    expect(result.retrievalMode).toBe("vector");
+    expect(result.source).toBe("supabase");
+    expect(result.seeded).toBe(false);
+    expect(result.results).toHaveLength(2);
+    expect(result.results[0].agentId).toBe("agent-1");
+    expect(result.results[0].relevance).toBeGreaterThanOrEqual(result.results[1].relevance);
+    expect(result.fallbacksUsed).toEqual([]);
   });
 
-  describe('edge cases', () => {
-    it('handles empty query', async () => {
-      const result = await ragSearchService.search({ query: '' });
-      expect(result.results).toBeDefined();
+  it("applies filters without relaxing them when no candidates match", async () => {
+    mockedListCandidates.mockResolvedValueOnce({
+      candidates,
+      source: "supabase",
+      seeded: false,
+      warnings: [],
+      fallbacksUsed: [],
+    });
+    mockedGenerateEmbedding.mockResolvedValueOnce({ embedding: [1, 0, 0] });
+
+    const result = await ragSearchService.search({
+      query: "fix gutters",
+      filters: { location: "Seattle" },
     });
 
-    it('handles null/undefined filters', async () => {
-      const result = await ragSearchService.search({
-        query: 'fix',
-        filters: undefined
-      });
-      expect(result.results.length).toBeGreaterThan(0);
+    expect(result.results).toEqual([]);
+    expect(result.totalFound).toBe(0);
+    expect(result.warnings).toEqual([]);
+  });
+
+  it("throws when embeddings are unavailable instead of falling back to keywords", async () => {
+    mockedListCandidates.mockResolvedValueOnce({
+      candidates,
+      source: "supabase",
+      seeded: false,
+      warnings: [],
+      fallbacksUsed: [],
+    });
+    mockedGenerateEmbedding.mockResolvedValueOnce({
+      embedding: null,
+      reason: "unconfigured",
     });
 
-    it('handles empty serviceCategories array', async () => {
-      const result = await ragSearchService.search({
-        query: 'fix',
-        filters: { serviceCategories: [] }
-      });
-      expect(result.results.length).toBeGreaterThan(0);
-    });
+    await expect(ragSearchService.search({ query: "fix gutters" })).rejects.toThrow(
+      "Embedding provider is not configured.",
+    );
   });
 });

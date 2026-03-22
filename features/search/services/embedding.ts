@@ -1,7 +1,13 @@
 import OpenAI from "openai";
 
+export type EmbeddingResult =
+  | { embedding: number[] }
+  | { embedding: null; reason: "unconfigured" | "error"; message?: string };
+
 export class EmbeddingService {
   private client: OpenAI | null = null;
+  private cachedApiKey: string | null = null;
+  private cachedBaseURL: string | undefined = undefined;
 
   isConfigured(): boolean {
     return Boolean(process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY);
@@ -26,19 +32,25 @@ export class EmbeddingService {
     return null;
   }
 
-  async generateEmbedding(text: string): Promise<number[] | null> {
+  async generateEmbedding(text: string): Promise<EmbeddingResult> {
     const clientConfig = this.getClientConfig();
 
     if (!clientConfig) {
-      return null;
+      return { embedding: null, reason: "unconfigured" };
     }
 
     try {
-      if (!this.client) {
+      if (
+        !this.client ||
+        this.cachedApiKey !== clientConfig.apiKey ||
+        this.cachedBaseURL !== clientConfig.baseURL
+      ) {
         this.client = new OpenAI({
           apiKey: clientConfig.apiKey,
           baseURL: clientConfig.baseURL,
         });
+        this.cachedApiKey = clientConfig.apiKey;
+        this.cachedBaseURL = clientConfig.baseURL;
       }
 
       const response = await this.client.embeddings.create({
@@ -46,9 +58,15 @@ export class EmbeddingService {
         input: text,
       });
 
-      return response.data[0]?.embedding ?? null;
-    } catch {
-      return null;
+      const embedding = response.data[0]?.embedding;
+      if (!embedding) {
+        return { embedding: null, reason: "error", message: "No embedding returned from API" };
+      }
+
+      return { embedding };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return { embedding: null, reason: "error", message };
     }
   }
 }
