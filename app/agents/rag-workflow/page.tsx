@@ -2,7 +2,7 @@
 
 import { useStream } from "@langchain/langgraph-sdk/react";
 import { useState } from "react";
-import { RAGWorkflowStreamer } from "@/app/components/agents/RAGWorkflowStreamer";
+import { RAGWorkflowStreamer } from "./_components/RAGWorkflowStreamer";
 
 export default function RAGWorkflowPage() {
   const [jobDesc, setJobDesc] = useState("");
