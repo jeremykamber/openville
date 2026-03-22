@@ -22,29 +22,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Supabase is not configured." }, { status: 500 });
     }
 
-    const seededCandidates = await Promise.all(
-      marketCandidateSeeds.map(async (seed) => {
-        const embeddingResult = await embeddingService.generateEmbedding(
-          buildCandidateEmbeddingInput(seed),
-        );
+    const BATCH_SIZE = 5;
+    const seededCandidates: (typeof marketCandidateSeeds[number] & { embedding: number[] })[] = [];
 
-        if (!embeddingResult.embedding) {
-          const reason =
-            embeddingResult.reason === "unconfigured"
-              ? "Embedding provider is not configured."
-              : `Embedding API call failed.${embeddingResult.message ? ` Error: ${embeddingResult.message}` : ""}`;
-
-          throw new Error(
-            `Unable to seed market candidate ${seed.agentId} with an embedding. ${reason}`,
+    for (let i = 0; i < marketCandidateSeeds.length; i += BATCH_SIZE) {
+      const batch = marketCandidateSeeds.slice(i, i + BATCH_SIZE);
+      const results = await Promise.all(
+        batch.map(async (seed) => {
+          const embeddingResult = await embeddingService.generateEmbedding(
+            buildCandidateEmbeddingInput(seed),
           );
-        }
 
-        return {
-          ...seed,
-          embedding: embeddingResult.embedding,
-        };
-      }),
-    );
+          if (!embeddingResult.embedding) {
+            const reason =
+              embeddingResult.reason === "unconfigured"
+                ? "Embedding provider is not configured."
+                : `Embedding API call failed.${embeddingResult.message ? ` Error: ${embeddingResult.message}` : ""}`;
+
+            throw new Error(
+              `Unable to seed market candidate ${seed.agentId} with an embedding. ${reason}`,
+            );
+          }
+
+          return {
+            ...seed,
+            embedding: embeddingResult.embedding,
+          };
+        }),
+      );
+      seededCandidates.push(...results);
+    }
 
     const rows = seededCandidates.map((seed) => ({
       agent_id: seed.agentId,

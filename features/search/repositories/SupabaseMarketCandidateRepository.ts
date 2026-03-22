@@ -100,39 +100,42 @@ export class SupabaseMarketCandidateRepository implements MarketCandidateReposit
       return 0;
     }
 
-    await Promise.all(
-      missingRows.map(async (row) => {
-        const candidate = mapRowToCandidate(row);
-        const embeddingResult = await embeddingService.generateEmbedding(
-          buildCandidateEmbeddingInput(candidate),
-        );
+    const BATCH_SIZE = 5;
 
-        if (!embeddingResult.embedding) {
-          const reason =
-            embeddingResult.reason === "unconfigured"
-              ? "Embedding provider is not configured."
-              : `Embedding API call failed.${embeddingResult.message ? ` Error: ${embeddingResult.message}` : ""}`;
-
-          throw new Error(
-            `Market candidate ${candidate.agentId} is missing a stored embedding and automatic repair failed. ${reason}`,
+    for (let i = 0; i < missingRows.length; i += BATCH_SIZE) {
+      const batch = missingRows.slice(i, i + BATCH_SIZE);
+      await Promise.all(
+        batch.map(async (row) => {
+          const candidate = mapRowToCandidate(row);
+          const embeddingResult = await embeddingService.generateEmbedding(
+            buildCandidateEmbeddingInput(candidate),
           );
-        }
 
-        const serializedEmbedding = serializeEmbedding(embeddingResult.embedding);
-        const { error } = await supabaseAdmin!
-          .from("market_candidates")
-          .update({ embedding: serializedEmbedding })
-          .eq("agent_id", candidate.agentId);
+          if (!embeddingResult.embedding) {
+            const reason =
+              embeddingResult.reason === "unconfigured"
+                ? "Embedding provider is not configured."
+                : `Embedding API call failed.${embeddingResult.message ? ` Error: ${embeddingResult.message}` : ""}`;
 
-        if (error) {
-          throw new Error(
-            `Failed to backfill embedding for market candidate ${candidate.agentId}: ${error.message}`,
-          );
-        }
+            throw new Error(
+              `Market candidate ${candidate.agentId} is missing a stored embedding and automatic repair failed. ${reason}`,
+            );
+          }
 
-        row.embedding = serializedEmbedding;
-      }),
-    );
+          const serializedEmbedding = serializeEmbedding(embeddingResult.embedding);
+          const { error } = await supabaseAdmin!
+            .from("market_candidates")
+            .update({ embedding: serializedEmbedding })
+            .eq("agent_id", candidate.agentId);
+
+          if (error) {
+            throw new Error(
+              `Failed to backfill embedding for market candidate ${candidate.agentId}: ${error.message}`,
+            );
+          }
+        }),
+      );
+    }
 
     return missingRows.length;
   }
@@ -169,10 +172,8 @@ export class SupabaseMarketCandidateRepository implements MarketCandidateReposit
         fallbacksUsed: [],
       };
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown Supabase market error";
       console.error("Market candidate repository error:", error);
-      throw new Error(message);
+      throw error;
     }
   }
 }
